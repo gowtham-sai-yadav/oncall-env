@@ -1,7 +1,7 @@
 {
   "incident_id": "INC-20260326-005",
   "difficulty": "hard",
-  "description": "SEV1 incident: Complete order processing pipeline failure. Multiple services down or degraded. You must triage the alerts, diagnose the root cause through careful investigation of logs/metrics/dependencies, apply the correct remediation, and document the incident. The root cause is subtle -- a recent config change combined with a traffic spike triggered a memory leak.",
+  "description": "SEV1 incident: Complete order processing pipeline failure. Multiple services down or degraded. You must triage the alerts, diagnose the root cause through careful investigation of logs, metrics, and dependencies, apply the correct remediation, and document the incident.",
   "expected_severity": "SEV1",
   "initial_alerts": [
     {

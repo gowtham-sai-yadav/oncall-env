@@ -1,5 +1,7 @@
 spec_version: 1
 name: oncall_env
+description: "Incident Response Command Center - simulates production on-call engineering with alert triage, root cause diagnosis, remediation, and documentation"
+version: "0.2.0"
 type: space
 runtime: fastapi
 app: server.app:app

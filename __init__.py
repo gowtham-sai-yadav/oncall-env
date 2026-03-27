@@ -3,6 +3,7 @@
 from oncall_env.models import (
     OnCallAction,
     OnCallObservation,
+    OnCallState,
     Alert,
     ServiceStatus,
     LogEntry,
@@ -14,6 +15,7 @@ from oncall_env.client import OnCallEnvClient
 __all__ = [
     "OnCallAction",
     "OnCallObservation",
+    "OnCallState",
     "OnCallEnvClient",
     "Alert",
     "ServiceStatus",

@@ -1,7 +1,7 @@
 {
   "incident_id": "INC-20260326-006",
   "difficulty": "expert",
-  "description": "SEV1 cascading production outage with multiple misleading signals. Several unrelated events coincide with the real failure, creating red herrings. A recent unrelated deployment and a correlated-but-non-causal metric spike make diagnosis extremely challenging. You must carefully distinguish signal from noise, identify the true root cause, remediate correctly, and document thoroughly.",
+  "description": "SEV1 cascading production outage affecting multiple critical services. Several events occurring simultaneously make diagnosis challenging. You must carefully investigate, identify the true root cause, remediate correctly, and document thoroughly.",
   "expected_severity": "SEV1",
   "initial_alerts": [
     {
@@ -35,7 +35,7 @@
       "alert_id": "alert-504",
       "severity": "warning",
       "service": "recommendation-engine",
-      "message": "Model inference latency increased 3x (RED HERRING: scheduled model update)",
+      "message": "Model inference latency increased 3x",
       "timestamp": "2026-03-26T20:00:15Z",
       "acknowledged": false,
       "silenced": false
@@ -53,7 +53,7 @@
       "alert_id": "alert-506",
       "severity": "warning",
       "service": "search-api",
-      "message": "Search latency elevated to 600ms (RED HERRING: elasticsearch reindexing)",
+      "message": "Search latency elevated to 600ms",
       "timestamp": "2026-03-26T20:00:25Z",
       "acknowledged": false,
       "silenced": false

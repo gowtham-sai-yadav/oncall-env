@@ -1,3 +1,14 @@
+---
+title: OnCallEnv
+emoji: "\U0001F6A8"
+sdk: docker
+app_port: 8000
+tags:
+  - openenv
+  - reinforcement-learning
+  - incident-response
+---
+
 # OnCallEnv -- Incident Response Command Center
 
 An OpenEnv RL environment that simulates production incident response. An AI agent acts as an **on-call engineer** -- triaging alerts, diagnosing root causes, remediating failures, and documenting incidents.
@@ -24,8 +35,8 @@ uvicorn oncall_env.server.app:app --host 0.0.0.0 --port 8000
 # Run tests
 pytest server/test_oncall.py -v
 
-# Run baseline (requires OPENAI_API_KEY)
-python baseline.py
+# Run baseline (requires API_BASE_URL and MODEL_NAME or HF_TOKEN)
+python inference.py
 ```
 
 ## Docker
@@ -121,7 +132,7 @@ oncall_env/
 ├── __init__.py              # Exports
 ├── models.py                # Action, Observation, State (Pydantic)
 ├── client.py                # EnvClient subclass
-├── baseline.py              # Baseline inference script
+├── inference.py             # Baseline inference script
 ├── openenv.yaml             # OpenEnv manifest
 ├── pyproject.toml           # Package config
 ├── scenarios/               # Pre-generated incident scenarios (JSON)

@@ -205,6 +205,12 @@ def _grade_remediation(
             if svc in healthy_services_at_start:
                 score -= 0.1
 
+    # Penalize premature resolution (resolving without any investigation)
+    investigation_types = {"query_logs", "check_metrics", "view_dependencies"}
+    has_any_investigation = any(a["action_type"] in investigation_types for a in actions)
+    if resolved and not has_any_investigation:
+        score -= 0.3
+
     return min(max(score, 0.0), 1.0)
 
 
@@ -246,3 +252,81 @@ def _grade_documentation(summary: str) -> float:
     score += 0.2 * min(matched / 3, 1.0)
 
     return min(score, 1.0)
+
+
+# ── Supplementary Metrics (not part of main reward, for analysis) ────────
+
+
+def compute_supplementary_metrics(
+    scenario: dict[str, Any],
+    actions_taken: list[dict],
+    services_state: list[dict],
+    resolved: bool,
+) -> dict[str, float]:
+    """Compute supplementary metrics for episode analysis.
+
+    These do NOT affect the main reward. They provide additional insight
+    into agent behavior for debugging, research, and leaderboard display.
+    """
+    return {
+        "egar": _compute_egar(actions_taken),
+        "blast_radius": _compute_blast_radius(scenario, actions_taken),
+    }
+
+
+def _compute_egar(actions: list[dict]) -> float:
+    """Evidence-Gated Action Rate: did agent investigate before remediating?
+
+    For each remediation action, checks whether the agent queried logs or
+    metrics for that specific service beforehand. Returns fraction of
+    remediation actions that were preceded by investigation of the target.
+
+    Score: 1.0 = always investigated first, 0.0 = never investigated.
+    """
+    investigation_types = {"query_logs", "check_metrics", "view_dependencies"}
+    remediation_types = {"restart_service", "scale_service", "rollback_deploy", "update_config"}
+
+    remediation_actions = [a for a in actions if a["action_type"] in remediation_types]
+    if not remediation_actions:
+        return 0.5  # No remediation attempted -- neutral
+
+    gated_count = 0
+    for ra in remediation_actions:
+        target_svc = ra["params"].get("service_name", "")
+        ra_step = ra.get("step", float("inf"))
+        investigated = any(
+            a["action_type"] in investigation_types
+            and (a["params"].get("service", "") == target_svc or a["params"].get("service_name", "") == target_svc)
+            and a.get("step", 0) < ra_step
+            for a in actions
+        )
+        if investigated:
+            gated_count += 1
+
+    return round(gated_count / len(remediation_actions), 3)
+
+
+def _compute_blast_radius(scenario: dict, actions: list[dict]) -> float:
+    """Blast radius: ratio of incorrect remediation actions to total remediations.
+
+    Lower is better. 0.0 = every remediation targeted the right service.
+    1.0 = every remediation was wrong.
+    """
+    remediation_types = {"restart_service", "scale_service", "rollback_deploy", "update_config"}
+    remediation_actions = [a for a in actions if a["action_type"] in remediation_types]
+
+    if not remediation_actions:
+        return 0.0
+
+    valid_targets = {
+        (vr.get("action"), vr.get("service"))
+        for vr in scenario.get("valid_remediations", [])
+    }
+
+    wrong_count = 0
+    for ra in remediation_actions:
+        key = (ra["action_type"], ra["params"].get("service_name", ""))
+        if key not in valid_targets:
+            wrong_count += 1
+
+    return round(wrong_count / len(remediation_actions), 3)

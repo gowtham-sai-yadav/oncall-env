@@ -21,7 +21,9 @@ class OnCallEnvClient(EnvClient[OnCallAction, OnCallObservation, OnCallState]):
         obs_data = payload.get("observation", payload)
         reward = payload.get("reward")
         done = payload.get("done", False)
-        obs = OnCallObservation(**obs_data, reward=reward, done=done)
+        # Avoid double-setting reward/done if already in obs_data
+        obs_data_clean = {k: v for k, v in obs_data.items() if k not in ("reward", "done")}
+        obs = OnCallObservation(**obs_data_clean, reward=reward, done=done)
         return StepResult(
             observation=obs,
             reward=reward,

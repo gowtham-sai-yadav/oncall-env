@@ -12,6 +12,8 @@ from openenv.core.env_server.interfaces import Environment
 from oncall_env.models import OnCallAction, OnCallObservation, OnCallState
 from oncall_env.server.scenario_loader import load_scenario_by_task
 from oncall_env.server.graders import grade_episode
+from oncall_env.server.rubric import OnCallRubric
+from oncall_env.server.simulator import degrade_services, propagate_recovery
 
 
 ALL_ACTIONS = [
@@ -31,7 +33,9 @@ class OnCallEnvironment(Environment[OnCallAction, OnCallObservation, OnCallState
     SUPPORTS_CONCURRENT_SESSIONS = True
 
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+        self._rubric = OnCallRubric()
+        self._rubric.set_env(self)
+        super().__init__(rubric=self._rubric)
         self._state = OnCallState()
         self._scenario: dict[str, Any] = {}
         self._alerts: list[dict] = []
@@ -47,6 +51,8 @@ class OnCallEnvironment(Environment[OnCallAction, OnCallObservation, OnCallState
     # ── reset ───────────────────────────────────────────────────────────
 
     def reset(self, seed: int | None = None, episode_id: str | None = None, **kwargs) -> OnCallObservation:
+        self._reset_rubric()
+
         task_id = kwargs.get("task_id", 1)
         scenario_idx = kwargs.get("scenario_idx", 0)
 
@@ -108,6 +114,17 @@ class OnCallEnvironment(Environment[OnCallAction, OnCallObservation, OnCallState
 
         self._add_event("agent_action", f"{action.action_type}: {sanitized_params}")
 
+        # Dynamic simulation: degrade unhealthy services each step
+        deps = self._scenario.get("dependencies", {})
+        degrade_services(self._services, deps)
+
+        # Cascading recovery: if a remediation just fixed a service, propagate
+        if action.action_type in ("restart_service", "scale_service", "rollback_deploy", "update_config"):
+            target_svc = sanitized_params.get("service_name", "")
+            svc_map = {s["name"]: s for s in self._services}
+            if target_svc in svc_map and svc_map[target_svc]["status"] == "healthy":
+                propagate_recovery(self._services, deps, target_svc)
+
         done = self._resolved or self._state.step_count >= MAX_STEPS
         reward = self._compute_final_reward() if done else None
 
@@ -116,6 +133,10 @@ class OnCallEnvironment(Environment[OnCallAction, OnCallObservation, OnCallState
         for k, v in extra.items():
             if hasattr(obs, k):
                 setattr(obs, k, v)
+
+        # Accumulate step in rubric trajectory (for GRPO training compatibility)
+        self._apply_rubric(action, obs)
+
         return obs
 
     # ── state property ──────────────────────────────────────────────────
@@ -123,6 +144,19 @@ class OnCallEnvironment(Environment[OnCallAction, OnCallObservation, OnCallState
     @property
     def state(self) -> OnCallState:
         return self._state
+
+    # ── metadata ─────────────────────────────────────────────────────────
+
+    def get_metadata(self):
+        return {
+            "name": "OnCallEnv",
+            "description": "Incident Response Command Center -- simulates production on-call engineering with alert triage, root cause diagnosis, remediation, and documentation across 4 difficulty levels.",
+            "version": "0.2.0",
+            "tasks": 4,
+            "scenarios_per_task": 2,
+            "action_types": 13,
+            "grading_components": 6,
+        }
 
     # ── Action Handlers ─────────────────────────────────────────────────
 
@@ -157,8 +191,9 @@ class OnCallEnvironment(Environment[OnCallAction, OnCallObservation, OnCallState
         if result is None:
             for k, v in metrics_db.items():
                 if service and service.lower() in k.lower():
-                    result = v
-                    break
+                    if not metric_name or metric_name.lower() in k.lower():
+                        result = v
+                        break
 
         if result is None:
             return f"No metrics found for service='{service}' metric='{metric_name}'.", {"metric_results": None}
@@ -316,6 +351,49 @@ class OnCallEnvironment(Environment[OnCallAction, OnCallObservation, OnCallState
             "description": description,
         })
 
+    def _compute_step_reward_signals(self) -> dict:
+        """Compute intermediate reward signals for GRPO training.
+
+        These signals are exposed in observation.metadata["reward_signals"]
+        on every step, providing per-step feedback for multi-objective training.
+        """
+        scenario = self._scenario
+        if not scenario:
+            return {}
+
+        # Triage progress: fraction of critical alerts acknowledged
+        critical_alerts = [a for a in scenario.get("initial_alerts", []) if a.get("severity") == "critical"]
+        acked = sum(1 for a in self._alerts if a.get("acknowledged"))
+        triage_progress = acked / max(len(critical_alerts), 1)
+
+        # Investigation depth: fraction of expected diagnostics completed
+        expected_diags = scenario.get("expected_diagnostics", [])
+        completed_diags = 0
+        for d in expected_diags:
+            if any(a["action_type"] == d.get("action_type") for a in self._actions_taken):
+                completed_diags += 1
+        investigation_depth = completed_diags / max(len(expected_diags), 1)
+
+        # Premature action: penalty if agent remediated without investigating first
+        has_investigation = any(
+            a["action_type"] in ("query_logs", "check_metrics", "view_dependencies")
+            for a in self._actions_taken
+        )
+        has_remediation = any(
+            a["action_type"] in ("restart_service", "scale_service", "rollback_deploy", "update_config")
+            for a in self._actions_taken
+        )
+        premature_action = 0.0 if (not has_remediation or has_investigation) else -0.5
+
+        return {
+            "oncall.triage_progress": round(triage_progress, 3),
+            "oncall.investigation_depth": round(investigation_depth, 3),
+            "oncall.premature_action": premature_action,
+            "oncall.severity_set": 1.0 if self._severity is not None else 0.0,
+            "oncall.summary_written": 1.0 if self._summary else 0.0,
+            "oncall.resolved": 1.0 if self._resolved else 0.0,
+        }
+
     def _make_observation(
         self,
         message: str = "",
@@ -336,6 +414,7 @@ class OnCallEnvironment(Environment[OnCallAction, OnCallObservation, OnCallState
                 "step_count": self._state.step_count,
                 "task_id": self._state.task_id,
                 "scenario_id": self._state.scenario_id,
+                "reward_signals": self._compute_step_reward_signals(),
             },
         )
 

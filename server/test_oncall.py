@@ -400,5 +400,206 @@ def test_full_episode_new_task4_scenario():
     assert 0.0 <= obs.reward <= 1.0
 
 
+# ── Reward Signals & Rubric Tests ─────────────────────────────────────────
+
+def test_reward_signals_present_after_step():
+    """Verify per-step reward signals are in observation metadata."""
+    env = OnCallEnvironment()
+    env.reset(task_id=1, scenario_idx=0)
+    obs = env.step(OnCallAction(action_type="query_logs", params={"service": "payment-api"}))
+    assert "reward_signals" in obs.metadata
+    signals = obs.metadata["reward_signals"]
+    assert "oncall.triage_progress" in signals
+    assert "oncall.investigation_depth" in signals
+    assert "oncall.premature_action" in signals
+    assert "oncall.severity_set" in signals
+    assert "oncall.summary_written" in signals
+    assert "oncall.resolved" in signals
+
+
+def test_reward_signals_progress_over_episode():
+    """Verify reward signals reflect actual progress."""
+    env = OnCallEnvironment()
+    env.reset(task_id=1, scenario_idx=0)
+
+    # Before any action: triage_progress should be 0
+    obs = env.step(OnCallAction(action_type="query_logs", params={"service": "payment-api"}))
+    assert obs.metadata["reward_signals"]["oncall.triage_progress"] == 0.0
+    assert obs.metadata["reward_signals"]["oncall.investigation_depth"] > 0.0  # queried expected diagnostic
+
+    # Acknowledge a critical alert
+    obs = env.step(OnCallAction(action_type="acknowledge_alert", params={"alert_id": "alert-001"}))
+    assert obs.metadata["reward_signals"]["oncall.triage_progress"] > 0.0
+
+    # Set severity
+    obs = env.step(OnCallAction(action_type="set_severity", params={"level": "SEV2"}))
+    assert obs.metadata["reward_signals"]["oncall.severity_set"] == 1.0
+
+    # Write summary
+    obs = env.step(OnCallAction(action_type="write_summary", params={"text": "Root cause identified."}))
+    assert obs.metadata["reward_signals"]["oncall.summary_written"] == 1.0
+
+
+def test_rubric_produces_same_score_as_direct_grading():
+    """Rubric score_trajectory should match grade_episode."""
+    env = OnCallEnvironment()
+    env.reset(task_id=1, scenario_idx=0)
+
+    actions = [
+        OnCallAction(action_type="acknowledge_alert", params={"alert_id": "alert-001"}),
+        OnCallAction(action_type="query_logs", params={"service": "payment-api"}),
+        OnCallAction(action_type="restart_service", params={"service_name": "payment-api"}),
+        OnCallAction(action_type="resolve_incident", params={"resolution_note": "fixed"}),
+    ]
+    for action in actions:
+        obs = env.step(action)
+
+    # Direct grading
+    direct_score = grade_episode(
+        scenario=env._scenario,
+        actions_taken=env._actions_taken,
+        alerts_state=env._alerts,
+        services_state=env._services,
+        severity_set=env._severity,
+        summary=env._summary,
+        escalated_to=env._escalated_to,
+        resolved=env._resolved,
+    )
+
+    # Rubric trajectory score
+    rubric_score = env._rubric.score_trajectory(env._rubric.trajectory)
+
+    assert direct_score == rubric_score, f"Direct={direct_score} vs Rubric={rubric_score}"
+
+
+def test_rubric_compute_step_rewards():
+    """Rubric compute_step_rewards should return one reward per step."""
+    env = OnCallEnvironment()
+    env.reset(task_id=1, scenario_idx=0)
+
+    for _ in range(5):
+        env.step(OnCallAction(action_type="query_logs", params={"service": "payment-api"}))
+    env.step(OnCallAction(action_type="resolve_incident", params={"resolution_note": "done"}))
+
+    step_rewards = env._rubric.compute_step_rewards()
+    assert len(step_rewards) == 6  # 5 queries + 1 resolve
+    assert all(isinstance(r, float) for r in step_rewards)
+
+
+# ── Dynamic Simulation Tests ──────────────────────────────────────────────
+
+def test_services_degrade_over_steps():
+    """Degraded services should get worse if not remediated."""
+    env = OnCallEnvironment()
+    env.reset(task_id=1, scenario_idx=0)
+
+    # payment-api starts at error_rate=12.3, status=degraded
+    initial_error_rate = None
+    for svc in env._services:
+        if svc["name"] == "payment-api":
+            initial_error_rate = svc["error_rate"]
+            break
+
+    # Take 5 non-remediation steps
+    for _ in range(5):
+        env.step(OnCallAction(action_type="query_logs", params={"service": "user-service"}))
+
+    current_error_rate = None
+    for svc in env._services:
+        if svc["name"] == "payment-api":
+            current_error_rate = svc["error_rate"]
+            break
+
+    assert current_error_rate > initial_error_rate, (
+        f"Expected degradation: initial={initial_error_rate}, current={current_error_rate}"
+    )
+
+
+def test_cascading_recovery_after_fix():
+    """Fixing root cause should improve downstream services whose deps are all healthy."""
+    from oncall_env.server.simulator import propagate_recovery
+
+    # Simulate: api-gateway depends on [order-service]. order-service is healthy.
+    # api-gateway is degraded. After fixing order-service, api-gateway should recover.
+    services = [
+        {"name": "order-service", "status": "healthy", "error_rate": 0.0, "latency_ms": 50},
+        {"name": "api-gateway", "status": "degraded", "error_rate": 30.0, "latency_ms": 2000},
+    ]
+    deps = {"api-gateway": ["order-service"]}
+
+    propagate_recovery(services, deps, "order-service")
+
+    gw = next(s for s in services if s["name"] == "api-gateway")
+    assert gw["error_rate"] < 30.0, f"Expected recovery: error_rate={gw['error_rate']}"
+    assert gw["latency_ms"] < 2000, f"Expected recovery: latency={gw['latency_ms']}"
+
+
+def test_status_transition_degraded_to_down():
+    """Services should transition from degraded to down when error_rate is extreme."""
+    from oncall_env.server.simulator import degrade_services
+
+    services = [{"name": "test-svc", "status": "degraded", "error_rate": 75.0, "latency_ms": 1000}]
+    # After enough degradation steps, should transition to down
+    for _ in range(10):
+        degrade_services(services, {})
+    assert services[0]["status"] == "down"
+    assert services[0]["error_rate"] == 100.0
+
+
+# ── Supplementary Metrics Tests ───────────────────────────────────────────
+
+def test_egar_metric():
+    """EGAR should score higher when agent investigates before remediating."""
+    from oncall_env.server.graders import _compute_egar
+
+    # Agent investigated payment-api before restarting it
+    good_actions = [
+        {"action_type": "query_logs", "params": {"service": "payment-api"}, "step": 1},
+        {"action_type": "restart_service", "params": {"service_name": "payment-api"}, "step": 2},
+    ]
+    # Agent restarted without investigating
+    bad_actions = [
+        {"action_type": "restart_service", "params": {"service_name": "payment-api"}, "step": 1},
+    ]
+
+    assert _compute_egar(good_actions) == 1.0
+    assert _compute_egar(bad_actions) == 0.0
+
+
+def test_blast_radius_metric():
+    """Blast radius should be 0 when all remediations are correct."""
+    from oncall_env.server.graders import _compute_blast_radius
+
+    scenario = {"valid_remediations": [{"action": "restart_service", "service": "payment-api"}]}
+
+    # Correct remediation
+    correct = [{"action_type": "restart_service", "params": {"service_name": "payment-api"}, "step": 1}]
+    assert _compute_blast_radius(scenario, correct) == 0.0
+
+    # Wrong remediation
+    wrong = [{"action_type": "restart_service", "params": {"service_name": "user-service"}, "step": 1}]
+    assert _compute_blast_radius(scenario, wrong) == 1.0
+
+
+def test_premature_resolution_penalty():
+    """Resolving without investigation should lower the remediation score."""
+    scenario = load_scenario_by_task(1, 0)
+
+    # With investigation
+    actions_with_invest = [
+        {"action_type": "query_logs", "params": {"service": "payment-api"}, "step": 1},
+        {"action_type": "restart_service", "params": {"service_name": "payment-api"}, "step": 2},
+    ]
+    # Without investigation
+    actions_no_invest = [
+        {"action_type": "restart_service", "params": {"service_name": "payment-api"}, "step": 1},
+    ]
+
+    r_with = grade_episode(scenario, actions_with_invest, scenario["services"], scenario["services"], "SEV2", "fix", None, True)
+    r_without = grade_episode(scenario, actions_no_invest, scenario["services"], scenario["services"], "SEV2", "fix", None, True)
+
+    assert r_with > r_without, f"Investigation should yield higher score: with={r_with} vs without={r_without}"
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

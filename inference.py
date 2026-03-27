@@ -56,6 +56,11 @@ def parse_action_from_llm(response_text: str) -> OnCallAction:
         return OnCallAction(action_type="write_summary", params={"text": text})
 
 
+def _alert_attr(a, key, default=""):
+    """Access alert field as attribute or dict key (handles both typed models and raw dicts)."""
+    return getattr(a, key, None) if not isinstance(a, dict) else a.get(key, default)
+
+
 def format_observation(obs) -> str:
     """Format observation for LLM context."""
     parts = [f"Message: {obs.message}"]
@@ -63,19 +68,28 @@ def format_observation(obs) -> str:
     if obs.alerts:
         parts.append("\nActive Alerts:")
         for a in obs.alerts:
-            ack = " [ACK]" if a.get("acknowledged") else ""
-            sil = " [SILENCED]" if a.get("silenced") else ""
-            parts.append(f"  [{a.get('severity', '?').upper()}] {a.get('alert_id')}: {a.get('service')} - {a.get('message')}{ack}{sil}")
+            ack = " [ACK]" if _alert_attr(a, "acknowledged") else ""
+            sil = " [SILENCED]" if _alert_attr(a, "silenced") else ""
+            sev = str(_alert_attr(a, "severity", "?")).upper()
+            parts.append(f"  [{sev}] {_alert_attr(a, 'alert_id')}: {_alert_attr(a, 'service')} - {_alert_attr(a, 'message')}{ack}{sil}")
 
     if obs.services:
         parts.append("\nService Status:")
         for s in obs.services:
-            parts.append(f"  {s.get('name')}: {s.get('status')} (latency={s.get('latency_ms')}ms, errors={s.get('error_rate')}%)")
+            name = _alert_attr(s, "name")
+            status = _alert_attr(s, "status")
+            latency = _alert_attr(s, "latency_ms", 0)
+            errors = _alert_attr(s, "error_rate", 0)
+            parts.append(f"  {name}: {status} (latency={latency}ms, errors={errors}%)")
 
     if obs.log_results:
         parts.append(f"\nLog Results ({len(obs.log_results)} entries):")
         for entry in obs.log_results[:10]:
-            parts.append(f"  [{entry.get('level')}] {entry.get('timestamp')} {entry.get('service')}: {entry.get('message')}")
+            lvl = _alert_attr(entry, "level")
+            ts = _alert_attr(entry, "timestamp")
+            svc = _alert_attr(entry, "service")
+            msg = _alert_attr(entry, "message")
+            parts.append(f"  [{lvl}] {ts} {svc}: {msg}")
 
     if obs.metric_results:
         parts.append(f"\nMetric Results: {json.dumps(obs.metric_results, indent=2)}")
@@ -86,7 +100,11 @@ def format_observation(obs) -> str:
     if obs.recent_deployments:
         parts.append("\nRecent Deployments:")
         for d in obs.recent_deployments:
-            parts.append(f"  {d.get('service')} v{d.get('version')} at {d.get('timestamp')} by {d.get('deployer')}")
+            svc = _alert_attr(d, "service")
+            ver = _alert_attr(d, "version")
+            ts = _alert_attr(d, "timestamp")
+            who = _alert_attr(d, "deployer")
+            parts.append(f"  {svc} v{ver} at {ts} by {who}")
 
     return "\n".join(parts)
 
@@ -99,9 +117,9 @@ async def run_baseline(base_url: str, task_id: int = 1, scenario_idx: int = 0):
         print("openai package required. Install with: pip install openai")
         sys.exit(1)
 
-    api_key = os.environ.get("OPENAI_API_KEY", "")
-    api_base = os.environ.get("OPENAI_API_BASE", "https://api.openai.com/v1")
-    model = os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
+    api_key = os.environ.get("HF_TOKEN", os.environ.get("OPENAI_API_KEY", ""))
+    api_base = os.environ.get("API_BASE_URL", "https://api.openai.com/v1")
+    model = os.environ.get("MODEL_NAME", "gpt-4o-mini")
 
     client_llm = OpenAI(api_key=api_key, base_url=api_base)
 
