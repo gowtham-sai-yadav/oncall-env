@@ -1,0 +1,104 @@
+{
+  "incident_id": "INC-20260326-002",
+  "difficulty": "easy",
+  "description": "Alerts firing across multiple services after a routine deployment. Determine which alerts are real issues vs deployment noise, triage appropriately.",
+  "expected_severity": "SEV3",
+  "initial_alerts": [
+    {
+      "alert_id": "alert-101",
+      "severity": "warning",
+      "service": "search-api",
+      "message": "Latency increased to 450ms (threshold 400ms)",
+      "timestamp": "2026-03-26T10:00:00Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-102",
+      "severity": "critical",
+      "service": "auth-service",
+      "message": "Login failure rate at 8% - above 5% threshold",
+      "timestamp": "2026-03-26T10:00:30Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-103",
+      "severity": "info",
+      "service": "search-api",
+      "message": "Deployment v3.2.0 completed successfully",
+      "timestamp": "2026-03-26T09:55:00Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-104",
+      "severity": "info",
+      "service": "cdn",
+      "message": "Cache purge completed for static assets",
+      "timestamp": "2026-03-26T09:58:00Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-105",
+      "severity": "warning",
+      "service": "auth-service",
+      "message": "Redis connection timeout - retry succeeded",
+      "timestamp": "2026-03-26T10:01:00Z",
+      "acknowledged": false,
+      "silenced": false
+    }
+  ],
+  "services": [
+    {"name": "search-api", "status": "healthy", "latency_ms": 450, "error_rate": 0.5, "cpu_percent": 35, "memory_percent": 40, "version": "3.2.0"},
+    {"name": "auth-service", "status": "degraded", "latency_ms": 200, "error_rate": 8.0, "cpu_percent": 55, "memory_percent": 72, "version": "2.1.0"},
+    {"name": "cdn", "status": "healthy", "latency_ms": 5, "error_rate": 0.0, "cpu_percent": 10, "memory_percent": 15, "version": "1.0.0"}
+  ],
+  "recent_deployments": [
+    {"service": "search-api", "version": "3.2.0", "timestamp": "2026-03-26T09:55:00Z", "deployer": "ci-bot"},
+    {"service": "auth-service", "version": "2.1.0", "timestamp": "2026-03-25T16:00:00Z", "deployer": "backend-team"}
+  ],
+  "logs": {
+    "auth-service": [
+      {"timestamp": "2026-03-26T10:00:20Z", "service": "auth-service", "level": "ERROR", "message": "Redis ETIMEDOUT connecting to auth-redis-primary:6379"},
+      {"timestamp": "2026-03-26T10:00:25Z", "service": "auth-service", "level": "ERROR", "message": "Session validation failed: cache miss, DB fallback triggered"},
+      {"timestamp": "2026-03-26T10:00:35Z", "service": "auth-service", "level": "WARN", "message": "Redis reconnection attempt 3/5"},
+      {"timestamp": "2026-03-26T10:01:05Z", "service": "auth-service", "level": "INFO", "message": "Redis connection re-established"}
+    ],
+    "search-api": [
+      {"timestamp": "2026-03-26T09:56:00Z", "service": "search-api", "level": "INFO", "message": "v3.2.0 startup: warming search index cache"},
+      {"timestamp": "2026-03-26T09:58:00Z", "service": "search-api", "level": "INFO", "message": "Cache warm complete - 95% coverage"},
+      {"timestamp": "2026-03-26T10:00:00Z", "service": "search-api", "level": "INFO", "message": "Latency elevated during cache warm - expected transient"}
+    ]
+  },
+  "metrics": {
+    "auth-service:error_rate": [0.1, 0.2, 1.5, 5.2, 8.0],
+    "auth-service:redis_connections": [10, 10, 8, 2, 0, 5, 10],
+    "search-api:latency_p99": [200, 200, 350, 450, 420, 380]
+  },
+  "dependencies": {
+    "auth-service": ["auth-redis-primary", "user-db"],
+    "search-api": ["elasticsearch", "search-cache"]
+  },
+  "root_cause": {
+    "service": "auth-service",
+    "description": "Redis primary node experienced brief connectivity issue causing auth failures. Self-recovered.",
+    "keywords": ["redis", "auth", "connection", "timeout", "session"]
+  },
+  "valid_remediations": [
+    {"action": "restart_service", "service": "auth-service"}
+  ],
+  "expected_diagnostics": [
+    {"action_type": "query_logs", "params": {"service": "auth-service"}},
+    {"action_type": "check_metrics", "params": {"service": "auth-service"}}
+  ],
+  "grading_rubric": {
+    "triage_weight": 0.35,
+    "diagnostic_weight": 0.20,
+    "root_cause_weight": 0.15,
+    "remediation_weight": 0.10,
+    "efficiency_weight": 0.10,
+    "documentation_weight": 0.10
+  }
+}

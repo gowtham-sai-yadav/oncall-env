@@ -1,0 +1,2 @@
+[console_scripts]
+server = oncall_env.server.app:main

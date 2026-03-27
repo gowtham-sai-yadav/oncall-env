@@ -1,0 +1,163 @@
+{
+  "incident_id": "INC-20260326-005",
+  "difficulty": "hard",
+  "description": "SEV1 incident: Complete order processing pipeline failure. Multiple services down or degraded. You must triage the alerts, diagnose the root cause through careful investigation of logs/metrics/dependencies, apply the correct remediation, and document the incident. The root cause is subtle -- a recent config change combined with a traffic spike triggered a memory leak.",
+  "expected_severity": "SEV1",
+  "initial_alerts": [
+    {
+      "alert_id": "alert-401",
+      "severity": "critical",
+      "service": "api-gateway",
+      "message": "Error rate 45% -- returning 502/503 to most requests",
+      "timestamp": "2026-03-26T18:00:00Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-402",
+      "severity": "critical",
+      "service": "order-service",
+      "message": "Service DOWN -- health check failing",
+      "timestamp": "2026-03-26T18:00:05Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-403",
+      "severity": "critical",
+      "service": "payment-api",
+      "message": "Transaction failure rate 60%",
+      "timestamp": "2026-03-26T18:00:10Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-404",
+      "severity": "warning",
+      "service": "cache-layer",
+      "message": "Cache miss rate elevated to 35%",
+      "timestamp": "2026-03-26T18:00:20Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-405",
+      "severity": "critical",
+      "service": "order-db",
+      "message": "Replication lag > 30 seconds on replica",
+      "timestamp": "2026-03-26T18:00:30Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-406",
+      "severity": "warning",
+      "service": "notification-service",
+      "message": "Dead letter queue growing: 2000 messages",
+      "timestamp": "2026-03-26T18:01:00Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-407",
+      "severity": "info",
+      "service": "monitoring",
+      "message": "PagerDuty escalation triggered for oncall-primary",
+      "timestamp": "2026-03-26T18:01:30Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-408",
+      "severity": "warning",
+      "service": "search-api",
+      "message": "Latency p99 increased to 800ms",
+      "timestamp": "2026-03-26T18:00:45Z",
+      "acknowledged": false,
+      "silenced": false
+    }
+  ],
+  "services": [
+    {"name": "api-gateway", "status": "degraded", "latency_ms": 5000, "error_rate": 45.0, "cpu_percent": 95, "memory_percent": 82, "version": "5.0.3"},
+    {"name": "order-service", "status": "down", "latency_ms": 0, "error_rate": 100.0, "cpu_percent": 0, "memory_percent": 0, "version": "3.3.0"},
+    {"name": "payment-api", "status": "degraded", "latency_ms": 4000, "error_rate": 60.0, "cpu_percent": 70, "memory_percent": 65, "version": "4.1.0"},
+    {"name": "cache-layer", "status": "degraded", "latency_ms": 50, "error_rate": 2.0, "cpu_percent": 60, "memory_percent": 75, "version": "2.0.1"},
+    {"name": "order-db", "status": "degraded", "latency_ms": 2000, "error_rate": 15.0, "cpu_percent": 98, "memory_percent": 95, "version": "14.2"},
+    {"name": "notification-service", "status": "healthy", "latency_ms": 150, "error_rate": 1.0, "cpu_percent": 40, "memory_percent": 50, "version": "1.5.0"},
+    {"name": "search-api", "status": "healthy", "latency_ms": 800, "error_rate": 2.0, "cpu_percent": 55, "memory_percent": 60, "version": "3.2.0"}
+  ],
+  "recent_deployments": [
+    {"service": "order-service", "version": "3.3.0", "timestamp": "2026-03-26T17:00:00Z", "deployer": "order-team"},
+    {"service": "cache-layer", "version": "2.0.1", "timestamp": "2026-03-26T16:00:00Z", "deployer": "platform-team"}
+  ],
+  "logs": {
+    "order-service": [
+      {"timestamp": "2026-03-26T17:30:00Z", "service": "order-service", "level": "WARN", "message": "Memory usage growing: 2.1GB / 2.5GB limit"},
+      {"timestamp": "2026-03-26T17:40:00Z", "service": "order-service", "level": "WARN", "message": "GC pause time: 850ms -- exceeding 200ms threshold"},
+      {"timestamp": "2026-03-26T17:45:00Z", "service": "order-service", "level": "ERROR", "message": "Memory usage: 2.4GB / 2.5GB -- GC unable to reclaim sufficient memory"},
+      {"timestamp": "2026-03-26T17:50:00Z", "service": "order-service", "level": "ERROR", "message": "New config 'order.cache.mode=aggressive' causing unbounded in-memory cache growth"},
+      {"timestamp": "2026-03-26T17:55:00Z", "service": "order-service", "level": "FATAL", "message": "OutOfMemoryError: Java heap space -- service shutting down"},
+      {"timestamp": "2026-03-26T18:00:00Z", "service": "order-service", "level": "FATAL", "message": "Health check failed -- container restarting (crash loop)"}
+    ],
+    "order-db": [
+      {"timestamp": "2026-03-26T17:55:00Z", "service": "order-db", "level": "WARN", "message": "Long-running queries detected: 15 queries > 10s"},
+      {"timestamp": "2026-03-26T17:58:00Z", "service": "order-db", "level": "ERROR", "message": "Connection pool saturated: 500/500 connections in use"},
+      {"timestamp": "2026-03-26T18:00:00Z", "service": "order-db", "level": "WARN", "message": "Replication lag increasing: primary under heavy write load"}
+    ],
+    "payment-api": [
+      {"timestamp": "2026-03-26T18:00:05Z", "service": "payment-api", "level": "ERROR", "message": "Order validation timeout: order-service not responding"},
+      {"timestamp": "2026-03-26T18:00:15Z", "service": "payment-api", "level": "ERROR", "message": "Transaction rollback for pay-99001: order confirmation timeout"},
+      {"timestamp": "2026-03-26T18:00:30Z", "service": "payment-api", "level": "WARN", "message": "Circuit breaker OPEN for order-service dependency"}
+    ],
+    "api-gateway": [
+      {"timestamp": "2026-03-26T18:00:00Z", "service": "api-gateway", "level": "ERROR", "message": "Upstream order-service: connection refused"},
+      {"timestamp": "2026-03-26T18:00:10Z", "service": "api-gateway", "level": "ERROR", "message": "502 Bad Gateway for 45% of /api/orders requests"},
+      {"timestamp": "2026-03-26T18:00:20Z", "service": "api-gateway", "level": "WARN", "message": "Request queue depth: 5000 -- approaching backpressure limit"}
+    ],
+    "cache-layer": [
+      {"timestamp": "2026-03-26T18:00:00Z", "service": "cache-layer", "level": "WARN", "message": "Cache miss rate elevated: order-service keys expired and not refreshed"},
+      {"timestamp": "2026-03-26T18:00:15Z", "service": "cache-layer", "level": "INFO", "message": "Serving stale data for order queries (TTL bypass mode)"}
+    ]
+  },
+  "metrics": {
+    "order-service:memory_mb": [1200, 1500, 1800, 2100, 2400, 2500, 2500],
+    "order-service:gc_pause_ms": [50, 80, 200, 500, 850, 1200],
+    "order-service:error_rate": [0.1, 0.5, 5.0, 30.0, 80.0, 100.0],
+    "order-db:connections": [200, 250, 350, 450, 500, 500],
+    "order-db:replication_lag_s": [0.1, 0.5, 2.0, 10.0, 30.0],
+    "payment-api:error_rate": [0.1, 0.5, 10.0, 35.0, 60.0],
+    "api-gateway:error_rate": [0.1, 1.0, 15.0, 35.0, 45.0],
+    "cache-layer:miss_rate": [5, 8, 15, 25, 35]
+  },
+  "dependencies": {
+    "api-gateway": ["order-service", "payment-api", "search-api", "user-service"],
+    "order-service": ["order-db", "cache-layer", "inventory-service"],
+    "payment-api": ["order-service", "payment-db", "stripe-gateway"],
+    "cache-layer": ["redis-cluster"]
+  },
+  "root_cause": {
+    "service": "order-service",
+    "description": "order-service v3.3.0 introduced a config change 'order.cache.mode=aggressive' that causes unbounded in-memory cache growth. Under the evening traffic spike, memory grew until OOM killed the service. The crash-looping order-service caused cascading failures to payment-api (can't validate orders) and api-gateway (upstream connection refused).",
+    "keywords": ["order-service", "memory", "leak", "OOM", "cache", "config", "aggressive", "v3.3.0", "heap"]
+  },
+  "valid_remediations": [
+    {"action": "update_config", "service": "order-service", "config_key": "order.cache.mode", "config_value": "normal"},
+    {"action": "rollback_deploy", "service": "order-service"},
+    {"action": "restart_service", "service": "order-service"}
+  ],
+  "expected_diagnostics": [
+    {"action_type": "query_logs", "params": {"service": "order-service"}},
+    {"action_type": "check_metrics", "params": {"service": "order-service"}},
+    {"action_type": "view_dependencies", "params": {"service_name": "api-gateway"}},
+    {"action_type": "query_logs", "params": {"service": "payment-api"}},
+    {"action_type": "check_metrics", "params": {"service": "order-db"}}
+  ],
+  "grading_rubric": {
+    "triage_weight": 0.10,
+    "diagnostic_weight": 0.25,
+    "root_cause_weight": 0.30,
+    "remediation_weight": 0.20,
+    "efficiency_weight": 0.10,
+    "documentation_weight": 0.05
+  }
+}

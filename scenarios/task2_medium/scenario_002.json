@@ -1,0 +1,107 @@
+{
+  "incident_id": "INC-20260326-004",
+  "difficulty": "medium",
+  "description": "Users reporting intermittent login failures and slow page loads. Multiple services show elevated error rates but no single service is fully down. Diagnose the root cause through careful investigation.",
+  "expected_severity": "SEV2",
+  "initial_alerts": [
+    {
+      "alert_id": "alert-301",
+      "severity": "critical",
+      "service": "auth-service",
+      "message": "Authentication failure rate at 18%",
+      "timestamp": "2026-03-26T16:00:00Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-302",
+      "severity": "warning",
+      "service": "session-store",
+      "message": "Redis cluster replication lag > 500ms",
+      "timestamp": "2026-03-26T16:00:15Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-303",
+      "severity": "warning",
+      "service": "api-gateway",
+      "message": "Increased 401 responses -- 15% of requests",
+      "timestamp": "2026-03-26T16:00:30Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-304",
+      "severity": "info",
+      "service": "cdn",
+      "message": "Normal operation -- cache hit rate 97%",
+      "timestamp": "2026-03-26T15:55:00Z",
+      "acknowledged": false,
+      "silenced": false
+    }
+  ],
+  "services": [
+    {"name": "auth-service", "status": "degraded", "latency_ms": 800, "error_rate": 18.0, "cpu_percent": 40, "memory_percent": 55, "version": "3.0.2"},
+    {"name": "session-store", "status": "degraded", "latency_ms": 600, "error_rate": 12.0, "cpu_percent": 85, "memory_percent": 90, "version": "6.2.7"},
+    {"name": "api-gateway", "status": "degraded", "latency_ms": 400, "error_rate": 15.0, "cpu_percent": 50, "memory_percent": 45, "version": "5.0.3"},
+    {"name": "cdn", "status": "healthy", "latency_ms": 5, "error_rate": 0.0, "cpu_percent": 10, "memory_percent": 20, "version": "1.0.0"},
+    {"name": "user-service", "status": "healthy", "latency_ms": 80, "error_rate": 0.5, "cpu_percent": 30, "memory_percent": 40, "version": "2.2.0"}
+  ],
+  "recent_deployments": [
+    {"service": "auth-service", "version": "3.0.2", "timestamp": "2026-03-26T15:30:00Z", "deployer": "auth-team"}
+  ],
+  "logs": {
+    "session-store": [
+      {"timestamp": "2026-03-26T15:45:00Z", "service": "session-store", "level": "WARN", "message": "Memory usage at 88% -- eviction policy active"},
+      {"timestamp": "2026-03-26T15:50:00Z", "service": "session-store", "level": "ERROR", "message": "Maxmemory reached -- rejecting new writes with OOM error"},
+      {"timestamp": "2026-03-26T15:55:00Z", "service": "session-store", "level": "WARN", "message": "Key eviction rate: 500 keys/sec -- sessions being dropped"},
+      {"timestamp": "2026-03-26T16:00:00Z", "service": "session-store", "level": "ERROR", "message": "Replication lag to replica-2: 800ms -- writes backing up"}
+    ],
+    "auth-service": [
+      {"timestamp": "2026-03-26T16:00:05Z", "service": "auth-service", "level": "ERROR", "message": "Session token validation failed: key not found in session-store"},
+      {"timestamp": "2026-03-26T16:00:10Z", "service": "auth-service", "level": "ERROR", "message": "User usr-12345 session evicted -- forcing re-authentication"},
+      {"timestamp": "2026-03-26T16:00:15Z", "service": "auth-service", "level": "WARN", "message": "Session cache miss rate: 18% (normal: <1%)"}
+    ],
+    "api-gateway": [
+      {"timestamp": "2026-03-26T16:00:05Z", "service": "api-gateway", "level": "WARN", "message": "401 Unauthorized responses increasing -- auth-service rejecting tokens"},
+      {"timestamp": "2026-03-26T16:00:20Z", "service": "api-gateway", "level": "INFO", "message": "Routing auth failures to login page for re-authentication"}
+    ]
+  },
+  "metrics": {
+    "session-store:memory_percent": [60, 70, 78, 85, 88, 90, 92],
+    "session-store:eviction_rate": [0, 0, 10, 100, 500, 800],
+    "session-store:connections": [200, 250, 300, 350, 380],
+    "auth-service:error_rate": [0.2, 0.5, 5.0, 12.0, 18.0],
+    "auth-service:session_miss_rate": [0.5, 1.0, 5.0, 12.0, 18.0]
+  },
+  "dependencies": {
+    "auth-service": ["session-store", "user-db"],
+    "api-gateway": ["auth-service", "order-service", "search-api"],
+    "session-store": []
+  },
+  "root_cause": {
+    "service": "session-store",
+    "description": "Redis session-store hit maxmemory limit, causing aggressive key eviction. Active user sessions are being evicted, forcing re-authentication and causing cascading auth failures. Root cause: session TTL was not set in auth-service v3.0.2 deployment, causing unbounded session growth.",
+    "keywords": ["session", "redis", "memory", "eviction", "maxmemory", "TTL", "session-store"]
+  },
+  "valid_remediations": [
+    {"action": "scale_service", "service": "session-store"},
+    {"action": "update_config", "service": "session-store", "config_key": "maxmemory", "config_value": "4gb"},
+    {"action": "rollback_deploy", "service": "auth-service"}
+  ],
+  "expected_diagnostics": [
+    {"action_type": "query_logs", "params": {"service": "session-store"}},
+    {"action_type": "check_metrics", "params": {"service": "session-store"}},
+    {"action_type": "query_logs", "params": {"service": "auth-service"}},
+    {"action_type": "view_dependencies", "params": {"service_name": "auth-service"}}
+  ],
+  "grading_rubric": {
+    "triage_weight": 0.10,
+    "diagnostic_weight": 0.30,
+    "root_cause_weight": 0.30,
+    "remediation_weight": 0.15,
+    "efficiency_weight": 0.10,
+    "documentation_weight": 0.05
+  }
+}

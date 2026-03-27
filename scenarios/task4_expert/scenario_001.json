@@ -1,0 +1,199 @@
+{
+  "incident_id": "INC-20260326-006",
+  "difficulty": "expert",
+  "description": "SEV1 cascading production outage with multiple misleading signals. Several unrelated events coincide with the real failure, creating red herrings. A recent unrelated deployment and a correlated-but-non-causal metric spike make diagnosis extremely challenging. You must carefully distinguish signal from noise, identify the true root cause, remediate correctly, and document thoroughly.",
+  "expected_severity": "SEV1",
+  "initial_alerts": [
+    {
+      "alert_id": "alert-501",
+      "severity": "critical",
+      "service": "api-gateway",
+      "message": "Global error rate 55% -- major outage",
+      "timestamp": "2026-03-26T20:00:00Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-502",
+      "severity": "critical",
+      "service": "user-service",
+      "message": "Authentication failures at 70% -- users cannot log in",
+      "timestamp": "2026-03-26T20:00:05Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-503",
+      "severity": "critical",
+      "service": "order-service",
+      "message": "Order creation completely failing -- 100% error rate",
+      "timestamp": "2026-03-26T20:00:10Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-504",
+      "severity": "warning",
+      "service": "recommendation-engine",
+      "message": "Model inference latency increased 3x (RED HERRING: scheduled model update)",
+      "timestamp": "2026-03-26T20:00:15Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-505",
+      "severity": "critical",
+      "service": "payment-api",
+      "message": "All payment transactions failing",
+      "timestamp": "2026-03-26T20:00:20Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-506",
+      "severity": "warning",
+      "service": "search-api",
+      "message": "Search latency elevated to 600ms (RED HERRING: elasticsearch reindexing)",
+      "timestamp": "2026-03-26T20:00:25Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-507",
+      "severity": "critical",
+      "service": "config-service",
+      "message": "Config refresh failing -- cannot reach config backend",
+      "timestamp": "2026-03-26T20:00:30Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-508",
+      "severity": "info",
+      "service": "search-api",
+      "message": "Scheduled elasticsearch reindex started at 19:55 -- expected higher latency",
+      "timestamp": "2026-03-26T19:55:00Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-509",
+      "severity": "info",
+      "service": "recommendation-engine",
+      "message": "Model v4.2 deployment started -- canary rollout in progress",
+      "timestamp": "2026-03-26T19:50:00Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-510",
+      "severity": "warning",
+      "service": "internal-dns",
+      "message": "DNS resolution latency increased to 200ms",
+      "timestamp": "2026-03-26T20:00:35Z",
+      "acknowledged": false,
+      "silenced": false
+    }
+  ],
+  "services": [
+    {"name": "api-gateway", "status": "degraded", "latency_ms": 8000, "error_rate": 55.0, "cpu_percent": 90, "memory_percent": 70, "version": "5.0.3"},
+    {"name": "user-service", "status": "degraded", "latency_ms": 5000, "error_rate": 70.0, "cpu_percent": 40, "memory_percent": 50, "version": "2.2.0"},
+    {"name": "order-service", "status": "down", "latency_ms": 0, "error_rate": 100.0, "cpu_percent": 15, "memory_percent": 30, "version": "3.2.0"},
+    {"name": "payment-api", "status": "down", "latency_ms": 0, "error_rate": 100.0, "cpu_percent": 10, "memory_percent": 25, "version": "4.1.0"},
+    {"name": "config-service", "status": "down", "latency_ms": 0, "error_rate": 100.0, "cpu_percent": 5, "memory_percent": 20, "version": "1.3.0"},
+    {"name": "recommendation-engine", "status": "healthy", "latency_ms": 300, "error_rate": 1.0, "cpu_percent": 80, "memory_percent": 70, "version": "4.2.0"},
+    {"name": "search-api", "status": "healthy", "latency_ms": 600, "error_rate": 0.5, "cpu_percent": 75, "memory_percent": 65, "version": "3.2.0"},
+    {"name": "internal-dns", "status": "degraded", "latency_ms": 200, "error_rate": 30.0, "cpu_percent": 95, "memory_percent": 88, "version": "3.0.0"},
+    {"name": "service-mesh", "status": "degraded", "latency_ms": 500, "error_rate": 25.0, "cpu_percent": 70, "memory_percent": 60, "version": "2.1.0"}
+  ],
+  "recent_deployments": [
+    {"service": "recommendation-engine", "version": "4.2.0", "timestamp": "2026-03-26T19:50:00Z", "deployer": "ml-team"},
+    {"service": "internal-dns", "version": "3.0.0", "timestamp": "2026-03-26T19:30:00Z", "deployer": "infra-team"},
+    {"service": "search-api", "version": "3.2.0", "timestamp": "2026-03-26T18:00:00Z", "deployer": "search-team"}
+  ],
+  "logs": {
+    "internal-dns": [
+      {"timestamp": "2026-03-26T19:35:00Z", "service": "internal-dns", "level": "INFO", "message": "DNS server v3.0.0 started -- new zone file loaded"},
+      {"timestamp": "2026-03-26T19:40:00Z", "service": "internal-dns", "level": "WARN", "message": "Zone transfer to secondary DNS delayed by 5 minutes"},
+      {"timestamp": "2026-03-26T19:55:00Z", "service": "internal-dns", "level": "ERROR", "message": "SERVFAIL for config-service.internal: zone file contains invalid A record"},
+      {"timestamp": "2026-03-26T19:58:00Z", "service": "internal-dns", "level": "ERROR", "message": "NXDOMAIN for order-db.internal: record missing from v3.0.0 zone file"},
+      {"timestamp": "2026-03-26T20:00:00Z", "service": "internal-dns", "level": "ERROR", "message": "SERVFAIL rate increasing: 30% of queries failing -- corrupted zone records for *.internal domain"},
+      {"timestamp": "2026-03-26T20:00:10Z", "service": "internal-dns", "level": "FATAL", "message": "Multiple critical DNS records missing/corrupted after v3.0.0 zone migration"}
+    ],
+    "config-service": [
+      {"timestamp": "2026-03-26T19:58:00Z", "service": "config-service", "level": "ERROR", "message": "Cannot connect to config-db.internal: DNS resolution failed"},
+      {"timestamp": "2026-03-26T20:00:00Z", "service": "config-service", "level": "FATAL", "message": "Config store unreachable -- serving stale config (last refresh: 19:30)"},
+      {"timestamp": "2026-03-26T20:00:10Z", "service": "config-service", "level": "FATAL", "message": "Health check failing: backend connectivity lost"}
+    ],
+    "order-service": [
+      {"timestamp": "2026-03-26T19:58:00Z", "service": "order-service", "level": "ERROR", "message": "Cannot resolve order-db.internal -- DNS lookup failed"},
+      {"timestamp": "2026-03-26T20:00:00Z", "service": "order-service", "level": "FATAL", "message": "Database connection pool empty: all connections failed DNS resolution"},
+      {"timestamp": "2026-03-26T20:00:05Z", "service": "order-service", "level": "FATAL", "message": "Service shutting down: critical dependency order-db unreachable"}
+    ],
+    "payment-api": [
+      {"timestamp": "2026-03-26T19:59:00Z", "service": "payment-api", "level": "ERROR", "message": "Cannot resolve payment-db.internal: SERVFAIL"},
+      {"timestamp": "2026-03-26T20:00:00Z", "service": "payment-api", "level": "FATAL", "message": "All payment processing halted: database DNS resolution failed"},
+      {"timestamp": "2026-03-26T20:00:10Z", "service": "payment-api", "level": "ERROR", "message": "Stripe webhook delivery failing: cannot resolve callback URL"}
+    ],
+    "user-service": [
+      {"timestamp": "2026-03-26T20:00:00Z", "service": "user-service", "level": "ERROR", "message": "Session validation failing: cannot reach auth-cache.internal"},
+      {"timestamp": "2026-03-26T20:00:05Z", "service": "user-service", "level": "WARN", "message": "Falling back to DB-only auth -- slow path active"},
+      {"timestamp": "2026-03-26T20:00:10Z", "service": "user-service", "level": "ERROR", "message": "user-db.internal resolution intermittent: 70% failure rate"}
+    ],
+    "recommendation-engine": [
+      {"timestamp": "2026-03-26T19:50:00Z", "service": "recommendation-engine", "level": "INFO", "message": "Model v4.2 loaded -- inference latency baseline: 300ms (expected: higher than v4.1 during warmup)"},
+      {"timestamp": "2026-03-26T20:00:00Z", "service": "recommendation-engine", "level": "INFO", "message": "Model serving normally -- no DNS dependency issues (uses IP-based model store)"}
+    ],
+    "search-api": [
+      {"timestamp": "2026-03-26T19:55:00Z", "service": "search-api", "level": "INFO", "message": "Elasticsearch reindex started -- expected temporary latency increase"},
+      {"timestamp": "2026-03-26T20:00:00Z", "service": "search-api", "level": "INFO", "message": "Reindex 40% complete -- search serving from stale index, latency elevated but functional"}
+    ]
+  },
+  "metrics": {
+    "internal-dns:query_failure_rate": [0, 0, 0, 5, 15, 30, 35],
+    "internal-dns:cpu_percent": [30, 40, 60, 80, 90, 95],
+    "internal-dns:resolution_latency_ms": [5, 10, 50, 100, 200, 500],
+    "config-service:error_rate": [0, 0, 0, 50, 100, 100],
+    "order-service:error_rate": [0, 0, 5, 50, 100, 100],
+    "payment-api:error_rate": [0, 0, 2, 40, 100, 100],
+    "user-service:error_rate": [0, 0, 5, 30, 60, 70],
+    "recommendation-engine:latency_ms": [100, 100, 200, 300, 300, 300],
+    "search-api:latency_ms": [200, 200, 300, 400, 500, 600],
+    "api-gateway:error_rate": [0, 1, 10, 30, 50, 55]
+  },
+  "dependencies": {
+    "api-gateway": ["order-service", "payment-api", "user-service", "search-api", "recommendation-engine"],
+    "order-service": ["order-db.internal", "config-service", "inventory-service"],
+    "payment-api": ["payment-db.internal", "order-service", "stripe-gateway"],
+    "user-service": ["user-db.internal", "auth-cache.internal"],
+    "config-service": ["config-db.internal"],
+    "recommendation-engine": ["model-store (IP-based)", "feature-store"],
+    "search-api": ["elasticsearch (IP-based)"],
+    "internal-dns": []
+  },
+  "root_cause": {
+    "service": "internal-dns",
+    "description": "internal-dns v3.0.0 deployment at 19:30 contained a corrupted zone file that dropped/corrupted several critical *.internal DNS records (order-db.internal, payment-db.internal, config-db.internal, auth-cache.internal). Services using DNS-based discovery lost connectivity to their databases and backing stores. Red herrings: recommendation-engine latency (unrelated model update) and search-api latency (unrelated elasticsearch reindex) are coincidental.",
+    "keywords": ["dns", "internal-dns", "zone", "corrupted", "SERVFAIL", "NXDOMAIN", "resolution", "v3.0.0", "zone file"]
+  },
+  "valid_remediations": [
+    {"action": "rollback_deploy", "service": "internal-dns"},
+    {"action": "restart_service", "service": "internal-dns"}
+  ],
+  "expected_diagnostics": [
+    {"action_type": "query_logs", "params": {"service": "internal-dns"}},
+    {"action_type": "query_logs", "params": {"service": "order-service"}},
+    {"action_type": "query_logs", "params": {"service": "config-service"}},
+    {"action_type": "check_metrics", "params": {"service": "internal-dns"}},
+    {"action_type": "view_dependencies", "params": {"service_name": "order-service"}},
+    {"action_type": "view_dependencies", "params": {"service_name": "payment-api"}}
+  ],
+  "grading_rubric": {
+    "triage_weight": 0.05,
+    "diagnostic_weight": 0.25,
+    "root_cause_weight": 0.35,
+    "remediation_weight": 0.20,
+    "efficiency_weight": 0.10,
+    "documentation_weight": 0.05
+  }
+}

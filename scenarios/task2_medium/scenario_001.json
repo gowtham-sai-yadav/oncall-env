@@ -1,0 +1,135 @@
+{
+  "incident_id": "INC-20260326-003",
+  "difficulty": "medium",
+  "description": "Multiple services degraded. Cascading failures detected -- order processing is failing, but the root cause is not immediately obvious. Investigate logs, metrics, and service dependencies to identify the root cause and remediate.",
+  "expected_severity": "SEV1",
+  "initial_alerts": [
+    {
+      "alert_id": "alert-201",
+      "severity": "critical",
+      "service": "api-gateway",
+      "message": "5xx error rate at 25% -- service degraded",
+      "timestamp": "2026-03-26T15:00:00Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-202",
+      "severity": "critical",
+      "service": "order-service",
+      "message": "Order creation timeout rate at 40%",
+      "timestamp": "2026-03-26T15:00:10Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-203",
+      "severity": "warning",
+      "service": "inventory-service",
+      "message": "Response time increased to 1200ms",
+      "timestamp": "2026-03-26T15:00:20Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-204",
+      "severity": "critical",
+      "service": "payment-api",
+      "message": "Transaction failures at 30%",
+      "timestamp": "2026-03-26T15:00:25Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-205",
+      "severity": "warning",
+      "service": "notification-service",
+      "message": "Message queue depth growing -- 5000 pending",
+      "timestamp": "2026-03-26T15:01:00Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-206",
+      "severity": "info",
+      "service": "monitoring",
+      "message": "Auto-scaling triggered for api-gateway",
+      "timestamp": "2026-03-26T15:01:30Z",
+      "acknowledged": false,
+      "silenced": false
+    }
+  ],
+  "services": [
+    {"name": "api-gateway", "status": "degraded", "latency_ms": 2500, "error_rate": 25.0, "cpu_percent": 92, "memory_percent": 78, "version": "5.0.3"},
+    {"name": "order-service", "status": "degraded", "latency_ms": 4500, "error_rate": 40.0, "cpu_percent": 68, "memory_percent": 55, "version": "3.2.0"},
+    {"name": "inventory-service", "status": "degraded", "latency_ms": 1200, "error_rate": 5.0, "cpu_percent": 45, "memory_percent": 88, "version": "2.5.1"},
+    {"name": "payment-api", "status": "degraded", "latency_ms": 3000, "error_rate": 30.0, "cpu_percent": 55, "memory_percent": 60, "version": "4.1.0"},
+    {"name": "notification-service", "status": "healthy", "latency_ms": 100, "error_rate": 0.5, "cpu_percent": 30, "memory_percent": 45, "version": "1.5.0"},
+    {"name": "inventory-db", "status": "down", "latency_ms": 0, "error_rate": 100.0, "cpu_percent": 0, "memory_percent": 0, "version": "14.2"}
+  ],
+  "recent_deployments": [
+    {"service": "inventory-service", "version": "2.5.1", "timestamp": "2026-03-26T14:45:00Z", "deployer": "inventory-team"},
+    {"service": "api-gateway", "version": "5.0.3", "timestamp": "2026-03-26T12:00:00Z", "deployer": "platform-team"}
+  ],
+  "logs": {
+    "inventory-service": [
+      {"timestamp": "2026-03-26T14:50:00Z", "service": "inventory-service", "level": "WARN", "message": "Slow query detected: SELECT stock FROM items WHERE sku IN (...) took 4500ms"},
+      {"timestamp": "2026-03-26T14:52:00Z", "service": "inventory-service", "level": "ERROR", "message": "Connection to inventory-db timed out after 10000ms"},
+      {"timestamp": "2026-03-26T14:55:00Z", "service": "inventory-service", "level": "ERROR", "message": "inventory-db: max_connections (100) reached -- all connections in use"},
+      {"timestamp": "2026-03-26T14:58:00Z", "service": "inventory-service", "level": "FATAL", "message": "Cannot acquire DB connection -- returning 503 to callers"},
+      {"timestamp": "2026-03-26T15:00:00Z", "service": "inventory-service", "level": "ERROR", "message": "OOM killer invoked on inventory-db pod -- memory exceeded limit"}
+    ],
+    "order-service": [
+      {"timestamp": "2026-03-26T15:00:05Z", "service": "order-service", "level": "ERROR", "message": "Inventory check failed for order ord-55100: upstream 503"},
+      {"timestamp": "2026-03-26T15:00:15Z", "service": "order-service", "level": "ERROR", "message": "Cannot validate stock levels -- inventory-service unavailable"},
+      {"timestamp": "2026-03-26T15:00:30Z", "service": "order-service", "level": "WARN", "message": "Falling back to cached inventory (stale 15min) for order processing"}
+    ],
+    "payment-api": [
+      {"timestamp": "2026-03-26T15:00:10Z", "service": "payment-api", "level": "ERROR", "message": "Order validation step failed -- cannot confirm order exists in order-service"},
+      {"timestamp": "2026-03-26T15:00:20Z", "service": "payment-api", "level": "ERROR", "message": "Transaction rollback for payment pay-88421: order not confirmed"}
+    ],
+    "api-gateway": [
+      {"timestamp": "2026-03-26T15:00:00Z", "service": "api-gateway", "level": "ERROR", "message": "Upstream timeout: order-service did not respond within 5000ms"},
+      {"timestamp": "2026-03-26T15:00:10Z", "service": "api-gateway", "level": "WARN", "message": "Circuit breaker OPEN for order-service"},
+      {"timestamp": "2026-03-26T15:00:20Z", "service": "api-gateway", "level": "ERROR", "message": "Returning 503 to clients for /api/orders/* routes"}
+    ]
+  },
+  "metrics": {
+    "inventory-service:memory_percent": [55, 60, 72, 85, 88, 95, 99],
+    "inventory-service:db_connections": [40, 55, 78, 95, 100, 100, 100],
+    "inventory-service:latency_p99": [100, 150, 400, 800, 1200, 4500],
+    "inventory-db:status": [1, 1, 1, 0, 0, 0],
+    "order-service:error_rate": [0.1, 0.5, 5.0, 20.0, 40.0],
+    "payment-api:error_rate": [0.1, 0.3, 8.0, 22.0, 30.0],
+    "api-gateway:5xx_rate": [0.1, 0.5, 8.0, 18.0, 25.0]
+  },
+  "dependencies": {
+    "api-gateway": ["order-service", "user-service", "payment-api", "search-api"],
+    "order-service": ["inventory-service", "payment-api", "order-db"],
+    "inventory-service": ["inventory-db"],
+    "payment-api": ["order-service", "payment-db", "stripe-gateway"]
+  },
+  "root_cause": {
+    "service": "inventory-service",
+    "description": "inventory-service v2.5.1 deployment introduced a memory leak in the DB connection pooling layer. The inventory-db ran out of connections and then was OOM-killed, causing cascading failures in order-service, payment-api, and api-gateway.",
+    "keywords": ["inventory", "memory", "leak", "connection pool", "oom", "database", "deployment", "v2.5.1"]
+  },
+  "valid_remediations": [
+    {"action": "rollback_deploy", "service": "inventory-service"},
+    {"action": "restart_service", "service": "inventory-service"}
+  ],
+  "expected_diagnostics": [
+    {"action_type": "query_logs", "params": {"service": "inventory-service"}},
+    {"action_type": "check_metrics", "params": {"service": "inventory-service"}},
+    {"action_type": "view_dependencies", "params": {"service_name": "order-service"}},
+    {"action_type": "query_logs", "params": {"service": "order-service"}}
+  ],
+  "grading_rubric": {
+    "triage_weight": 0.10,
+    "diagnostic_weight": 0.30,
+    "root_cause_weight": 0.30,
+    "remediation_weight": 0.15,
+    "efficiency_weight": 0.10,
+    "documentation_weight": 0.05
+  }
+}

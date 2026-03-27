@@ -1,0 +1,135 @@
+{
+  "incident_id": "INC-20260326-001",
+  "difficulty": "easy",
+  "description": "Multiple alerts firing across services. Triage incoming alerts: categorize severity, acknowledge critical alerts, and silence non-actionable noise. Identify which service needs immediate attention.",
+  "expected_severity": "SEV2",
+  "initial_alerts": [
+    {
+      "alert_id": "alert-001",
+      "severity": "critical",
+      "service": "payment-api",
+      "message": "Error rate exceeded 5% threshold - currently at 12.3%",
+      "timestamp": "2026-03-26T14:00:00Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-002",
+      "severity": "critical",
+      "service": "payment-api",
+      "message": "P99 latency > 2000ms (currently 3450ms)",
+      "timestamp": "2026-03-26T14:00:15Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-003",
+      "severity": "warning",
+      "service": "user-service",
+      "message": "CPU usage at 78% - approaching threshold",
+      "timestamp": "2026-03-26T14:01:00Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-004",
+      "severity": "info",
+      "service": "email-service",
+      "message": "Scheduled maintenance window starting in 2 hours",
+      "timestamp": "2026-03-26T13:55:00Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-005",
+      "severity": "warning",
+      "service": "order-service",
+      "message": "Increased 4xx responses from downstream dependency",
+      "timestamp": "2026-03-26T14:00:30Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-006",
+      "severity": "info",
+      "service": "monitoring",
+      "message": "New dashboard version deployed - no action required",
+      "timestamp": "2026-03-26T13:50:00Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-007",
+      "severity": "critical",
+      "service": "order-service",
+      "message": "Order creation failures spiking - 15% failure rate",
+      "timestamp": "2026-03-26T14:01:30Z",
+      "acknowledged": false,
+      "silenced": false
+    }
+  ],
+  "services": [
+    {"name": "payment-api", "status": "degraded", "latency_ms": 3450, "error_rate": 12.3, "cpu_percent": 45, "memory_percent": 62, "version": "2.4.1"},
+    {"name": "user-service", "status": "healthy", "latency_ms": 120, "error_rate": 0.1, "cpu_percent": 78, "memory_percent": 55, "version": "1.8.0"},
+    {"name": "order-service", "status": "degraded", "latency_ms": 890, "error_rate": 15.0, "cpu_percent": 52, "memory_percent": 48, "version": "3.1.2"},
+    {"name": "email-service", "status": "healthy", "latency_ms": 45, "error_rate": 0.0, "cpu_percent": 12, "memory_percent": 30, "version": "1.2.0"},
+    {"name": "monitoring", "status": "healthy", "latency_ms": 30, "error_rate": 0.0, "cpu_percent": 8, "memory_percent": 20, "version": "4.0.1"}
+  ],
+  "recent_deployments": [
+    {"service": "payment-api", "version": "2.4.1", "timestamp": "2026-03-26T13:30:00Z", "deployer": "ci-bot"},
+    {"service": "monitoring", "version": "4.0.1", "timestamp": "2026-03-26T13:45:00Z", "deployer": "ops-team"}
+  ],
+  "logs": {
+    "payment-api": [
+      {"timestamp": "2026-03-26T14:00:05Z", "service": "payment-api", "level": "ERROR", "message": "Connection pool exhausted - cannot acquire connection to payments-db"},
+      {"timestamp": "2026-03-26T14:00:08Z", "service": "payment-api", "level": "ERROR", "message": "Timeout waiting for DB connection after 5000ms"},
+      {"timestamp": "2026-03-26T14:00:12Z", "service": "payment-api", "level": "WARN", "message": "Circuit breaker OPEN for payments-db connections"},
+      {"timestamp": "2026-03-26T14:00:20Z", "service": "payment-api", "level": "ERROR", "message": "Failed to process payment txn-88291: DB connection unavailable"},
+      {"timestamp": "2026-03-26T14:00:25Z", "service": "payment-api", "level": "INFO", "message": "Retrying DB connection pool initialization"}
+    ],
+    "order-service": [
+      {"timestamp": "2026-03-26T14:00:35Z", "service": "order-service", "level": "ERROR", "message": "Payment API returned 503 for order ord-44210"},
+      {"timestamp": "2026-03-26T14:00:40Z", "service": "order-service", "level": "ERROR", "message": "Failed to complete checkout: upstream payment-api unavailable"},
+      {"timestamp": "2026-03-26T14:01:00Z", "service": "order-service", "level": "WARN", "message": "Fallback: queuing order for retry"},
+      {"timestamp": "2026-03-26T14:01:15Z", "service": "order-service", "level": "ERROR", "message": "Payment API returned 503 for order ord-44215"}
+    ],
+    "user-service": [
+      {"timestamp": "2026-03-26T14:00:00Z", "service": "user-service", "level": "INFO", "message": "Healthy - serving requests normally"},
+      {"timestamp": "2026-03-26T14:00:30Z", "service": "user-service", "level": "INFO", "message": "Cache hit ratio: 94%"}
+    ]
+  },
+  "metrics": {
+    "payment-api:error_rate": [0.1, 0.2, 0.5, 2.1, 5.8, 9.4, 12.3],
+    "payment-api:latency_p99": [150, 180, 450, 1200, 2800, 3450],
+    "payment-api:db_connections": [48, 50, 50, 50, 50, 50],
+    "order-service:error_rate": [0.1, 0.3, 2.0, 8.5, 15.0],
+    "user-service:cpu": [65, 70, 74, 76, 78]
+  },
+  "dependencies": {
+    "payment-api": ["payments-db", "stripe-gateway"],
+    "order-service": ["payment-api", "inventory-service", "order-db"],
+    "user-service": ["user-db", "redis-cache"],
+    "email-service": ["smtp-relay"]
+  },
+  "root_cause": {
+    "service": "payment-api",
+    "description": "DB connection pool exhaustion on payment-api caused by connection leak in v2.4.1 deployment",
+    "keywords": ["connection pool", "payment", "database", "db", "exhausted", "leak"]
+  },
+  "valid_remediations": [
+    {"action": "restart_service", "service": "payment-api"},
+    {"action": "rollback_deploy", "service": "payment-api"}
+  ],
+  "expected_diagnostics": [
+    {"action_type": "query_logs", "params": {"service": "payment-api"}},
+    {"action_type": "check_metrics", "params": {"service": "payment-api"}}
+  ],
+  "grading_rubric": {
+    "triage_weight": 0.30,
+    "diagnostic_weight": 0.20,
+    "root_cause_weight": 0.15,
+    "remediation_weight": 0.15,
+    "efficiency_weight": 0.10,
+    "documentation_weight": 0.10
+  }
+}

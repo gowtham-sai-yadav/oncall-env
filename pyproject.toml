@@ -1,0 +1,29 @@
+[project]
+name = "oncall-env"
+version = "0.1.0"
+description = "Incident Response Command Center - an OpenEnv RL environment simulating on-call engineering"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "openenv-core[core]>=0.2.1",
+    "fastapi>=0.100.0",
+    "pydantic>=2.0",
+    "uvicorn>=0.20.0",
+]
+
+[project.scripts]
+server = "oncall_env.server.app:main"
+
+[tool.setuptools]
+packages = ["oncall_env", "oncall_env.server", "oncall_env.scenarios", "oncall_env.scenarios.task1_easy", "oncall_env.scenarios.task2_medium", "oncall_env.scenarios.task3_hard", "oncall_env.scenarios.task4_expert"]
+package-dir = { "oncall_env" = ".", "oncall_env.server" = "server", "oncall_env.scenarios" = "scenarios", "oncall_env.scenarios.task1_easy" = "scenarios/task1_easy", "oncall_env.scenarios.task2_medium" = "scenarios/task2_medium", "oncall_env.scenarios.task3_hard" = "scenarios/task3_hard", "oncall_env.scenarios.task4_expert" = "scenarios/task4_expert" }
+
+[tool.setuptools.package-data]
+"oncall_env.scenarios.task1_easy" = ["*.json"]
+"oncall_env.scenarios.task2_medium" = ["*.json"]
+"oncall_env.scenarios.task3_hard" = ["*.json"]
+"oncall_env.scenarios.task4_expert" = ["*.json"]
+
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
