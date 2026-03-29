@@ -1,0 +1,288 @@
+{
+  "incident_id": "INC-20260326-103",
+  "difficulty": "medium",
+  "description": "SEV2 incident: Replication Lag affecting payment-api. Cascading impact on billing-service.",
+  "expected_severity": "SEV2",
+  "initial_alerts": [
+    {
+      "alert_id": "alert-10301",
+      "severity": "critical",
+      "service": "payment-api",
+      "message": "Data inconsistency detected - read replicas 44s behind primary",
+      "timestamp": "2026-03-26T16:19:05Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-10302",
+      "severity": "warning",
+      "service": "payment-api",
+      "message": "Replication lag exceeding 30s threshold",
+      "timestamp": "2026-03-26T16:20:10Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-10303",
+      "severity": "warning",
+      "service": "billing-service",
+      "message": "Stale data returned for user queries",
+      "timestamp": "2026-03-26T16:21:15Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-10304",
+      "severity": "critical",
+      "service": "billing-service",
+      "message": "billing-service error rate spiking - requests failing",
+      "timestamp": "2026-03-26T16:19:06Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-10305",
+      "severity": "info",
+      "service": "order-service",
+      "message": "New dashboard version deployed - no action required",
+      "timestamp": "2026-03-26T16:11:05Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-10306",
+      "severity": "info",
+      "service": "user-service",
+      "message": "SSL certificate renewal scheduled for next week",
+      "timestamp": "2026-03-26T16:10:26Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-10307",
+      "severity": "info",
+      "service": "order-service",
+      "message": "Scheduled maintenance window starting in 2 hours",
+      "timestamp": "2026-03-26T16:10:33Z",
+      "acknowledged": false,
+      "silenced": false
+    }
+  ],
+  "services": [
+    {
+      "name": "payment-api",
+      "status": "degraded",
+      "latency_ms": 5143,
+      "error_rate": 56.4,
+      "cpu_percent": 57,
+      "memory_percent": 59,
+      "version": "4.0.1"
+    },
+    {
+      "name": "billing-service",
+      "status": "degraded",
+      "latency_ms": 4512,
+      "error_rate": 32.1,
+      "cpu_percent": 77,
+      "memory_percent": 70,
+      "version": "2.1.1"
+    },
+    {
+      "name": "search-service",
+      "status": "healthy",
+      "latency_ms": 86,
+      "error_rate": 0.3,
+      "cpu_percent": 35,
+      "memory_percent": 50,
+      "version": "4.2.0"
+    },
+    {
+      "name": "order-service",
+      "status": "healthy",
+      "latency_ms": 186,
+      "error_rate": 0.5,
+      "cpu_percent": 13,
+      "memory_percent": 25,
+      "version": "4.1.0"
+    },
+    {
+      "name": "cdn-proxy",
+      "status": "healthy",
+      "latency_ms": 125,
+      "error_rate": 0.1,
+      "cpu_percent": 46,
+      "memory_percent": 51,
+      "version": "3.2.0"
+    },
+    {
+      "name": "user-service",
+      "status": "healthy",
+      "latency_ms": 110,
+      "error_rate": 0.6,
+      "cpu_percent": 41,
+      "memory_percent": 46,
+      "version": "1.1.0"
+    }
+  ],
+  "recent_deployments": [
+    {
+      "service": "payment-api",
+      "version": "4.0.1",
+      "timestamp": "2026-03-26T15:48:00Z",
+      "deployer": "sre-bot"
+    }
+  ],
+  "logs": {
+    "payment-api": [
+      {
+        "timestamp": "2026-03-26T16:18:00Z",
+        "service": "payment-api",
+        "level": "ERROR",
+        "message": "Replication lag at 59s - exceeds SLO of 5s"
+      },
+      {
+        "timestamp": "2026-03-26T16:20:30Z",
+        "service": "payment-api",
+        "level": "WARN",
+        "message": "Read replica payment-api-replica-2 falling behind primary"
+      },
+      {
+        "timestamp": "2026-03-26T16:23:00Z",
+        "service": "payment-api",
+        "level": "ERROR",
+        "message": "Schema migration v4.0.1 causing replication bottleneck"
+      },
+      {
+        "timestamp": "2026-03-26T16:25:30Z",
+        "service": "payment-api",
+        "level": "INFO",
+        "message": "Attempting to pause non-critical replication streams"
+      }
+    ],
+    "billing-service": [
+      {
+        "timestamp": "2026-03-26T16:19:00Z",
+        "service": "billing-service",
+        "level": "WARN",
+        "message": "Inconsistent read from payment-api: got stale version"
+      },
+      {
+        "timestamp": "2026-03-26T16:24:00Z",
+        "service": "billing-service",
+        "level": "ERROR",
+        "message": "Cache invalidation failed: stale data propagated from payment-api"
+      }
+    ]
+  },
+  "metrics": {
+    "payment-api:replication_lag_s": [
+      1.3,
+      2.7,
+      5.6,
+      12.0,
+      25.4,
+      53.8
+    ],
+    "payment-api:error_rate": [
+      1.1,
+      1.1,
+      1.1,
+      81.9,
+      81.9,
+      81.9
+    ],
+    "billing-service:error_rate": [
+      1.7,
+      1.7,
+      1.7,
+      84.6,
+      84.6,
+      84.6,
+      84.6
+    ],
+    "search-service:cpu": [
+      23.6,
+      31.8,
+      19.3,
+      30.1,
+      16.8,
+      21.4
+    ],
+    "order-service:cpu": [
+      23.2,
+      17.0,
+      20.8,
+      25.8,
+      26.5,
+      23.2
+    ]
+  },
+  "dependencies": {
+    "payment-api": [
+      "payment-api-db",
+      "payment-api-store"
+    ],
+    "billing-service": [
+      "payment-api",
+      "billing-service-db"
+    ],
+    "search-service": [
+      "payment-api",
+      "search-service-db"
+    ],
+    "order-service": [
+      "order-service-db"
+    ],
+    "cdn-proxy": [
+      "cdn-proxy-db"
+    ],
+    "user-service": [
+      "user-service-db"
+    ]
+  },
+  "root_cause": {
+    "service": "payment-api",
+    "description": "Database replication lag on payment-api caused read replicas to serve stale data after 4.0.1 schema migration",
+    "keywords": [
+      "replication",
+      "lag",
+      "stale",
+      "replica",
+      "schema",
+      "migration",
+      "database"
+    ]
+  },
+  "valid_remediations": [
+    {
+      "action": "rollback_deploy",
+      "service": "payment-api"
+    },
+    {
+      "action": "restart_service",
+      "service": "payment-api"
+    }
+  ],
+  "expected_diagnostics": [
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "payment-api"
+      }
+    },
+    {
+      "action_type": "check_metrics",
+      "params": {
+        "service": "payment-api"
+      }
+    }
+  ],
+  "grading_rubric": {
+    "triage_weight": 0.21,
+    "diagnostic_weight": 0.25,
+    "root_cause_weight": 0.19,
+    "remediation_weight": 0.19,
+    "efficiency_weight": 0.12,
+    "documentation_weight": 0.04
+  }
+}

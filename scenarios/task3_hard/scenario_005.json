@@ -1,0 +1,346 @@
+{
+  "incident_id": "INC-20260326-205",
+  "difficulty": "hard",
+  "description": "SEV1 incident: Memory Leak (OOM) affecting notification-service. Cascading impact on user-service, service-mesh. Multiple concurrent events make diagnosis challenging.",
+  "expected_severity": "SEV1",
+  "initial_alerts": [
+    {
+      "alert_id": "alert-20501",
+      "severity": "critical",
+      "service": "notification-service",
+      "message": "Memory usage at 86% - OOM kill imminent",
+      "timestamp": "2026-03-26T16:26:05Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-20502",
+      "severity": "critical",
+      "service": "notification-service",
+      "message": "Service restarts detected - 11 OOM kills in last 10 minutes",
+      "timestamp": "2026-03-26T16:27:10Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-20503",
+      "severity": "warning",
+      "service": "user-service",
+      "message": "Elevated error rate due to notification-service instability",
+      "timestamp": "2026-03-26T16:28:15Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-20504",
+      "severity": "critical",
+      "service": "user-service",
+      "message": "user-service error rate spiking - requests failing",
+      "timestamp": "2026-03-26T16:26:39Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-20505",
+      "severity": "critical",
+      "service": "service-mesh",
+      "message": "service-mesh error rate spiking - requests failing",
+      "timestamp": "2026-03-26T16:26:15Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-20506",
+      "severity": "info",
+      "service": "cache-layer",
+      "message": "Automated backup completed successfully",
+      "timestamp": "2026-03-26T16:23:13Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-20507",
+      "severity": "info",
+      "service": "cache-layer",
+      "message": "Automated backup completed successfully",
+      "timestamp": "2026-03-26T16:17:05Z",
+      "acknowledged": false,
+      "silenced": false
+    }
+  ],
+  "services": [
+    {
+      "name": "notification-service",
+      "status": "degraded",
+      "latency_ms": 5617,
+      "error_rate": 25.9,
+      "cpu_percent": 92,
+      "memory_percent": 84,
+      "version": "1.5.0"
+    },
+    {
+      "name": "user-service",
+      "status": "down",
+      "latency_ms": 0,
+      "error_rate": 72.3,
+      "cpu_percent": 64,
+      "memory_percent": 37,
+      "version": "3.1.2"
+    },
+    {
+      "name": "service-mesh",
+      "status": "degraded",
+      "latency_ms": 1764,
+      "error_rate": 67.0,
+      "cpu_percent": 35,
+      "memory_percent": 64,
+      "version": "1.1.0"
+    },
+    {
+      "name": "payment-api",
+      "status": "healthy",
+      "latency_ms": 199,
+      "error_rate": 0.3,
+      "cpu_percent": 34,
+      "memory_percent": 17,
+      "version": "2.1.1"
+    },
+    {
+      "name": "auth-service",
+      "status": "healthy",
+      "latency_ms": 26,
+      "error_rate": 0.7,
+      "cpu_percent": 30,
+      "memory_percent": 40,
+      "version": "2.0.0"
+    },
+    {
+      "name": "cache-layer",
+      "status": "healthy",
+      "latency_ms": 123,
+      "error_rate": 0.9,
+      "cpu_percent": 7,
+      "memory_percent": 48,
+      "version": "4.0.1"
+    }
+  ],
+  "recent_deployments": [
+    {
+      "service": "notification-service",
+      "version": "1.5.0",
+      "timestamp": "2026-03-26T15:32:00Z",
+      "deployer": "sre-bot"
+    },
+    {
+      "service": "auth-service",
+      "version": "2.0.0",
+      "timestamp": "2026-03-26T13:40:00Z",
+      "deployer": "dev-team"
+    }
+  ],
+  "logs": {
+    "notification-service": [
+      {
+        "timestamp": "2026-03-26T16:25:00Z",
+        "service": "notification-service",
+        "level": "WARN",
+        "message": "Heap usage at 85% - garbage collection ineffective"
+      },
+      {
+        "timestamp": "2026-03-26T16:26:40Z",
+        "service": "notification-service",
+        "level": "ERROR",
+        "message": "Out of memory: process killed by OOM killer (RSS: 4921MB)"
+      },
+      {
+        "timestamp": "2026-03-26T16:28:20Z",
+        "service": "notification-service",
+        "level": "INFO",
+        "message": "Service restarting after OOM kill - attempt 2"
+      },
+      {
+        "timestamp": "2026-03-26T16:30:00Z",
+        "service": "notification-service",
+        "level": "WARN",
+        "message": "Request cache size growing unbounded: 875337 entries"
+      },
+      {
+        "timestamp": "2026-03-26T16:31:40Z",
+        "service": "notification-service",
+        "level": "ERROR",
+        "message": "Failed to allocate memory for request processing"
+      }
+    ],
+    "user-service": [
+      {
+        "timestamp": "2026-03-26T16:26:00Z",
+        "service": "user-service",
+        "level": "ERROR",
+        "message": "Connection refused from notification-service: service restarting"
+      },
+      {
+        "timestamp": "2026-03-26T16:31:00Z",
+        "service": "user-service",
+        "level": "WARN",
+        "message": "Retrying request to notification-service after connection failure"
+      }
+    ],
+    "service-mesh": [
+      {
+        "timestamp": "2026-03-26T16:26:00Z",
+        "service": "service-mesh",
+        "level": "ERROR",
+        "message": "Connection refused from notification-service: service restarting"
+      },
+      {
+        "timestamp": "2026-03-26T16:31:00Z",
+        "service": "service-mesh",
+        "level": "WARN",
+        "message": "Retrying request to notification-service after connection failure"
+      }
+    ],
+    "payment-api": [
+      {
+        "timestamp": "2026-03-26T16:25:00Z",
+        "service": "payment-api",
+        "level": "INFO",
+        "message": "Healthy - serving requests normally"
+      }
+    ]
+  },
+  "metrics": {
+    "notification-service:memory_percent": [
+      0.0,
+      43.8,
+      67.8,
+      81.0,
+      88.3,
+      92.2
+    ],
+    "notification-service:error_rate": [
+      1.5,
+      1.5,
+      1.5,
+      1.5,
+      51.9,
+      51.9,
+      51.9,
+      51.9
+    ],
+    "notification-service:restarts": [
+      1.7,
+      1.7,
+      1.7,
+      46.7,
+      46.7,
+      46.7
+    ],
+    "user-service:error_rate": [
+      1.5,
+      1.5,
+      54.3,
+      54.3,
+      54.3
+    ],
+    "service-mesh:error_rate": [
+      1.7,
+      1.7,
+      1.7,
+      1.7,
+      91.4,
+      91.4,
+      91.4,
+      91.4
+    ],
+    "payment-api:cpu": [
+      48.3,
+      44.2,
+      47.9,
+      33.2,
+      35.4,
+      39.3
+    ],
+    "auth-service:cpu": [
+      23.9,
+      24.7,
+      32.0,
+      22.5,
+      21.7,
+      19.2
+    ]
+  },
+  "dependencies": {
+    "notification-service": [
+      "notification-service-db",
+      "notification-service-store"
+    ],
+    "user-service": [
+      "notification-service",
+      "user-service-db"
+    ],
+    "service-mesh": [
+      "notification-service",
+      "service-mesh-db"
+    ],
+    "payment-api": [
+      "payment-api-db"
+    ],
+    "auth-service": [
+      "auth-service-db"
+    ],
+    "cache-layer": [
+      "cache-layer-db"
+    ]
+  },
+  "root_cause": {
+    "service": "notification-service",
+    "description": "Memory leak in notification-service 1.5.0 causing OOM kills - unbounded cache growth in request handler",
+    "keywords": [
+      "memory",
+      "leak",
+      "OOM",
+      "out of memory",
+      "heap",
+      "cache",
+      "growth"
+    ]
+  },
+  "valid_remediations": [
+    {
+      "action": "restart_service",
+      "service": "notification-service"
+    },
+    {
+      "action": "rollback_deploy",
+      "service": "notification-service"
+    }
+  ],
+  "expected_diagnostics": [
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "notification-service"
+      }
+    },
+    {
+      "action_type": "check_metrics",
+      "params": {
+        "service": "notification-service"
+      }
+    },
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "user-service"
+      }
+    }
+  ],
+  "grading_rubric": {
+    "triage_weight": 0.1,
+    "diagnostic_weight": 0.27,
+    "root_cause_weight": 0.3,
+    "remediation_weight": 0.21,
+    "efficiency_weight": 0.08,
+    "documentation_weight": 0.04
+  }
+}

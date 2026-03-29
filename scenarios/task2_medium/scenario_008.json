@@ -1,0 +1,324 @@
+{
+  "incident_id": "INC-20260326-108",
+  "difficulty": "medium",
+  "description": "SEV2 incident: DNS Resolution Failure affecting metrics-collector. Cascading impact on cache-layer, api-gateway.",
+  "expected_severity": "SEV2",
+  "initial_alerts": [
+    {
+      "alert_id": "alert-10801",
+      "severity": "critical",
+      "service": "metrics-collector",
+      "message": "DNS query failure rate at 52.1% - resolution failing",
+      "timestamp": "2026-03-26T21:36:05Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-10802",
+      "severity": "critical",
+      "service": "cache-layer",
+      "message": "Service connectivity lost - DNS resolution failed",
+      "timestamp": "2026-03-26T21:37:10Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-10803",
+      "severity": "warning",
+      "service": "metrics-collector",
+      "message": "DNS resolution latency increased to 3697ms",
+      "timestamp": "2026-03-26T21:38:15Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-10804",
+      "severity": "critical",
+      "service": "cache-layer",
+      "message": "cache-layer error rate spiking - requests failing",
+      "timestamp": "2026-03-26T21:36:58Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-10805",
+      "severity": "critical",
+      "service": "api-gateway",
+      "message": "api-gateway error rate spiking - requests failing",
+      "timestamp": "2026-03-26T21:36:29Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-10806",
+      "severity": "info",
+      "service": "message-queue",
+      "message": "Elasticsearch reindex started - expected temporary latency increase",
+      "timestamp": "2026-03-26T21:34:02Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-10807",
+      "severity": "warning",
+      "service": "email-service",
+      "message": "Memory usage at 68% - within normal range but trending up",
+      "timestamp": "2026-03-26T21:32:39Z",
+      "acknowledged": false,
+      "silenced": false
+    }
+  ],
+  "services": [
+    {
+      "name": "metrics-collector",
+      "status": "down",
+      "latency_ms": 0,
+      "error_rate": 95.8,
+      "cpu_percent": 40,
+      "memory_percent": 48,
+      "version": "4.1.0"
+    },
+    {
+      "name": "cache-layer",
+      "status": "degraded",
+      "latency_ms": 1886,
+      "error_rate": 10.3,
+      "cpu_percent": 44,
+      "memory_percent": 47,
+      "version": "1.0.0"
+    },
+    {
+      "name": "api-gateway",
+      "status": "degraded",
+      "latency_ms": 4574,
+      "error_rate": 17.3,
+      "cpu_percent": 25,
+      "memory_percent": 51,
+      "version": "2.1.1"
+    },
+    {
+      "name": "message-queue",
+      "status": "healthy",
+      "latency_ms": 34,
+      "error_rate": 0.4,
+      "cpu_percent": 32,
+      "memory_percent": 29,
+      "version": "4.2.0"
+    },
+    {
+      "name": "email-service",
+      "status": "healthy",
+      "latency_ms": 86,
+      "error_rate": 0.3,
+      "cpu_percent": 22,
+      "memory_percent": 34,
+      "version": "2.0.0"
+    }
+  ],
+  "recent_deployments": [
+    {
+      "service": "metrics-collector",
+      "version": "4.1.0",
+      "timestamp": "2026-03-26T20:53:00Z",
+      "deployer": "release-manager"
+    },
+    {
+      "service": "email-service",
+      "version": "2.0.0",
+      "timestamp": "2026-03-26T18:55:00Z",
+      "deployer": "dev-team"
+    }
+  ],
+  "logs": {
+    "metrics-collector": [
+      {
+        "timestamp": "2026-03-26T21:35:00Z",
+        "service": "metrics-collector",
+        "level": "ERROR",
+        "message": "SERVFAIL for cache-layer.internal: zone file contains invalid A record"
+      },
+      {
+        "timestamp": "2026-03-26T21:36:40Z",
+        "service": "metrics-collector",
+        "level": "ERROR",
+        "message": "NXDOMAIN for cache-layer-db.internal: record missing from 4.1.0 zone file"
+      },
+      {
+        "timestamp": "2026-03-26T21:38:20Z",
+        "service": "metrics-collector",
+        "level": "ERROR",
+        "message": "SERVFAIL rate increasing: 69.3% of queries failing"
+      },
+      {
+        "timestamp": "2026-03-26T21:40:00Z",
+        "service": "metrics-collector",
+        "level": "FATAL",
+        "message": "Multiple critical DNS records missing/corrupted after 4.1.0 zone migration"
+      }
+    ],
+    "cache-layer": [
+      {
+        "timestamp": "2026-03-26T21:36:00Z",
+        "service": "cache-layer",
+        "level": "ERROR",
+        "message": "Cannot resolve cache-layer-db.internal.internal - DNS lookup failed"
+      },
+      {
+        "timestamp": "2026-03-26T21:41:00Z",
+        "service": "cache-layer",
+        "level": "FATAL",
+        "message": "Database connection pool empty: all connections failed DNS resolution"
+      }
+    ],
+    "api-gateway": [
+      {
+        "timestamp": "2026-03-26T21:36:00Z",
+        "service": "api-gateway",
+        "level": "ERROR",
+        "message": "Cannot resolve api-gateway-db.internal.internal - DNS lookup failed"
+      },
+      {
+        "timestamp": "2026-03-26T21:39:20Z",
+        "service": "api-gateway",
+        "level": "FATAL",
+        "message": "Database connection pool empty: all connections failed DNS resolution"
+      },
+      {
+        "timestamp": "2026-03-26T21:42:40Z",
+        "service": "api-gateway",
+        "level": "FATAL",
+        "message": "Service degraded: critical dependency unreachable via DNS"
+      }
+    ],
+    "message-queue": [
+      {
+        "timestamp": "2026-03-26T21:35:00Z",
+        "service": "message-queue",
+        "level": "INFO",
+        "message": "Model serving normally - no dependency issues"
+      }
+    ]
+  },
+  "metrics": {
+    "metrics-collector:query_failure_rate": [
+      0.2,
+      0.5,
+      1.2,
+      2.7,
+      6.2,
+      14.2,
+      32.5
+    ],
+    "metrics-collector:resolution_latency_ms": [
+      2.0,
+      4.3,
+      9.5,
+      20.7,
+      45.4,
+      99.6
+    ],
+    "cache-layer:error_rate": [
+      1.0,
+      1.0,
+      93.6,
+      93.6,
+      93.6
+    ],
+    "api-gateway:error_rate": [
+      1.4,
+      1.4,
+      1.4,
+      1.4,
+      55.4,
+      55.4,
+      55.4,
+      55.4
+    ],
+    "message-queue:cpu": [
+      26.9,
+      26.7,
+      20.4,
+      26.2,
+      25.5,
+      22.9
+    ],
+    "email-service:cpu": [
+      45.6,
+      47.0,
+      42.2,
+      48.2,
+      38.7,
+      44.7
+    ]
+  },
+  "dependencies": {
+    "metrics-collector": [],
+    "cache-layer": [
+      "cache-layer-db.internal",
+      "metrics-collector"
+    ],
+    "api-gateway": [
+      "api-gateway-db.internal",
+      "metrics-collector"
+    ],
+    "message-queue": [
+      "message-queue-db.internal",
+      "metrics-collector"
+    ],
+    "email-service": [
+      "email-service-db.internal",
+      "metrics-collector"
+    ]
+  },
+  "root_cause": {
+    "service": "metrics-collector",
+    "description": "DNS resolution failure on metrics-collector after 4.1.0 deployment corrupted zone file records",
+    "keywords": [
+      "dns",
+      "resolution",
+      "zone",
+      "corrupted",
+      "SERVFAIL",
+      "NXDOMAIN",
+      "zone file"
+    ]
+  },
+  "valid_remediations": [
+    {
+      "action": "rollback_deploy",
+      "service": "metrics-collector"
+    },
+    {
+      "action": "restart_service",
+      "service": "metrics-collector"
+    }
+  ],
+  "expected_diagnostics": [
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "metrics-collector"
+      }
+    },
+    {
+      "action_type": "check_metrics",
+      "params": {
+        "service": "metrics-collector"
+      }
+    },
+    {
+      "action_type": "view_dependencies",
+      "params": {
+        "service_name": "cache-layer"
+      }
+    }
+  ],
+  "grading_rubric": {
+    "triage_weight": 0.21,
+    "diagnostic_weight": 0.24,
+    "root_cause_weight": 0.19,
+    "remediation_weight": 0.2,
+    "efficiency_weight": 0.13,
+    "documentation_weight": 0.03
+  }
+}

@@ -1,0 +1,370 @@
+{
+  "incident_id": "INC-20260326-212",
+  "difficulty": "hard",
+  "description": "SEV1 incident: Dependency Version Mismatch affecting auth-service. Cascading impact on notification-service, cache-layer. Multiple concurrent events make diagnosis challenging.",
+  "expected_severity": "SEV1",
+  "initial_alerts": [
+    {
+      "alert_id": "alert-21201",
+      "severity": "critical",
+      "service": "auth-service",
+      "message": "Deserialization errors spiking - 58.2% request failure",
+      "timestamp": "2026-03-26T22:17:05Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-21202",
+      "severity": "warning",
+      "service": "auth-service",
+      "message": "API contract violation detected in responses from upstream",
+      "timestamp": "2026-03-26T22:18:10Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-21203",
+      "severity": "warning",
+      "service": "notification-service",
+      "message": "Increased error responses from auth-service",
+      "timestamp": "2026-03-26T22:19:15Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-21204",
+      "severity": "critical",
+      "service": "notification-service",
+      "message": "notification-service error rate spiking - requests failing",
+      "timestamp": "2026-03-26T22:17:16Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-21205",
+      "severity": "critical",
+      "service": "cache-layer",
+      "message": "cache-layer error rate spiking - requests failing",
+      "timestamp": "2026-03-26T22:17:09Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-21206",
+      "severity": "info",
+      "service": "cdn-proxy",
+      "message": "New dashboard version deployed - no action required",
+      "timestamp": "2026-03-26T22:14:49Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-21207",
+      "severity": "info",
+      "service": "search-service",
+      "message": "SSL certificate renewal scheduled for next week",
+      "timestamp": "2026-03-26T22:15:20Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-21208",
+      "severity": "info",
+      "service": "message-queue",
+      "message": "Canary deployment proceeding as expected",
+      "timestamp": "2026-03-26T22:08:36Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-21209",
+      "severity": "warning",
+      "service": "cdn-proxy",
+      "message": "CPU usage at 67% - approaching threshold",
+      "timestamp": "2026-03-26T22:12:51Z",
+      "acknowledged": false,
+      "silenced": false
+    }
+  ],
+  "services": [
+    {
+      "name": "auth-service",
+      "status": "degraded",
+      "latency_ms": 4756,
+      "error_rate": 32.6,
+      "cpu_percent": 49,
+      "memory_percent": 85,
+      "version": "3.1.2"
+    },
+    {
+      "name": "notification-service",
+      "status": "degraded",
+      "latency_ms": 593,
+      "error_rate": 66.6,
+      "cpu_percent": 34,
+      "memory_percent": 46,
+      "version": "1.5.0"
+    },
+    {
+      "name": "cache-layer",
+      "status": "degraded",
+      "latency_ms": 3882,
+      "error_rate": 48.6,
+      "cpu_percent": 27,
+      "memory_percent": 56,
+      "version": "3.1.2"
+    },
+    {
+      "name": "cdn-proxy",
+      "status": "healthy",
+      "latency_ms": 91,
+      "error_rate": 0.6,
+      "cpu_percent": 17,
+      "memory_percent": 19,
+      "version": "3.2.0"
+    },
+    {
+      "name": "message-queue",
+      "status": "healthy",
+      "latency_ms": 139,
+      "error_rate": 0.3,
+      "cpu_percent": 9,
+      "memory_percent": 43,
+      "version": "1.2.3"
+    },
+    {
+      "name": "search-service",
+      "status": "healthy",
+      "latency_ms": 80,
+      "error_rate": 0.9,
+      "cpu_percent": 40,
+      "memory_percent": 23,
+      "version": "4.2.0"
+    }
+  ],
+  "recent_deployments": [
+    {
+      "service": "auth-service",
+      "version": "3.1.2",
+      "timestamp": "2026-03-26T21:11:00Z",
+      "deployer": "dev-team"
+    },
+    {
+      "service": "search-service",
+      "version": "4.2.0",
+      "timestamp": "2026-03-26T20:26:00Z",
+      "deployer": "search-team"
+    },
+    {
+      "service": "cdn-proxy",
+      "version": "3.2.0",
+      "timestamp": "2026-03-26T20:27:00Z",
+      "deployer": "ops-team"
+    }
+  ],
+  "logs": {
+    "auth-service": [
+      {
+        "timestamp": "2026-03-26T22:16:00Z",
+        "service": "auth-service",
+        "level": "ERROR",
+        "message": "Failed to deserialize response from upstream: unexpected field format"
+      },
+      {
+        "timestamp": "2026-03-26T22:17:15Z",
+        "service": "auth-service",
+        "level": "ERROR",
+        "message": "API version mismatch: expected v3 response, got v2 schema"
+      },
+      {
+        "timestamp": "2026-03-26T22:18:30Z",
+        "service": "auth-service",
+        "level": "WARN",
+        "message": "Contract test failures detected post-deployment of 3.1.2"
+      },
+      {
+        "timestamp": "2026-03-26T22:19:45Z",
+        "service": "auth-service",
+        "level": "ERROR",
+        "message": "Null pointer: response missing required field 'metadata.trace_id'"
+      }
+    ],
+    "notification-service": [
+      {
+        "timestamp": "2026-03-26T22:17:00Z",
+        "service": "notification-service",
+        "level": "WARN",
+        "message": "auth-service returning malformed responses"
+      },
+      {
+        "timestamp": "2026-03-26T22:22:00Z",
+        "service": "notification-service",
+        "level": "ERROR",
+        "message": "Failed to process response from auth-service: schema mismatch"
+      }
+    ],
+    "cache-layer": [
+      {
+        "timestamp": "2026-03-26T22:17:00Z",
+        "service": "cache-layer",
+        "level": "WARN",
+        "message": "auth-service returning malformed responses"
+      },
+      {
+        "timestamp": "2026-03-26T22:22:00Z",
+        "service": "cache-layer",
+        "level": "ERROR",
+        "message": "Failed to process response from auth-service: schema mismatch"
+      }
+    ],
+    "message-queue": [
+      {
+        "timestamp": "2026-03-26T22:16:00Z",
+        "service": "message-queue",
+        "level": "INFO",
+        "message": "Scheduled reindex 40% complete - elevated latency expected"
+      }
+    ],
+    "cdn-proxy": [
+      {
+        "timestamp": "2026-03-26T22:16:00Z",
+        "service": "cdn-proxy",
+        "level": "INFO",
+        "message": "Scheduled reindex 40% complete - elevated latency expected"
+      }
+    ]
+  },
+  "metrics": {
+    "auth-service:error_rate": [
+      0.1,
+      0.1,
+      0.1,
+      65.1,
+      65.1,
+      65.1,
+      65.1
+    ],
+    "auth-service:deserialization_errors": [
+      1.2,
+      1.2,
+      1.2,
+      1.2,
+      98.8,
+      98.8,
+      98.8,
+      98.8
+    ],
+    "notification-service:error_rate": [
+      1.5,
+      1.5,
+      1.5,
+      61.8,
+      61.8,
+      61.8,
+      61.8
+    ],
+    "cache-layer:error_rate": [
+      0.8,
+      0.8,
+      85.3,
+      85.3,
+      85.3
+    ],
+    "cdn-proxy:cpu": [
+      40.1,
+      39.4,
+      32.9,
+      28.4,
+      35.8,
+      31.2
+    ],
+    "message-queue:cpu": [
+      28.7,
+      43.3,
+      21.6,
+      24.0,
+      35.2,
+      27.4
+    ]
+  },
+  "dependencies": {
+    "auth-service": [
+      "auth-service-db",
+      "auth-service-store"
+    ],
+    "notification-service": [
+      "auth-service",
+      "notification-service-db"
+    ],
+    "cache-layer": [
+      "auth-service",
+      "cache-layer-db"
+    ],
+    "cdn-proxy": [
+      "cdn-proxy-db"
+    ],
+    "message-queue": [
+      "message-queue-db"
+    ],
+    "search-service": [
+      "search-service-db"
+    ]
+  },
+  "root_cause": {
+    "service": "auth-service",
+    "description": "Dependency version mismatch: auth-service 3.1.2 expects API v3 but upstream provides v2, causing deserialization failures",
+    "keywords": [
+      "version",
+      "mismatch",
+      "api",
+      "incompatible",
+      "deserialization",
+      "contract",
+      "breaking change"
+    ]
+  },
+  "valid_remediations": [
+    {
+      "action": "rollback_deploy",
+      "service": "auth-service"
+    },
+    {
+      "action": "restart_service",
+      "service": "auth-service"
+    }
+  ],
+  "expected_diagnostics": [
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "auth-service"
+      }
+    },
+    {
+      "action_type": "check_metrics",
+      "params": {
+        "service": "auth-service"
+      }
+    },
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "notification-service"
+      }
+    },
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "cache-layer"
+      }
+    }
+  ],
+  "grading_rubric": {
+    "triage_weight": 0.08,
+    "diagnostic_weight": 0.26,
+    "root_cause_weight": 0.31,
+    "remediation_weight": 0.21,
+    "efficiency_weight": 0.1,
+    "documentation_weight": 0.04
+  }
+}

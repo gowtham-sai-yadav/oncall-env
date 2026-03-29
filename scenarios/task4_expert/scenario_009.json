@@ -1,0 +1,371 @@
+{
+  "incident_id": "INC-20260326-309",
+  "difficulty": "expert",
+  "description": "SEV1 incident: TLS Certificate Expiry affecting cdn-proxy. Cascading impact on notification-service, order-service. Multiple concurrent events make diagnosis challenging. Red herrings present - focus on evidence-based investigation.",
+  "expected_severity": "SEV1",
+  "initial_alerts": [
+    {
+      "alert_id": "alert-30901",
+      "severity": "critical",
+      "service": "cdn-proxy",
+      "message": "TLS certificate expired - all HTTPS connections failing",
+      "timestamp": "2026-03-26T11:30:05Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-30902",
+      "severity": "critical",
+      "service": "notification-service",
+      "message": "Connection refused: TLS handshake failure with cdn-proxy",
+      "timestamp": "2026-03-26T11:31:10Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-30903",
+      "severity": "warning",
+      "service": "cdn-proxy",
+      "message": "Certificate validity: EXPIRED since 2026-03-26T09:00:00Z",
+      "timestamp": "2026-03-26T11:32:15Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-30904",
+      "severity": "critical",
+      "service": "notification-service",
+      "message": "notification-service error rate spiking - requests failing",
+      "timestamp": "2026-03-26T11:30:07Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-30905",
+      "severity": "critical",
+      "service": "order-service",
+      "message": "order-service error rate spiking - requests failing",
+      "timestamp": "2026-03-26T11:30:29Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-30906",
+      "severity": "warning",
+      "service": "message-queue",
+      "message": "Disk usage at 72% on data volume",
+      "timestamp": "2026-03-26T11:19:23Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-30907",
+      "severity": "info",
+      "service": "logging-pipeline",
+      "message": "Feature flag 'new-checkout-flow' enabled for 5% of users",
+      "timestamp": "2026-03-26T11:26:39Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-30908",
+      "severity": "info",
+      "service": "analytics-service",
+      "message": "Model v4.2 deployment started - canary rollout in progress",
+      "timestamp": "2026-03-26T11:21:54Z",
+      "acknowledged": false,
+      "silenced": false
+    }
+  ],
+  "services": [
+    {
+      "name": "cdn-proxy",
+      "status": "degraded",
+      "latency_ms": 4987,
+      "error_rate": 60.0,
+      "cpu_percent": 59,
+      "memory_percent": 66,
+      "version": "4.2.0"
+    },
+    {
+      "name": "notification-service",
+      "status": "degraded",
+      "latency_ms": 2471,
+      "error_rate": 55.1,
+      "cpu_percent": 44,
+      "memory_percent": 47,
+      "version": "1.5.0"
+    },
+    {
+      "name": "order-service",
+      "status": "degraded",
+      "latency_ms": 3150,
+      "error_rate": 44.5,
+      "cpu_percent": 68,
+      "memory_percent": 37,
+      "version": "2.1.1"
+    },
+    {
+      "name": "analytics-service",
+      "status": "healthy",
+      "latency_ms": 98,
+      "error_rate": 0.7,
+      "cpu_percent": 24,
+      "memory_percent": 53,
+      "version": "1.1.0"
+    },
+    {
+      "name": "api-gateway",
+      "status": "healthy",
+      "latency_ms": 20,
+      "error_rate": 0.8,
+      "cpu_percent": 19,
+      "memory_percent": 20,
+      "version": "1.1.0"
+    },
+    {
+      "name": "logging-pipeline",
+      "status": "healthy",
+      "latency_ms": 52,
+      "error_rate": 0.2,
+      "cpu_percent": 31,
+      "memory_percent": 30,
+      "version": "2.1.1"
+    },
+    {
+      "name": "message-queue",
+      "status": "healthy",
+      "latency_ms": 22,
+      "error_rate": 0.6,
+      "cpu_percent": 18,
+      "memory_percent": 42,
+      "version": "5.0.3"
+    }
+  ],
+  "recent_deployments": [
+    {
+      "service": "cdn-proxy",
+      "version": "4.2.0",
+      "timestamp": "2026-03-26T10:28:00Z",
+      "deployer": "ci-bot"
+    },
+    {
+      "service": "analytics-service",
+      "version": "1.1.0",
+      "timestamp": "2026-03-26T08:28:00Z",
+      "deployer": "dev-team"
+    },
+    {
+      "service": "logging-pipeline",
+      "version": "2.1.1",
+      "timestamp": "2026-03-26T08:17:00Z",
+      "deployer": "dev-team"
+    }
+  ],
+  "logs": {
+    "cdn-proxy": [
+      {
+        "timestamp": "2026-03-26T11:29:00Z",
+        "service": "cdn-proxy",
+        "level": "ERROR",
+        "message": "TLS handshake failed: certificate expired at 2026-03-26T09:00:00Z"
+      },
+      {
+        "timestamp": "2026-03-26T11:30:25Z",
+        "service": "cdn-proxy",
+        "level": "ERROR",
+        "message": "x509: certificate has expired or is not yet valid"
+      },
+      {
+        "timestamp": "2026-03-26T11:31:50Z",
+        "service": "cdn-proxy",
+        "level": "WARN",
+        "message": "Auto-renewal of TLS cert failed: ACME challenge timeout"
+      },
+      {
+        "timestamp": "2026-03-26T11:33:15Z",
+        "service": "cdn-proxy",
+        "level": "ERROR",
+        "message": "All incoming HTTPS connections rejected: invalid certificate"
+      }
+    ],
+    "notification-service": [
+      {
+        "timestamp": "2026-03-26T11:30:00Z",
+        "service": "notification-service",
+        "level": "ERROR",
+        "message": "TLS handshake failed connecting to cdn-proxy: certificate expired"
+      },
+      {
+        "timestamp": "2026-03-26T11:35:00Z",
+        "service": "notification-service",
+        "level": "WARN",
+        "message": "Falling back to cached data - cdn-proxy unreachable"
+      }
+    ],
+    "order-service": [
+      {
+        "timestamp": "2026-03-26T11:30:00Z",
+        "service": "order-service",
+        "level": "ERROR",
+        "message": "TLS handshake failed connecting to cdn-proxy: certificate expired"
+      },
+      {
+        "timestamp": "2026-03-26T11:35:00Z",
+        "service": "order-service",
+        "level": "WARN",
+        "message": "Falling back to cached data - cdn-proxy unreachable"
+      }
+    ],
+    "message-queue": [
+      {
+        "timestamp": "2026-03-26T11:29:00Z",
+        "service": "message-queue",
+        "level": "INFO",
+        "message": "Model serving normally - no dependency issues"
+      }
+    ],
+    "api-gateway": [
+      {
+        "timestamp": "2026-03-26T11:29:00Z",
+        "service": "api-gateway",
+        "level": "INFO",
+        "message": "Model serving normally - no dependency issues"
+      }
+    ]
+  },
+  "metrics": {
+    "cdn-proxy:tls_errors": [
+      1.9,
+      1.9,
+      1.9,
+      1.9,
+      95.6,
+      95.6,
+      95.6,
+      95.6
+    ],
+    "cdn-proxy:error_rate": [
+      0.5,
+      0.5,
+      0.5,
+      79.4,
+      79.4,
+      79.4,
+      79.4
+    ],
+    "notification-service:error_rate": [
+      1.2,
+      1.2,
+      1.2,
+      59.5,
+      59.5,
+      59.5,
+      59.5
+    ],
+    "order-service:error_rate": [
+      0.2,
+      0.2,
+      0.2,
+      0.2,
+      46.7,
+      46.7,
+      46.7,
+      46.7
+    ],
+    "analytics-service:cpu": [
+      35.4,
+      39.3,
+      38.0,
+      45.3,
+      37.9,
+      43.9
+    ],
+    "api-gateway:cpu": [
+      45.4,
+      39.0,
+      39.7,
+      49.6,
+      49.9,
+      44.0
+    ]
+  },
+  "dependencies": {
+    "cdn-proxy": [
+      "cdn-proxy-db",
+      "cdn-proxy-store"
+    ],
+    "notification-service": [
+      "cdn-proxy",
+      "notification-service-db"
+    ],
+    "order-service": [
+      "cdn-proxy",
+      "order-service-db"
+    ],
+    "analytics-service": [
+      "cdn-proxy",
+      "analytics-service-db"
+    ],
+    "api-gateway": [
+      "api-gateway-db"
+    ],
+    "logging-pipeline": [
+      "logging-pipeline-db"
+    ],
+    "message-queue": [
+      "message-queue-db"
+    ]
+  },
+  "root_cause": {
+    "service": "cdn-proxy",
+    "description": "TLS certificate expired on cdn-proxy causing all HTTPS connections to fail",
+    "keywords": [
+      "tls",
+      "certificate",
+      "expired",
+      "ssl",
+      "https",
+      "cert",
+      "x509"
+    ]
+  },
+  "valid_remediations": [
+    {
+      "action": "restart_service",
+      "service": "cdn-proxy"
+    },
+    {
+      "action": "update_config",
+      "service": "cdn-proxy"
+    }
+  ],
+  "expected_diagnostics": [
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "cdn-proxy"
+      }
+    },
+    {
+      "action_type": "check_metrics",
+      "params": {
+        "service": "cdn-proxy"
+      }
+    },
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "notification-service"
+      }
+    }
+  ],
+  "grading_rubric": {
+    "triage_weight": 0.07,
+    "diagnostic_weight": 0.17,
+    "root_cause_weight": 0.34,
+    "remediation_weight": 0.2,
+    "efficiency_weight": 0.11,
+    "documentation_weight": 0.11
+  }
+}

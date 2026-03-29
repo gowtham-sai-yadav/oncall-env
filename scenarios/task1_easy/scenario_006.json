@@ -1,0 +1,253 @@
+{
+  "incident_id": "INC-20260326-006",
+  "difficulty": "easy",
+  "description": "SEV3 incident: CPU Spin Loop affecting payment-api. Cascading impact on billing-service.",
+  "expected_severity": "SEV3",
+  "initial_alerts": [
+    {
+      "alert_id": "alert-601",
+      "severity": "critical",
+      "service": "payment-api",
+      "message": "CPU usage at 94% - all cores saturated",
+      "timestamp": "2026-03-26T17:12:05Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-602",
+      "severity": "critical",
+      "service": "payment-api",
+      "message": "Service unresponsive - health check failures",
+      "timestamp": "2026-03-26T17:13:10Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-603",
+      "severity": "warning",
+      "service": "billing-service",
+      "message": "Timeout errors from payment-api increasing",
+      "timestamp": "2026-03-26T17:14:15Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-604",
+      "severity": "critical",
+      "service": "billing-service",
+      "message": "billing-service error rate spiking - requests failing",
+      "timestamp": "2026-03-26T17:12:39Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-605",
+      "severity": "info",
+      "service": "email-service",
+      "message": "Model v4.2 deployment started - canary rollout in progress",
+      "timestamp": "2026-03-26T17:03:52Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-606",
+      "severity": "info",
+      "service": "metrics-collector",
+      "message": "Feature flag 'new-checkout-flow' enabled for 5% of users",
+      "timestamp": "2026-03-26T17:01:55Z",
+      "acknowledged": false,
+      "silenced": false
+    }
+  ],
+  "services": [
+    {
+      "name": "payment-api",
+      "status": "degraded",
+      "latency_ms": 1203,
+      "error_rate": 37.6,
+      "cpu_percent": 50,
+      "memory_percent": 72,
+      "version": "4.0.1"
+    },
+    {
+      "name": "billing-service",
+      "status": "degraded",
+      "latency_ms": 3399,
+      "error_rate": 50.9,
+      "cpu_percent": 61,
+      "memory_percent": 51,
+      "version": "5.0.3"
+    },
+    {
+      "name": "email-service",
+      "status": "healthy",
+      "latency_ms": 174,
+      "error_rate": 0.6,
+      "cpu_percent": 35,
+      "memory_percent": 42,
+      "version": "1.2.3"
+    },
+    {
+      "name": "metrics-collector",
+      "status": "healthy",
+      "latency_ms": 66,
+      "error_rate": 0.9,
+      "cpu_percent": 11,
+      "memory_percent": 15,
+      "version": "3.0.0"
+    }
+  ],
+  "recent_deployments": [
+    {
+      "service": "payment-api",
+      "version": "4.0.1",
+      "timestamp": "2026-03-26T16:01:00Z",
+      "deployer": "dev-team"
+    }
+  ],
+  "logs": {
+    "payment-api": [
+      {
+        "timestamp": "2026-03-26T17:11:00Z",
+        "service": "payment-api",
+        "level": "WARN",
+        "message": "CPU usage at 100% - throttling requests"
+      },
+      {
+        "timestamp": "2026-03-26T17:13:30Z",
+        "service": "payment-api",
+        "level": "ERROR",
+        "message": "Worker thread pool exhausted - all threads blocked"
+      },
+      {
+        "timestamp": "2026-03-26T17:16:00Z",
+        "service": "payment-api",
+        "level": "ERROR",
+        "message": "Health check timeout after 5s - service appears hung"
+      },
+      {
+        "timestamp": "2026-03-26T17:18:30Z",
+        "service": "payment-api",
+        "level": "WARN",
+        "message": "Error handler retry loop detected: 3834 retries in 10s"
+      }
+    ],
+    "billing-service": [
+      {
+        "timestamp": "2026-03-26T17:12:00Z",
+        "service": "billing-service",
+        "level": "ERROR",
+        "message": "payment-api health check failed: timeout after 10s"
+      },
+      {
+        "timestamp": "2026-03-26T17:17:00Z",
+        "service": "billing-service",
+        "level": "WARN",
+        "message": "Load balancer removed payment-api from pool"
+      }
+    ]
+  },
+  "metrics": {
+    "payment-api:cpu_percent": [
+      0.0,
+      48.3,
+      71.2,
+      81.9,
+      87.0
+    ],
+    "payment-api:latency_p99": [
+      1.3,
+      3.5,
+      9.2,
+      24.4,
+      65.0
+    ],
+    "billing-service:error_rate": [
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      66.4,
+      66.4,
+      66.4,
+      66.4
+    ],
+    "email-service:cpu": [
+      46.1,
+      46.2,
+      44.8,
+      42.2,
+      42.8,
+      45.3
+    ],
+    "metrics-collector:cpu": [
+      36.6,
+      36.4,
+      20.8,
+      30.2,
+      23.3,
+      27.4
+    ]
+  },
+  "dependencies": {
+    "payment-api": [
+      "payment-api-db",
+      "payment-api-store"
+    ],
+    "billing-service": [
+      "payment-api",
+      "billing-service-db"
+    ],
+    "email-service": [
+      "email-service-db"
+    ],
+    "metrics-collector": [
+      "metrics-collector-db"
+    ]
+  },
+  "root_cause": {
+    "service": "payment-api",
+    "description": "CPU spin loop in payment-api 4.0.1 caused by infinite retry loop in error handler",
+    "keywords": [
+      "cpu",
+      "spin",
+      "loop",
+      "100%",
+      "retry",
+      "infinite",
+      "hang"
+    ]
+  },
+  "valid_remediations": [
+    {
+      "action": "restart_service",
+      "service": "payment-api"
+    },
+    {
+      "action": "rollback_deploy",
+      "service": "payment-api"
+    }
+  ],
+  "expected_diagnostics": [
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "payment-api"
+      }
+    },
+    {
+      "action_type": "check_metrics",
+      "params": {
+        "service": "payment-api"
+      }
+    }
+  ],
+  "grading_rubric": {
+    "triage_weight": 0.32,
+    "diagnostic_weight": 0.19,
+    "root_cause_weight": 0.15,
+    "remediation_weight": 0.13,
+    "efficiency_weight": 0.08,
+    "documentation_weight": 0.13
+  }
+}

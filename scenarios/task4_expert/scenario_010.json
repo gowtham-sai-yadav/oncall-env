@@ -1,0 +1,400 @@
+{
+  "incident_id": "INC-20260326-310",
+  "difficulty": "expert",
+  "description": "SEV1 incident: Load Balancer Misconfiguration affecting logging-pipeline. Cascading impact on billing-service, analytics-service. Multiple concurrent events make diagnosis challenging. Red herrings present - focus on evidence-based investigation.",
+  "expected_severity": "SEV1",
+  "initial_alerts": [
+    {
+      "alert_id": "alert-31001",
+      "severity": "critical",
+      "service": "logging-pipeline",
+      "message": "Uneven traffic distribution - single backend receiving 100% traffic",
+      "timestamp": "2026-03-26T16:31:05Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-31002",
+      "severity": "critical",
+      "service": "billing-service",
+      "message": "Service overloaded - receiving all routed traffic",
+      "timestamp": "2026-03-26T16:32:10Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-31003",
+      "severity": "warning",
+      "service": "logging-pipeline",
+      "message": "Health check configuration mismatch detected",
+      "timestamp": "2026-03-26T16:33:15Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-31004",
+      "severity": "critical",
+      "service": "billing-service",
+      "message": "billing-service error rate spiking - requests failing",
+      "timestamp": "2026-03-26T16:31:27Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-31005",
+      "severity": "critical",
+      "service": "analytics-service",
+      "message": "analytics-service error rate spiking - requests failing",
+      "timestamp": "2026-03-26T16:31:47Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-31006",
+      "severity": "info",
+      "service": "message-queue",
+      "message": "New dashboard version deployed - no action required",
+      "timestamp": "2026-03-26T16:24:20Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-31007",
+      "severity": "warning",
+      "service": "message-queue",
+      "message": "Log volume increased 20% - review retention policy",
+      "timestamp": "2026-03-26T16:22:45Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-31008",
+      "severity": "warning",
+      "service": "config-server",
+      "message": "Log volume increased 20% - review retention policy",
+      "timestamp": "2026-03-26T16:29:02Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-31009",
+      "severity": "warning",
+      "service": "config-server",
+      "message": "Log volume increased 20% - review retention policy",
+      "timestamp": "2026-03-26T16:25:43Z",
+      "acknowledged": false,
+      "silenced": false
+    }
+  ],
+  "services": [
+    {
+      "name": "logging-pipeline",
+      "status": "degraded",
+      "latency_ms": 4324,
+      "error_rate": 39.1,
+      "cpu_percent": 66,
+      "memory_percent": 43,
+      "version": "1.0.0"
+    },
+    {
+      "name": "billing-service",
+      "status": "degraded",
+      "latency_ms": 2886,
+      "error_rate": 13.9,
+      "cpu_percent": 70,
+      "memory_percent": 49,
+      "version": "1.5.0"
+    },
+    {
+      "name": "analytics-service",
+      "status": "degraded",
+      "latency_ms": 4373,
+      "error_rate": 52.9,
+      "cpu_percent": 68,
+      "memory_percent": 36,
+      "version": "4.2.0"
+    },
+    {
+      "name": "metrics-collector",
+      "status": "healthy",
+      "latency_ms": 84,
+      "error_rate": 0.3,
+      "cpu_percent": 40,
+      "memory_percent": 32,
+      "version": "4.2.0"
+    },
+    {
+      "name": "message-queue",
+      "status": "healthy",
+      "latency_ms": 111,
+      "error_rate": 0.3,
+      "cpu_percent": 30,
+      "memory_percent": 37,
+      "version": "4.2.0"
+    },
+    {
+      "name": "config-server",
+      "status": "healthy",
+      "latency_ms": 132,
+      "error_rate": 0.1,
+      "cpu_percent": 23,
+      "memory_percent": 49,
+      "version": "4.0.1"
+    }
+  ],
+  "recent_deployments": [
+    {
+      "service": "logging-pipeline",
+      "version": "1.0.0",
+      "timestamp": "2026-03-26T15:28:00Z",
+      "deployer": "ci-bot"
+    },
+    {
+      "service": "message-queue",
+      "version": "4.2.0",
+      "timestamp": "2026-03-26T14:34:00Z",
+      "deployer": "ml-team"
+    },
+    {
+      "service": "metrics-collector",
+      "version": "4.2.0",
+      "timestamp": "2026-03-26T14:02:00Z",
+      "deployer": "ops-team"
+    },
+    {
+      "service": "config-server",
+      "version": "4.0.1",
+      "timestamp": "2026-03-26T14:35:00Z",
+      "deployer": "ops-team"
+    }
+  ],
+  "logs": {
+    "logging-pipeline": [
+      {
+        "timestamp": "2026-03-26T16:30:00Z",
+        "service": "logging-pipeline",
+        "level": "ERROR",
+        "message": "Backend pool misconfigured: only 1 of 5 backends active"
+      },
+      {
+        "timestamp": "2026-03-26T16:31:40Z",
+        "service": "logging-pipeline",
+        "level": "WARN",
+        "message": "Health check endpoint changed in 1.0.0 but LB config not updated"
+      },
+      {
+        "timestamp": "2026-03-26T16:33:20Z",
+        "service": "logging-pipeline",
+        "level": "ERROR",
+        "message": "All traffic routed to billing-service: other backends marked unhealthy"
+      },
+      {
+        "timestamp": "2026-03-26T16:35:00Z",
+        "service": "logging-pipeline",
+        "level": "WARN",
+        "message": "Backend billing-service reporting 503: overloaded from traffic spike"
+      }
+    ],
+    "billing-service": [
+      {
+        "timestamp": "2026-03-26T16:31:00Z",
+        "service": "billing-service",
+        "level": "ERROR",
+        "message": "Request rate 10x normal - possible routing issue"
+      },
+      {
+        "timestamp": "2026-03-26T16:36:00Z",
+        "service": "billing-service",
+        "level": "WARN",
+        "message": "Thread pool exhausted from unexpected traffic volume"
+      }
+    ],
+    "analytics-service": [
+      {
+        "timestamp": "2026-03-26T16:31:00Z",
+        "service": "analytics-service",
+        "level": "ERROR",
+        "message": "Request rate 10x normal - possible routing issue"
+      },
+      {
+        "timestamp": "2026-03-26T16:36:00Z",
+        "service": "analytics-service",
+        "level": "WARN",
+        "message": "Thread pool exhausted from unexpected traffic volume"
+      }
+    ],
+    "message-queue": [
+      {
+        "timestamp": "2026-03-26T16:30:00Z",
+        "service": "message-queue",
+        "level": "INFO",
+        "message": "Cache hit ratio: 94%"
+      }
+    ],
+    "metrics-collector": [
+      {
+        "timestamp": "2026-03-26T16:30:00Z",
+        "service": "metrics-collector",
+        "level": "INFO",
+        "message": "Model serving normally - no dependency issues"
+      }
+    ],
+    "config-server": [
+      {
+        "timestamp": "2026-03-26T16:30:00Z",
+        "service": "config-server",
+        "level": "INFO",
+        "message": "Scheduled reindex 40% complete - elevated latency expected"
+      }
+    ]
+  },
+  "metrics": {
+    "logging-pipeline:backend_health_pct": [
+      1.2,
+      1.2,
+      1.2,
+      95.4,
+      95.4,
+      95.4
+    ],
+    "logging-pipeline:error_rate": [
+      0.2,
+      0.2,
+      0.2,
+      84.0,
+      84.0,
+      84.0,
+      84.0
+    ],
+    "billing-service:cpu_percent": [
+      0.0,
+      33.2,
+      54.9,
+      69.0,
+      78.1,
+      84.1,
+      88.0,
+      90.6
+    ],
+    "billing-service:error_rate": [
+      0.3,
+      0.8,
+      2.1,
+      5.3,
+      13.3,
+      33.2,
+      83.2
+    ],
+    "analytics-service:cpu_percent": [
+      0.0,
+      33.9,
+      54.4,
+      66.9,
+      74.4,
+      79.0,
+      81.8
+    ],
+    "analytics-service:error_rate": [
+      1.6,
+      2.9,
+      5.3,
+      9.7,
+      17.6,
+      32.1,
+      58.3
+    ],
+    "metrics-collector:cpu": [
+      40.1,
+      36.8,
+      37.0,
+      35.8,
+      45.1,
+      44.8
+    ],
+    "message-queue:cpu": [
+      44.0,
+      45.6,
+      42.4,
+      43.0,
+      50.2,
+      52.0
+    ]
+  },
+  "dependencies": {
+    "logging-pipeline": [
+      "logging-pipeline-db",
+      "logging-pipeline-store"
+    ],
+    "billing-service": [
+      "logging-pipeline",
+      "billing-service-db"
+    ],
+    "analytics-service": [
+      "logging-pipeline",
+      "analytics-service-db"
+    ],
+    "metrics-collector": [
+      "metrics-collector-db"
+    ],
+    "message-queue": [
+      "message-queue-db"
+    ],
+    "config-server": [
+      "config-server-db"
+    ]
+  },
+  "root_cause": {
+    "service": "logging-pipeline",
+    "description": "Load balancer misconfiguration on logging-pipeline routing all traffic to single unhealthy backend after 1.0.0 config change",
+    "keywords": [
+      "load balancer",
+      "routing",
+      "misconfiguration",
+      "config",
+      "backend",
+      "traffic"
+    ]
+  },
+  "valid_remediations": [
+    {
+      "action": "update_config",
+      "service": "logging-pipeline"
+    },
+    {
+      "action": "rollback_deploy",
+      "service": "logging-pipeline"
+    },
+    {
+      "action": "restart_service",
+      "service": "logging-pipeline"
+    }
+  ],
+  "expected_diagnostics": [
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "logging-pipeline"
+      }
+    },
+    {
+      "action_type": "check_metrics",
+      "params": {
+        "service": "logging-pipeline"
+      }
+    },
+    {
+      "action_type": "view_dependencies",
+      "params": {
+        "service_name": "billing-service"
+      }
+    }
+  ],
+  "grading_rubric": {
+    "triage_weight": 0.07,
+    "diagnostic_weight": 0.21,
+    "root_cause_weight": 0.34,
+    "remediation_weight": 0.16,
+    "efficiency_weight": 0.12,
+    "documentation_weight": 0.1
+  }
+}

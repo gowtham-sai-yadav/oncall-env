@@ -1,0 +1,269 @@
+{
+  "incident_id": "INC-20260326-007",
+  "difficulty": "easy",
+  "description": "SEV3 incident: GC Pause Storm affecting order-service. Cascading impact on auth-service.",
+  "expected_severity": "SEV3",
+  "initial_alerts": [
+    {
+      "alert_id": "alert-701",
+      "severity": "critical",
+      "service": "order-service",
+      "message": "P99 latency spiked to 6065ms - GC pauses detected",
+      "timestamp": "2026-03-26T18:38:05Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-702",
+      "severity": "warning",
+      "service": "order-service",
+      "message": "GC pause time exceeding 2s per cycle",
+      "timestamp": "2026-03-26T18:39:10Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-703",
+      "severity": "warning",
+      "service": "auth-service",
+      "message": "Intermittent timeouts from order-service",
+      "timestamp": "2026-03-26T18:40:15Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-704",
+      "severity": "critical",
+      "service": "auth-service",
+      "message": "auth-service error rate spiking - requests failing",
+      "timestamp": "2026-03-26T18:38:14Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-705",
+      "severity": "info",
+      "service": "metrics-collector",
+      "message": "SSL certificate renewal scheduled for next week",
+      "timestamp": "2026-03-26T18:34:44Z",
+      "acknowledged": false,
+      "silenced": false
+    }
+  ],
+  "services": [
+    {
+      "name": "order-service",
+      "status": "degraded",
+      "latency_ms": 2418,
+      "error_rate": 66.3,
+      "cpu_percent": 90,
+      "memory_percent": 92,
+      "version": "2.3.0"
+    },
+    {
+      "name": "auth-service",
+      "status": "degraded",
+      "latency_ms": 4951,
+      "error_rate": 12.1,
+      "cpu_percent": 51,
+      "memory_percent": 62,
+      "version": "1.2.3"
+    },
+    {
+      "name": "metrics-collector",
+      "status": "healthy",
+      "latency_ms": 90,
+      "error_rate": 0.7,
+      "cpu_percent": 9,
+      "memory_percent": 26,
+      "version": "2.1.1"
+    },
+    {
+      "name": "api-gateway",
+      "status": "healthy",
+      "latency_ms": 134,
+      "error_rate": 0.6,
+      "cpu_percent": 11,
+      "memory_percent": 40,
+      "version": "2.4.1"
+    },
+    {
+      "name": "logging-pipeline",
+      "status": "healthy",
+      "latency_ms": 103,
+      "error_rate": 0.1,
+      "cpu_percent": 30,
+      "memory_percent": 35,
+      "version": "3.1.2"
+    }
+  ],
+  "recent_deployments": [
+    {
+      "service": "order-service",
+      "version": "2.3.0",
+      "timestamp": "2026-03-26T17:40:00Z",
+      "deployer": "platform-team"
+    }
+  ],
+  "logs": {
+    "order-service": [
+      {
+        "timestamp": "2026-03-26T18:37:00Z",
+        "service": "order-service",
+        "level": "WARN",
+        "message": "GC pause duration: 3317ms (threshold: 500ms)"
+      },
+      {
+        "timestamp": "2026-03-26T18:40:20Z",
+        "service": "order-service",
+        "level": "ERROR",
+        "message": "Stop-the-world GC: 2471ms - request processing halted"
+      },
+      {
+        "timestamp": "2026-03-26T18:43:40Z",
+        "service": "order-service",
+        "level": "WARN",
+        "message": "Heap occupancy at 97% - frequent full GC cycles"
+      }
+    ],
+    "auth-service": [
+      {
+        "timestamp": "2026-03-26T18:38:00Z",
+        "service": "auth-service",
+        "level": "WARN",
+        "message": "Intermittent timeout from order-service: latency spike detected"
+      },
+      {
+        "timestamp": "2026-03-26T18:43:00Z",
+        "service": "auth-service",
+        "level": "ERROR",
+        "message": "Request to order-service timed out during GC pause"
+      }
+    ]
+  },
+  "metrics": {
+    "order-service:gc_pause_ms": [
+      1.0,
+      1.8,
+      3.0,
+      5.3,
+      9.1,
+      15.7,
+      27.1,
+      46.9
+    ],
+    "order-service:latency_p99": [
+      1.8,
+      3.0,
+      5.1,
+      8.6,
+      14.6,
+      24.8,
+      42.2,
+      71.7
+    ],
+    "order-service:memory_percent": [
+      0.0,
+      33.4,
+      55.1,
+      69.3,
+      78.5,
+      84.5,
+      88.4,
+      91.0
+    ],
+    "auth-service:error_rate": [
+      2.0,
+      2.0,
+      2.0,
+      74.9,
+      74.9,
+      74.9,
+      74.9
+    ],
+    "metrics-collector:cpu": [
+      18.8,
+      12.9,
+      24.7,
+      20.5,
+      25.0,
+      21.9
+    ],
+    "api-gateway:cpu": [
+      19.3,
+      27.6,
+      22.3,
+      25.9,
+      30.0,
+      31.7
+    ]
+  },
+  "dependencies": {
+    "order-service": [
+      "order-service-db",
+      "order-service-store"
+    ],
+    "auth-service": [
+      "order-service",
+      "auth-service-db"
+    ],
+    "metrics-collector": [
+      "order-service",
+      "metrics-collector-db"
+    ],
+    "api-gateway": [
+      "api-gateway-db"
+    ],
+    "logging-pipeline": [
+      "logging-pipeline-db"
+    ]
+  },
+  "root_cause": {
+    "service": "order-service",
+    "description": "GC pause storm in order-service 2.3.0 due to excessive object allocation in batch processor",
+    "keywords": [
+      "gc",
+      "garbage collection",
+      "pause",
+      "stop-the-world",
+      "allocation",
+      "heap"
+    ]
+  },
+  "valid_remediations": [
+    {
+      "action": "restart_service",
+      "service": "order-service"
+    },
+    {
+      "action": "rollback_deploy",
+      "service": "order-service"
+    },
+    {
+      "action": "scale_service",
+      "service": "order-service"
+    }
+  ],
+  "expected_diagnostics": [
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "order-service"
+      }
+    },
+    {
+      "action_type": "check_metrics",
+      "params": {
+        "service": "order-service"
+      }
+    }
+  ],
+  "grading_rubric": {
+    "triage_weight": 0.33,
+    "diagnostic_weight": 0.18,
+    "root_cause_weight": 0.14,
+    "remediation_weight": 0.17,
+    "efficiency_weight": 0.09,
+    "documentation_weight": 0.09
+  }
+}

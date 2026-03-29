@@ -1,201 +1,415 @@
 {
-  "incident_id": "INC-20260326-008",
+  "incident_id": "INC-20260326-302",
   "difficulty": "expert",
-  "description": "SEV1 internal service communication breakdown. Multiple critical services are failing to communicate. Several concurrent events make diagnosis challenging. You must investigate carefully, identify the true root cause, remediate correctly, and document thoroughly.",
+  "description": "SEV1 incident: Connection Pool Exhaustion affecting auth-service. Cascading impact on cache-layer, notification-service. Multiple concurrent events make diagnosis challenging. Red herrings present - focus on evidence-based investigation.",
   "expected_severity": "SEV1",
   "initial_alerts": [
     {
-      "alert_id": "alert-520",
+      "alert_id": "alert-30201",
       "severity": "critical",
-      "service": "service-mesh",
-      "message": "Envoy sidecar TLS handshake failure rate 98% -- mTLS connections across mesh collapsing",
-      "timestamp": "2026-03-26T21:02:00Z",
+      "service": "auth-service",
+      "message": "Error rate exceeded 5% threshold - currently at 29.0%",
+      "timestamp": "2026-03-26T22:31:05Z",
       "acknowledged": false,
       "silenced": false
     },
     {
-      "alert_id": "alert-521",
+      "alert_id": "alert-30202",
       "severity": "critical",
+      "service": "auth-service",
+      "message": "P99 latency > 2000ms (currently 4981ms)",
+      "timestamp": "2026-03-26T22:32:10Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-30203",
+      "severity": "warning",
+      "service": "cache-layer",
+      "message": "Increased 4xx responses from downstream dependency",
+      "timestamp": "2026-03-26T22:33:15Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-30204",
+      "severity": "critical",
+      "service": "cache-layer",
+      "message": "cache-layer error rate spiking - requests failing",
+      "timestamp": "2026-03-26T22:31:51Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-30205",
+      "severity": "critical",
+      "service": "notification-service",
+      "message": "notification-service error rate spiking - requests failing",
+      "timestamp": "2026-03-26T22:31:51Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-30206",
+      "severity": "info",
+      "service": "search-service",
+      "message": "New dashboard version deployed - no action required",
+      "timestamp": "2026-03-26T22:28:46Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-30207",
+      "severity": "info",
       "service": "api-gateway",
-      "message": "Upstream connection errors 87% -- majority of backend calls failing with TLS errors",
-      "timestamp": "2026-03-26T21:02:15Z",
+      "message": "Scheduled maintenance window starting in 2 hours",
+      "timestamp": "2026-03-26T22:23:12Z",
       "acknowledged": false,
       "silenced": false
     },
     {
-      "alert_id": "alert-522",
-      "severity": "critical",
-      "service": "order-service",
-      "message": "Order processing down -- 100% connection refused from inventory-service and payment-api",
-      "timestamp": "2026-03-26T21:02:30Z",
-      "acknowledged": false,
-      "silenced": false
-    },
-    {
-      "alert_id": "alert-523",
-      "severity": "critical",
-      "service": "payment-api",
-      "message": "All inbound mTLS connections rejected -- payment processing halted",
-      "timestamp": "2026-03-26T21:02:45Z",
-      "acknowledged": false,
-      "silenced": false
-    },
-    {
-      "alert_id": "alert-524",
-      "severity": "warning",
-      "service": "cdn",
-      "message": "External latency elevated to 850ms -- CDN cache purge in progress",
-      "timestamp": "2026-03-26T21:01:00Z",
-      "acknowledged": false,
-      "silenced": false
-    },
-    {
-      "alert_id": "alert-525",
-      "severity": "warning",
-      "service": "data-pipeline",
-      "message": "CPU usage 91% on pipeline worker nodes -- batch ETL job running",
-      "timestamp": "2026-03-26T21:00:30Z",
-      "acknowledged": false,
-      "silenced": false
-    },
-    {
-      "alert_id": "alert-526",
-      "severity": "critical",
-      "service": "inventory-service",
-      "message": "Cannot accept inbound connections -- Envoy sidecar certificate validation failing",
-      "timestamp": "2026-03-26T21:03:00Z",
-      "acknowledged": false,
-      "silenced": false
-    },
-    {
-      "alert_id": "alert-527",
+      "alert_id": "alert-30208",
       "severity": "info",
-      "service": "service-mesh",
-      "message": "Scheduled TLS certificate rotation started at 21:00 -- intermediate CA cert bundle pushed to all Envoy sidecars",
-      "timestamp": "2026-03-26T21:00:00Z",
+      "service": "search-service",
+      "message": "SSL certificate renewal scheduled for next week",
+      "timestamp": "2026-03-26T22:24:09Z",
       "acknowledged": false,
       "silenced": false
     },
     {
-      "alert_id": "alert-528",
+      "alert_id": "alert-30209",
       "severity": "info",
-      "service": "cdn",
-      "message": "Scheduled CDN cache purge initiated at 21:00 for stale asset invalidation -- expected latency increase for 10-15 minutes",
-      "timestamp": "2026-03-26T21:00:05Z",
+      "service": "api-gateway",
+      "message": "Canary deployment proceeding as expected",
+      "timestamp": "2026-03-26T22:25:11Z",
       "acknowledged": false,
       "silenced": false
     },
     {
-      "alert_id": "alert-529",
+      "alert_id": "alert-30210",
       "severity": "warning",
-      "service": "user-service",
-      "message": "Login success rate dropped to 15% -- downstream service calls via mesh failing",
-      "timestamp": "2026-03-26T21:03:15Z",
+      "service": "metrics-collector",
+      "message": "Log volume increased 20% - review retention policy",
+      "timestamp": "2026-03-26T22:27:49Z",
       "acknowledged": false,
       "silenced": false
     }
   ],
   "services": [
-    {"name": "service-mesh", "status": "degraded", "latency_ms": 9500, "error_rate": 98.0, "cpu_percent": 65, "memory_percent": 72, "version": "1.18.2"},
-    {"name": "api-gateway", "status": "degraded", "latency_ms": 7200, "error_rate": 87.0, "cpu_percent": 85, "memory_percent": 68, "version": "5.1.0"},
-    {"name": "order-service", "status": "down", "latency_ms": 0, "error_rate": 100.0, "cpu_percent": 12, "memory_percent": 28, "version": "3.3.1"},
-    {"name": "payment-api", "status": "down", "latency_ms": 0, "error_rate": 100.0, "cpu_percent": 9, "memory_percent": 22, "version": "4.2.0"},
-    {"name": "inventory-service", "status": "down", "latency_ms": 0, "error_rate": 100.0, "cpu_percent": 8, "memory_percent": 20, "version": "2.5.0"},
-    {"name": "user-service", "status": "degraded", "latency_ms": 4800, "error_rate": 85.0, "cpu_percent": 38, "memory_percent": 45, "version": "2.3.0"},
-    {"name": "cdn", "status": "healthy", "latency_ms": 850, "error_rate": 0.2, "cpu_percent": 35, "memory_percent": 40, "version": "3.0.1"},
-    {"name": "data-pipeline", "status": "healthy", "latency_ms": 1200, "error_rate": 0.0, "cpu_percent": 91, "memory_percent": 78, "version": "2.1.4"},
-    {"name": "notification-service", "status": "healthy", "latency_ms": 90, "error_rate": 0.1, "cpu_percent": 14, "memory_percent": 18, "version": "1.4.2"}
+    {
+      "name": "auth-service",
+      "status": "down",
+      "latency_ms": 0,
+      "error_rate": 75.1,
+      "cpu_percent": 63,
+      "memory_percent": 45,
+      "version": "2.3.0"
+    },
+    {
+      "name": "cache-layer",
+      "status": "degraded",
+      "latency_ms": 2126,
+      "error_rate": 40.4,
+      "cpu_percent": 76,
+      "memory_percent": 55,
+      "version": "3.0.0"
+    },
+    {
+      "name": "notification-service",
+      "status": "degraded",
+      "latency_ms": 1011,
+      "error_rate": 30.2,
+      "cpu_percent": 63,
+      "memory_percent": 60,
+      "version": "5.0.3"
+    },
+    {
+      "name": "metrics-collector",
+      "status": "healthy",
+      "latency_ms": 88,
+      "error_rate": 0.2,
+      "cpu_percent": 37,
+      "memory_percent": 50,
+      "version": "1.0.0"
+    },
+    {
+      "name": "api-gateway",
+      "status": "healthy",
+      "latency_ms": 21,
+      "error_rate": 0.5,
+      "cpu_percent": 43,
+      "memory_percent": 42,
+      "version": "5.0.3"
+    },
+    {
+      "name": "search-service",
+      "status": "healthy",
+      "latency_ms": 40,
+      "error_rate": 0.1,
+      "cpu_percent": 21,
+      "memory_percent": 25,
+      "version": "2.4.1"
+    }
   ],
   "recent_deployments": [
-    {"service": "service-mesh", "version": "1.18.2", "timestamp": "2026-03-26T21:00:00Z", "deployer": "infra-team", "notes": "Scheduled quarterly TLS certificate rotation -- pushed new intermediate CA cert bundle"},
-    {"service": "cdn", "version": "3.0.1", "timestamp": "2026-03-26T20:55:00Z", "deployer": "platform-team", "notes": "Updated CDN routing config and triggered full cache purge for stale assets"},
-    {"service": "data-pipeline", "version": "2.1.4", "timestamp": "2026-03-26T20:00:00Z", "deployer": "data-team", "notes": "Nightly batch ETL job started -- processes ~200GB of daily transaction logs"}
+    {
+      "service": "auth-service",
+      "version": "2.3.0",
+      "timestamp": "2026-03-26T21:50:00Z",
+      "deployer": "search-team"
+    },
+    {
+      "service": "api-gateway",
+      "version": "5.0.3",
+      "timestamp": "2026-03-26T19:00:00Z",
+      "deployer": "dev-team"
+    },
+    {
+      "service": "search-service",
+      "version": "2.4.1",
+      "timestamp": "2026-03-26T21:27:00Z",
+      "deployer": "ops-team"
+    },
+    {
+      "service": "metrics-collector",
+      "version": "1.0.0",
+      "timestamp": "2026-03-26T19:38:00Z",
+      "deployer": "dev-team"
+    }
   ],
   "logs": {
-    "service-mesh": [
-      {"timestamp": "2026-03-26T21:00:00Z", "service": "service-mesh", "level": "INFO", "message": "Certificate rotation initiated -- distributing new intermediate CA bundle (cert-bundle-v2026Q1) to all Envoy sidecars"},
-      {"timestamp": "2026-03-26T21:00:45Z", "service": "service-mesh", "level": "WARN", "message": "Istiod xDS push completed -- 47 sidecars updated with new cert bundle"},
-      {"timestamp": "2026-03-26T21:01:30Z", "service": "service-mesh", "level": "ERROR", "message": "TLS handshake failure: CERTIFICATE_VERIFY_FAILED -- intermediate CA in cert-bundle-v2026Q1 has invalid issuer chain"},
-      {"timestamp": "2026-03-26T21:01:45Z", "service": "service-mesh", "level": "ERROR", "message": "mTLS PEER_CERTIFICATE_INVALID on sidecar order-service-pod-7d9f: cannot verify certificate signed by intermediate CA CN=mesh-ca-intermediate-v2"},
-      {"timestamp": "2026-03-26T21:02:00Z", "service": "service-mesh", "level": "FATAL", "message": "Envoy sidecar handshake failure rate: 98% -- intermediate CA cert bundle cert-bundle-v2026Q1 is invalid, all mTLS sessions being rejected"},
-      {"timestamp": "2026-03-26T21:02:10Z", "service": "service-mesh", "level": "ERROR", "message": "Certificate validation error: intermediate CA CN=mesh-ca-intermediate-v2 not chained to trusted root CA -- bundle was generated with wrong signing key"}
+    "auth-service": [
+      {
+        "timestamp": "2026-03-26T22:30:00Z",
+        "service": "auth-service",
+        "level": "ERROR",
+        "message": "Connection pool exhausted - cannot acquire connection to auth-service-db"
+      },
+      {
+        "timestamp": "2026-03-26T22:31:40Z",
+        "service": "auth-service",
+        "level": "ERROR",
+        "message": "Timeout waiting for DB connection after 5000ms"
+      },
+      {
+        "timestamp": "2026-03-26T22:33:20Z",
+        "service": "auth-service",
+        "level": "WARN",
+        "message": "Circuit breaker OPEN for auth-service-db connections"
+      },
+      {
+        "timestamp": "2026-03-26T22:35:00Z",
+        "service": "auth-service",
+        "level": "ERROR",
+        "message": "Failed to process request txn-20389: DB connection unavailable"
+      },
+      {
+        "timestamp": "2026-03-26T22:36:40Z",
+        "service": "auth-service",
+        "level": "INFO",
+        "message": "Retrying DB connection pool initialization"
+      }
     ],
-    "order-service": [
-      {"timestamp": "2026-03-26T21:01:50Z", "service": "order-service", "level": "ERROR", "message": "Connection refused: payment-api.internal -- Envoy sidecar rejected mTLS handshake (CERTIFICATE_VERIFY_FAILED)"},
-      {"timestamp": "2026-03-26T21:02:00Z", "service": "order-service", "level": "ERROR", "message": "Connection refused: inventory-service.internal -- upstream TLS handshake failed"},
-      {"timestamp": "2026-03-26T21:02:15Z", "service": "order-service", "level": "FATAL", "message": "All downstream dependencies unreachable via service mesh -- order processing halted"},
-      {"timestamp": "2026-03-26T21:02:30Z", "service": "order-service", "level": "INFO", "message": "Direct database connection (non-mTLS) still healthy -- issue is inter-service mesh communication only"}
-    ],
-    "payment-api": [
-      {"timestamp": "2026-03-26T21:01:55Z", "service": "payment-api", "level": "ERROR", "message": "Inbound mTLS connection from order-service rejected: peer certificate signed by untrusted intermediate CA"},
-      {"timestamp": "2026-03-26T21:02:05Z", "service": "payment-api", "level": "ERROR", "message": "Envoy sidecar blocking all inbound mesh traffic -- cert-bundle-v2026Q1 intermediate CA not trusted"},
-      {"timestamp": "2026-03-26T21:02:20Z", "service": "payment-api", "level": "FATAL", "message": "Zero inbound requests processed since 21:01:50 -- all callers rejected at TLS layer"}
-    ],
-    "cdn": [
-      {"timestamp": "2026-03-26T20:55:00Z", "service": "cdn", "level": "INFO", "message": "CDN routing config v3.0.1 deployed -- enabling smart cache eviction rules"},
-      {"timestamp": "2026-03-26T21:00:05Z", "service": "cdn", "level": "INFO", "message": "Full cache purge started -- all edge nodes invalidating cached assets"},
-      {"timestamp": "2026-03-26T21:00:30Z", "service": "cdn", "level": "INFO", "message": "Cache miss rate temporarily elevated to 95% -- expected during purge, cache warming from origin"},
-      {"timestamp": "2026-03-26T21:08:00Z", "service": "cdn", "level": "INFO", "message": "Cache repopulated to 72% -- latency returning to normal, no errors detected"}
-    ],
-    "data-pipeline": [
-      {"timestamp": "2026-03-26T20:00:00Z", "service": "data-pipeline", "level": "INFO", "message": "Nightly ETL batch job started -- processing 2026-03-25 transaction logs"},
-      {"timestamp": "2026-03-26T21:00:00Z", "service": "data-pipeline", "level": "INFO", "message": "ETL job progress: 48% complete -- CPU-intensive aggregation phase, normal for this stage"},
-      {"timestamp": "2026-03-26T21:02:00Z", "service": "data-pipeline", "level": "INFO", "message": "ETL job running normally -- no dependency on service mesh, reads directly from object storage"},
-      {"timestamp": "2026-03-26T21:05:00Z", "service": "data-pipeline", "level": "INFO", "message": "ETL job progress: 61% complete -- CPU usage expected to drop after aggregation phase in ~30 min"}
+    "cache-layer": [
+      {
+        "timestamp": "2026-03-26T22:31:00Z",
+        "service": "cache-layer",
+        "level": "ERROR",
+        "message": "auth-service returned 503 for request req-84656"
+      },
+      {
+        "timestamp": "2026-03-26T22:34:20Z",
+        "service": "cache-layer",
+        "level": "ERROR",
+        "message": "Failed to complete operation: upstream auth-service unavailable"
+      },
+      {
+        "timestamp": "2026-03-26T22:37:40Z",
+        "service": "cache-layer",
+        "level": "WARN",
+        "message": "Fallback: queuing request for retry"
+      }
     ],
     "notification-service": [
-      {"timestamp": "2026-03-26T21:02:00Z", "service": "notification-service", "level": "INFO", "message": "Outbound email and SMS sending normally -- uses external SMTP/SMS APIs, not service mesh"},
-      {"timestamp": "2026-03-26T21:03:00Z", "service": "notification-service", "level": "INFO", "message": "All notification queues healthy -- no mTLS dependency, communicates via public API endpoints"}
+      {
+        "timestamp": "2026-03-26T22:31:00Z",
+        "service": "notification-service",
+        "level": "ERROR",
+        "message": "auth-service returned 503 for request req-39678"
+      },
+      {
+        "timestamp": "2026-03-26T22:34:20Z",
+        "service": "notification-service",
+        "level": "ERROR",
+        "message": "Failed to complete operation: upstream auth-service unavailable"
+      },
+      {
+        "timestamp": "2026-03-26T22:37:40Z",
+        "service": "notification-service",
+        "level": "WARN",
+        "message": "Fallback: queuing request for retry"
+      }
+    ],
+    "search-service": [
+      {
+        "timestamp": "2026-03-26T22:30:00Z",
+        "service": "search-service",
+        "level": "INFO",
+        "message": "Healthy - serving requests normally"
+      }
+    ],
+    "metrics-collector": [
+      {
+        "timestamp": "2026-03-26T22:30:00Z",
+        "service": "metrics-collector",
+        "level": "WARN",
+        "message": "Slow query detected (non-critical): SELECT took 2.1s"
+      }
+    ],
+    "api-gateway": [
+      {
+        "timestamp": "2026-03-26T22:30:00Z",
+        "service": "api-gateway",
+        "level": "WARN",
+        "message": "Slow query detected (non-critical): SELECT took 2.1s"
+      }
     ]
   },
   "metrics": {
-    "service-mesh:tls_handshake_failure_rate": [0, 0, 0, 2, 45, 98, 98],
-    "service-mesh:active_mtls_connections": [1200, 1198, 1190, 800, 120, 18, 12],
-    "service-mesh:cpu_percent": [40, 42, 45, 55, 65, 65, 65],
-    "order-service:error_rate": [0, 0, 0, 20, 80, 100, 100],
-    "payment-api:error_rate": [0, 0, 0, 15, 75, 100, 100],
-    "inventory-service:error_rate": [0, 0, 0, 18, 82, 100, 100],
-    "api-gateway:error_rate": [0, 1, 2, 25, 70, 87, 87],
-    "user-service:error_rate": [0, 0, 5, 30, 70, 85, 85],
-    "cdn:latency_ms": [120, 120, 120, 850, 700, 450, 200],
-    "cdn:error_rate": [0.1, 0.1, 0.1, 0.2, 0.2, 0.1, 0.1],
-    "data-pipeline:cpu_percent": [20, 45, 72, 88, 91, 91, 90],
-    "data-pipeline:error_rate": [0, 0, 0, 0, 0, 0, 0]
+    "auth-service:error_rate": [
+      0.6,
+      1.1,
+      2.1,
+      4.1,
+      7.8,
+      15.0,
+      28.6,
+      54.7
+    ],
+    "auth-service:latency_p99": [
+      1.3,
+      2.7,
+      5.3,
+      10.7,
+      21.3,
+      42.7
+    ],
+    "auth-service:db_connections": [
+      0.0,
+      28.3,
+      46.7,
+      58.7,
+      66.5,
+      71.6,
+      75.0,
+      77.1
+    ],
+    "cache-layer:error_rate": [
+      1.3,
+      2.5,
+      4.9,
+      9.8,
+      19.4,
+      38.6,
+      76.5
+    ],
+    "notification-service:error_rate": [
+      0.6,
+      1.2,
+      2.3,
+      4.7,
+      9.5,
+      19.3,
+      38.9
+    ],
+    "metrics-collector:cpu": [
+      16.5,
+      22.7,
+      20.5,
+      21.1,
+      27.8,
+      31.7
+    ],
+    "api-gateway:cpu": [
+      26.2,
+      30.8,
+      32.0,
+      29.4,
+      26.3,
+      21.1
+    ]
   },
   "dependencies": {
-    "api-gateway": ["order-service", "payment-api", "user-service", "inventory-service", "notification-service"],
-    "order-service": ["payment-api", "inventory-service", "service-mesh"],
-    "payment-api": ["service-mesh", "stripe-gateway (external)"],
-    "inventory-service": ["service-mesh", "inventory-db (direct)"],
-    "user-service": ["service-mesh", "user-db (direct)"],
-    "notification-service": ["smtp-relay (external)", "sms-gateway (external)"],
-    "cdn": ["origin-servers (external)"],
-    "data-pipeline": ["object-storage (direct)", "warehouse-db (direct)"],
-    "service-mesh": []
+    "auth-service": [
+      "auth-service-db",
+      "auth-service-store"
+    ],
+    "cache-layer": [
+      "auth-service",
+      "cache-layer-db"
+    ],
+    "notification-service": [
+      "auth-service",
+      "notification-service-db"
+    ],
+    "metrics-collector": [
+      "metrics-collector-db"
+    ],
+    "api-gateway": [
+      "api-gateway-db"
+    ],
+    "search-service": [
+      "search-service-db"
+    ]
   },
   "root_cause": {
-    "service": "service-mesh",
-    "description": "The scheduled TLS certificate rotation at 21:00 pushed an invalid intermediate CA certificate bundle (cert-bundle-v2026Q1) to all 47 Istio/Envoy sidecars. The intermediate CA CN=mesh-ca-intermediate-v2 was signed with the wrong key and cannot be chained to the trusted root CA. Every service using mTLS for internal communication immediately began rejecting connections. Services NOT on the mesh (notification-service, cdn, data-pipeline) continued operating normally. Red herrings: the CDN cache purge (coincidental timing, elevated external latency only, no errors) and the data-pipeline batch job (scheduled nightly ETL, high CPU is normal, zero error rate, no mesh dependency).",
-    "keywords": ["service-mesh", "certificate", "TLS", "mTLS", "intermediate CA", "cert-bundle-v2026Q1", "handshake", "CERTIFICATE_VERIFY_FAILED", "Envoy", "Istio", "rotation", "invalid"]
+    "service": "auth-service",
+    "description": "DB connection pool exhaustion on auth-service caused by connection leak in 2.3.0 deployment",
+    "keywords": [
+      "connection pool",
+      "database",
+      "db",
+      "exhausted",
+      "leak",
+      "connection"
+    ]
   },
   "valid_remediations": [
-    {"action": "rollback_deploy", "service": "service-mesh"},
-    {"action": "restart_service", "service": "service-mesh"}
+    {
+      "action": "restart_service",
+      "service": "auth-service"
+    },
+    {
+      "action": "rollback_deploy",
+      "service": "auth-service"
+    }
   ],
   "expected_diagnostics": [
-    {"action_type": "query_logs", "params": {"service": "service-mesh"}},
-    {"action_type": "query_logs", "params": {"service": "order-service"}},
-    {"action_type": "check_metrics", "params": {"service": "service-mesh"}},
-    {"action_type": "view_dependencies", "params": {"service_name": "api-gateway"}},
-    {"action_type": "view_dependencies", "params": {"service_name": "payment-api"}},
-    {"action_type": "query_logs", "params": {"service": "payment-api"}}
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "auth-service"
+      }
+    },
+    {
+      "action_type": "check_metrics",
+      "params": {
+        "service": "auth-service"
+      }
+    },
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "cache-layer"
+      }
+    }
   ],
   "grading_rubric": {
-    "triage_weight": 0.05,
-    "diagnostic_weight": 0.25,
-    "root_cause_weight": 0.35,
-    "remediation_weight": 0.20,
-    "efficiency_weight": 0.10,
-    "documentation_weight": 0.05
+    "triage_weight": 0.04,
+    "diagnostic_weight": 0.22,
+    "root_cause_weight": 0.36,
+    "remediation_weight": 0.2,
+    "efficiency_weight": 0.07,
+    "documentation_weight": 0.11
   }
 }

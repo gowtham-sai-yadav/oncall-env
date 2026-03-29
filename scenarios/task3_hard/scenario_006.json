@@ -1,0 +1,371 @@
+{
+  "incident_id": "INC-20260326-206",
+  "difficulty": "hard",
+  "description": "SEV1 incident: CPU Spin Loop affecting order-service. Cascading impact on internal-dns, email-service. Multiple concurrent events make diagnosis challenging.",
+  "expected_severity": "SEV1",
+  "initial_alerts": [
+    {
+      "alert_id": "alert-20601",
+      "severity": "critical",
+      "service": "order-service",
+      "message": "CPU usage at 90% - all cores saturated",
+      "timestamp": "2026-03-26T09:11:05Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-20602",
+      "severity": "critical",
+      "service": "order-service",
+      "message": "Service unresponsive - health check failures",
+      "timestamp": "2026-03-26T09:12:10Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-20603",
+      "severity": "warning",
+      "service": "internal-dns",
+      "message": "Timeout errors from order-service increasing",
+      "timestamp": "2026-03-26T09:13:15Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-20604",
+      "severity": "critical",
+      "service": "internal-dns",
+      "message": "internal-dns error rate spiking - requests failing",
+      "timestamp": "2026-03-26T09:11:33Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-20605",
+      "severity": "critical",
+      "service": "email-service",
+      "message": "email-service error rate spiking - requests failing",
+      "timestamp": "2026-03-26T09:11:03Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-20606",
+      "severity": "info",
+      "service": "payment-api",
+      "message": "Feature flag 'new-checkout-flow' enabled for 5% of users",
+      "timestamp": "2026-03-26T09:08:18Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-20607",
+      "severity": "info",
+      "service": "payment-api",
+      "message": "New dashboard version deployed - no action required",
+      "timestamp": "2026-03-26T09:00:54Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-20608",
+      "severity": "warning",
+      "service": "logging-pipeline",
+      "message": "CPU usage at 63% - approaching threshold",
+      "timestamp": "2026-03-26T09:03:41Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-20609",
+      "severity": "info",
+      "service": "cdn-proxy",
+      "message": "Model v4.2 deployment started - canary rollout in progress",
+      "timestamp": "2026-03-26T09:06:41Z",
+      "acknowledged": false,
+      "silenced": false
+    }
+  ],
+  "services": [
+    {
+      "name": "order-service",
+      "status": "degraded",
+      "latency_ms": 4412,
+      "error_rate": 46.4,
+      "cpu_percent": 65,
+      "memory_percent": 54,
+      "version": "3.2.0"
+    },
+    {
+      "name": "internal-dns",
+      "status": "degraded",
+      "latency_ms": 4604,
+      "error_rate": 60.5,
+      "cpu_percent": 64,
+      "memory_percent": 49,
+      "version": "5.0.3"
+    },
+    {
+      "name": "email-service",
+      "status": "degraded",
+      "latency_ms": 2628,
+      "error_rate": 44.2,
+      "cpu_percent": 54,
+      "memory_percent": 42,
+      "version": "4.1.0"
+    },
+    {
+      "name": "logging-pipeline",
+      "status": "healthy",
+      "latency_ms": 98,
+      "error_rate": 0.7,
+      "cpu_percent": 42,
+      "memory_percent": 18,
+      "version": "4.2.0"
+    },
+    {
+      "name": "cdn-proxy",
+      "status": "healthy",
+      "latency_ms": 63,
+      "error_rate": 1.0,
+      "cpu_percent": 27,
+      "memory_percent": 50,
+      "version": "3.1.2"
+    },
+    {
+      "name": "payment-api",
+      "status": "healthy",
+      "latency_ms": 194,
+      "error_rate": 0.8,
+      "cpu_percent": 10,
+      "memory_percent": 49,
+      "version": "4.0.1"
+    }
+  ],
+  "recent_deployments": [
+    {
+      "service": "order-service",
+      "version": "3.2.0",
+      "timestamp": "2026-03-26T08:50:00Z",
+      "deployer": "dev-team"
+    },
+    {
+      "service": "payment-api",
+      "version": "4.0.1",
+      "timestamp": "2026-03-26T08:38:00Z",
+      "deployer": "dev-team"
+    },
+    {
+      "service": "logging-pipeline",
+      "version": "4.2.0",
+      "timestamp": "2026-03-26T07:54:00Z",
+      "deployer": "dev-team"
+    }
+  ],
+  "logs": {
+    "order-service": [
+      {
+        "timestamp": "2026-03-26T09:10:00Z",
+        "service": "order-service",
+        "level": "WARN",
+        "message": "CPU usage at 97% - throttling requests"
+      },
+      {
+        "timestamp": "2026-03-26T09:11:40Z",
+        "service": "order-service",
+        "level": "ERROR",
+        "message": "Worker thread pool exhausted - all threads blocked"
+      },
+      {
+        "timestamp": "2026-03-26T09:13:20Z",
+        "service": "order-service",
+        "level": "ERROR",
+        "message": "Health check timeout after 5s - service appears hung"
+      },
+      {
+        "timestamp": "2026-03-26T09:15:00Z",
+        "service": "order-service",
+        "level": "WARN",
+        "message": "Error handler retry loop detected: 4873 retries in 10s"
+      }
+    ],
+    "internal-dns": [
+      {
+        "timestamp": "2026-03-26T09:11:00Z",
+        "service": "internal-dns",
+        "level": "ERROR",
+        "message": "order-service health check failed: timeout after 10s"
+      },
+      {
+        "timestamp": "2026-03-26T09:16:00Z",
+        "service": "internal-dns",
+        "level": "WARN",
+        "message": "Load balancer removed order-service from pool"
+      }
+    ],
+    "email-service": [
+      {
+        "timestamp": "2026-03-26T09:11:00Z",
+        "service": "email-service",
+        "level": "ERROR",
+        "message": "order-service health check failed: timeout after 10s"
+      },
+      {
+        "timestamp": "2026-03-26T09:16:00Z",
+        "service": "email-service",
+        "level": "WARN",
+        "message": "Load balancer removed order-service from pool"
+      }
+    ],
+    "payment-api": [
+      {
+        "timestamp": "2026-03-26T09:10:00Z",
+        "service": "payment-api",
+        "level": "INFO",
+        "message": "Scheduled reindex 40% complete - elevated latency expected"
+      }
+    ],
+    "logging-pipeline": [
+      {
+        "timestamp": "2026-03-26T09:10:00Z",
+        "service": "logging-pipeline",
+        "level": "WARN",
+        "message": "Slow query detected (non-critical): SELECT took 2.1s"
+      }
+    ]
+  },
+  "metrics": {
+    "order-service:cpu_percent": [
+      0.0,
+      33.8,
+      55.9,
+      70.2,
+      79.6,
+      85.7,
+      89.6,
+      92.2
+    ],
+    "order-service:latency_p99": [
+      2.0,
+      4.0,
+      8.3,
+      16.9,
+      34.7,
+      71.1
+    ],
+    "internal-dns:error_rate": [
+      1.6,
+      1.6,
+      1.6,
+      98.3,
+      98.3,
+      98.3
+    ],
+    "email-service:error_rate": [
+      0.8,
+      0.8,
+      0.8,
+      0.8,
+      78.6,
+      78.6,
+      78.6,
+      78.6
+    ],
+    "logging-pipeline:cpu": [
+      40.5,
+      36.1,
+      40.6,
+      39.8,
+      33.9,
+      34.4
+    ],
+    "cdn-proxy:cpu": [
+      39.1,
+      38.9,
+      34.8,
+      29.8,
+      33.2,
+      27.1
+    ]
+  },
+  "dependencies": {
+    "order-service": [
+      "order-service-db",
+      "order-service-store"
+    ],
+    "internal-dns": [
+      "order-service",
+      "internal-dns-db"
+    ],
+    "email-service": [
+      "order-service",
+      "email-service-db"
+    ],
+    "logging-pipeline": [
+      "logging-pipeline-db"
+    ],
+    "cdn-proxy": [
+      "cdn-proxy-db"
+    ],
+    "payment-api": [
+      "payment-api-db"
+    ]
+  },
+  "root_cause": {
+    "service": "order-service",
+    "description": "CPU spin loop in order-service 3.2.0 caused by infinite retry loop in error handler",
+    "keywords": [
+      "cpu",
+      "spin",
+      "loop",
+      "100%",
+      "retry",
+      "infinite",
+      "hang"
+    ]
+  },
+  "valid_remediations": [
+    {
+      "action": "restart_service",
+      "service": "order-service"
+    },
+    {
+      "action": "rollback_deploy",
+      "service": "order-service"
+    }
+  ],
+  "expected_diagnostics": [
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "order-service"
+      }
+    },
+    {
+      "action_type": "check_metrics",
+      "params": {
+        "service": "order-service"
+      }
+    },
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "internal-dns"
+      }
+    },
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "email-service"
+      }
+    }
+  ],
+  "grading_rubric": {
+    "triage_weight": 0.11,
+    "diagnostic_weight": 0.27,
+    "root_cause_weight": 0.27,
+    "remediation_weight": 0.18,
+    "efficiency_weight": 0.11,
+    "documentation_weight": 0.06
+  }
+}

@@ -1,0 +1,259 @@
+{
+  "incident_id": "INC-20260326-011",
+  "difficulty": "easy",
+  "description": "SEV3 incident: Bad Config Rollout affecting billing-service. Cascading impact on logging-pipeline.",
+  "expected_severity": "SEV3",
+  "initial_alerts": [
+    {
+      "alert_id": "alert-1101",
+      "severity": "critical",
+      "service": "billing-service",
+      "message": "Error rate at 37.1% after config deployment",
+      "timestamp": "2026-03-26T11:01:05Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-1102",
+      "severity": "warning",
+      "service": "billing-service",
+      "message": "Config refresh failed - serving with invalid config",
+      "timestamp": "2026-03-26T11:02:10Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-1103",
+      "severity": "warning",
+      "service": "logging-pipeline",
+      "message": "Upstream dependency billing-service returning errors",
+      "timestamp": "2026-03-26T11:03:15Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-1104",
+      "severity": "critical",
+      "service": "logging-pipeline",
+      "message": "logging-pipeline error rate spiking - requests failing",
+      "timestamp": "2026-03-26T11:01:54Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-1105",
+      "severity": "warning",
+      "service": "order-service",
+      "message": "CPU usage at 66% - approaching threshold",
+      "timestamp": "2026-03-26T11:56:51Z",
+      "acknowledged": false,
+      "silenced": false
+    }
+  ],
+  "services": [
+    {
+      "name": "billing-service",
+      "status": "degraded",
+      "latency_ms": 1392,
+      "error_rate": 29.3,
+      "cpu_percent": 43,
+      "memory_percent": 71,
+      "version": "2.0.0"
+    },
+    {
+      "name": "logging-pipeline",
+      "status": "down",
+      "latency_ms": 0,
+      "error_rate": 72.4,
+      "cpu_percent": 79,
+      "memory_percent": 69,
+      "version": "1.1.0"
+    },
+    {
+      "name": "order-service",
+      "status": "healthy",
+      "latency_ms": 70,
+      "error_rate": 0.4,
+      "cpu_percent": 33,
+      "memory_percent": 35,
+      "version": "1.1.0"
+    },
+    {
+      "name": "metrics-collector",
+      "status": "healthy",
+      "latency_ms": 157,
+      "error_rate": 0.1,
+      "cpu_percent": 7,
+      "memory_percent": 23,
+      "version": "2.4.1"
+    },
+    {
+      "name": "cache-layer",
+      "status": "healthy",
+      "latency_ms": 40,
+      "error_rate": 0.2,
+      "cpu_percent": 24,
+      "memory_percent": 27,
+      "version": "2.3.0"
+    }
+  ],
+  "recent_deployments": [
+    {
+      "service": "billing-service",
+      "version": "2.0.0",
+      "timestamp": "2026-03-26T10:08:00Z",
+      "deployer": "platform-team"
+    }
+  ],
+  "logs": {
+    "billing-service": [
+      {
+        "timestamp": "2026-03-26T11:00:00Z",
+        "service": "billing-service",
+        "level": "ERROR",
+        "message": "Database connection failed: invalid connection string in config v2.0.0"
+      },
+      {
+        "timestamp": "2026-03-26T11:02:00Z",
+        "service": "billing-service",
+        "level": "ERROR",
+        "message": "Config validation skipped in deployment pipeline"
+      },
+      {
+        "timestamp": "2026-03-26T11:04:00Z",
+        "service": "billing-service",
+        "level": "FATAL",
+        "message": "Cannot initialize connection pool: malformed DSN"
+      },
+      {
+        "timestamp": "2026-03-26T11:06:00Z",
+        "service": "billing-service",
+        "level": "WARN",
+        "message": "Rolling back to cached config from previous version"
+      }
+    ],
+    "logging-pipeline": [
+      {
+        "timestamp": "2026-03-26T11:01:00Z",
+        "service": "logging-pipeline",
+        "level": "ERROR",
+        "message": "billing-service returning 500 for all requests"
+      },
+      {
+        "timestamp": "2026-03-26T11:06:00Z",
+        "service": "logging-pipeline",
+        "level": "WARN",
+        "message": "Dependency billing-service health check failing"
+      }
+    ]
+  },
+  "metrics": {
+    "billing-service:error_rate": [
+      1.2,
+      1.2,
+      1.2,
+      1.2,
+      84.1,
+      84.1,
+      84.1,
+      84.1
+    ],
+    "billing-service:db_connections": [
+      0.8,
+      0.8,
+      0.8,
+      61.5,
+      61.5,
+      61.5
+    ],
+    "logging-pipeline:error_rate": [
+      0.7,
+      0.7,
+      0.7,
+      73.9,
+      73.9,
+      73.9,
+      73.9
+    ],
+    "order-service:cpu": [
+      41.6,
+      35.7,
+      42.6,
+      38.9,
+      41.0,
+      38.0
+    ],
+    "metrics-collector:cpu": [
+      44.7,
+      34.0,
+      40.4,
+      32.3,
+      39.2,
+      38.9
+    ]
+  },
+  "dependencies": {
+    "billing-service": [
+      "billing-service-db",
+      "billing-service-store"
+    ],
+    "logging-pipeline": [
+      "billing-service",
+      "logging-pipeline-db"
+    ],
+    "order-service": [
+      "billing-service",
+      "order-service-db"
+    ],
+    "metrics-collector": [
+      "metrics-collector-db"
+    ],
+    "cache-layer": [
+      "cache-layer-db"
+    ]
+  },
+  "root_cause": {
+    "service": "billing-service",
+    "description": "Bad configuration rollout to billing-service in 2.0.0 - invalid database connection string causing all queries to fail",
+    "keywords": [
+      "config",
+      "configuration",
+      "rollout",
+      "invalid",
+      "connection string",
+      "misconfigured"
+    ]
+  },
+  "valid_remediations": [
+    {
+      "action": "rollback_deploy",
+      "service": "billing-service"
+    },
+    {
+      "action": "update_config",
+      "service": "billing-service"
+    }
+  ],
+  "expected_diagnostics": [
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "billing-service"
+      }
+    },
+    {
+      "action_type": "check_metrics",
+      "params": {
+        "service": "billing-service"
+      }
+    }
+  ],
+  "grading_rubric": {
+    "triage_weight": 0.27,
+    "diagnostic_weight": 0.23,
+    "root_cause_weight": 0.16,
+    "remediation_weight": 0.16,
+    "efficiency_weight": 0.11,
+    "documentation_weight": 0.07
+  }
+}

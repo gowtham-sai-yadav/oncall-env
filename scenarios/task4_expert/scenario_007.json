@@ -1,0 +1,407 @@
+{
+  "incident_id": "INC-20260326-307",
+  "difficulty": "expert",
+  "description": "SEV1 incident: GC Pause Storm affecting payment-api. Cascading impact on api-gateway, search-service, message-queue. Multiple concurrent events make diagnosis challenging. Red herrings present - focus on evidence-based investigation.",
+  "expected_severity": "SEV1",
+  "initial_alerts": [
+    {
+      "alert_id": "alert-30701",
+      "severity": "critical",
+      "service": "payment-api",
+      "message": "P99 latency spiked to 3470ms - GC pauses detected",
+      "timestamp": "2026-03-26T15:28:05Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-30702",
+      "severity": "warning",
+      "service": "payment-api",
+      "message": "GC pause time exceeding 2s per cycle",
+      "timestamp": "2026-03-26T15:29:10Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-30703",
+      "severity": "warning",
+      "service": "api-gateway",
+      "message": "Intermittent timeouts from payment-api",
+      "timestamp": "2026-03-26T15:30:15Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-30704",
+      "severity": "critical",
+      "service": "api-gateway",
+      "message": "api-gateway error rate spiking - requests failing",
+      "timestamp": "2026-03-26T15:28:48Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-30705",
+      "severity": "critical",
+      "service": "search-service",
+      "message": "search-service error rate spiking - requests failing",
+      "timestamp": "2026-03-26T15:28:18Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-30706",
+      "severity": "critical",
+      "service": "message-queue",
+      "message": "message-queue error rate spiking - requests failing",
+      "timestamp": "2026-03-26T15:28:10Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-30707",
+      "severity": "info",
+      "service": "cache-layer",
+      "message": "Scheduled maintenance window starting in 2 hours",
+      "timestamp": "2026-03-26T15:21:17Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-30708",
+      "severity": "info",
+      "service": "cache-layer",
+      "message": "Feature flag 'new-checkout-flow' enabled for 5% of users",
+      "timestamp": "2026-03-26T15:26:16Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-30709",
+      "severity": "info",
+      "service": "user-service",
+      "message": "New dashboard version deployed - no action required",
+      "timestamp": "2026-03-26T15:24:23Z",
+      "acknowledged": false,
+      "silenced": false
+    }
+  ],
+  "services": [
+    {
+      "name": "payment-api",
+      "status": "degraded",
+      "latency_ms": 7704,
+      "error_rate": 15.8,
+      "cpu_percent": 50,
+      "memory_percent": 46,
+      "version": "2.4.1"
+    },
+    {
+      "name": "api-gateway",
+      "status": "degraded",
+      "latency_ms": 4198,
+      "error_rate": 43.9,
+      "cpu_percent": 53,
+      "memory_percent": 58,
+      "version": "3.2.0"
+    },
+    {
+      "name": "search-service",
+      "status": "degraded",
+      "latency_ms": 4847,
+      "error_rate": 22.8,
+      "cpu_percent": 37,
+      "memory_percent": 31,
+      "version": "2.4.1"
+    },
+    {
+      "name": "message-queue",
+      "status": "degraded",
+      "latency_ms": 4577,
+      "error_rate": 20.1,
+      "cpu_percent": 52,
+      "memory_percent": 35,
+      "version": "1.5.0"
+    },
+    {
+      "name": "user-service",
+      "status": "healthy",
+      "latency_ms": 40,
+      "error_rate": 0.2,
+      "cpu_percent": 25,
+      "memory_percent": 49,
+      "version": "2.4.1"
+    },
+    {
+      "name": "service-mesh",
+      "status": "healthy",
+      "latency_ms": 45,
+      "error_rate": 0.7,
+      "cpu_percent": 23,
+      "memory_percent": 45,
+      "version": "2.3.0"
+    },
+    {
+      "name": "cache-layer",
+      "status": "healthy",
+      "latency_ms": 152,
+      "error_rate": 1.0,
+      "cpu_percent": 28,
+      "memory_percent": 54,
+      "version": "4.2.0"
+    }
+  ],
+  "recent_deployments": [
+    {
+      "service": "payment-api",
+      "version": "2.4.1",
+      "timestamp": "2026-03-26T14:52:00Z",
+      "deployer": "infra-team"
+    },
+    {
+      "service": "service-mesh",
+      "version": "2.3.0",
+      "timestamp": "2026-03-26T12:31:00Z",
+      "deployer": "search-team"
+    },
+    {
+      "service": "cache-layer",
+      "version": "4.2.0",
+      "timestamp": "2026-03-26T13:22:00Z",
+      "deployer": "search-team"
+    }
+  ],
+  "logs": {
+    "payment-api": [
+      {
+        "timestamp": "2026-03-26T15:27:00Z",
+        "service": "payment-api",
+        "level": "WARN",
+        "message": "GC pause duration: 3281ms (threshold: 500ms)"
+      },
+      {
+        "timestamp": "2026-03-26T15:29:00Z",
+        "service": "payment-api",
+        "level": "ERROR",
+        "message": "Stop-the-world GC: 552ms - request processing halted"
+      },
+      {
+        "timestamp": "2026-03-26T15:31:00Z",
+        "service": "payment-api",
+        "level": "WARN",
+        "message": "Heap occupancy at 87% - frequent full GC cycles"
+      },
+      {
+        "timestamp": "2026-03-26T15:33:00Z",
+        "service": "payment-api",
+        "level": "INFO",
+        "message": "GC tuning: concurrent mark phase taking 1599ms"
+      }
+    ],
+    "api-gateway": [
+      {
+        "timestamp": "2026-03-26T15:28:00Z",
+        "service": "api-gateway",
+        "level": "WARN",
+        "message": "Intermittent timeout from payment-api: latency spike detected"
+      },
+      {
+        "timestamp": "2026-03-26T15:33:00Z",
+        "service": "api-gateway",
+        "level": "ERROR",
+        "message": "Request to payment-api timed out during GC pause"
+      }
+    ],
+    "search-service": [
+      {
+        "timestamp": "2026-03-26T15:28:00Z",
+        "service": "search-service",
+        "level": "WARN",
+        "message": "Intermittent timeout from payment-api: latency spike detected"
+      },
+      {
+        "timestamp": "2026-03-26T15:33:00Z",
+        "service": "search-service",
+        "level": "ERROR",
+        "message": "Request to payment-api timed out during GC pause"
+      }
+    ],
+    "message-queue": [
+      {
+        "timestamp": "2026-03-26T15:28:00Z",
+        "service": "message-queue",
+        "level": "WARN",
+        "message": "Intermittent timeout from payment-api: latency spike detected"
+      },
+      {
+        "timestamp": "2026-03-26T15:33:00Z",
+        "service": "message-queue",
+        "level": "ERROR",
+        "message": "Request to payment-api timed out during GC pause"
+      }
+    ],
+    "cache-layer": [
+      {
+        "timestamp": "2026-03-26T15:27:00Z",
+        "service": "cache-layer",
+        "level": "INFO",
+        "message": "Batch job completed: processed 31678 records"
+      }
+    ],
+    "service-mesh": [
+      {
+        "timestamp": "2026-03-26T15:27:00Z",
+        "service": "service-mesh",
+        "level": "WARN",
+        "message": "Slow query detected (non-critical): SELECT took 2.1s"
+      }
+    ]
+  },
+  "metrics": {
+    "payment-api:gc_pause_ms": [
+      0.5,
+      1.2,
+      2.9,
+      6.7,
+      15.8,
+      37.0,
+      86.8
+    ],
+    "payment-api:latency_p99": [
+      0.3,
+      1.4,
+      5.6,
+      22.5,
+      90.9
+    ],
+    "payment-api:memory_percent": [
+      0.0,
+      38.1,
+      61.2,
+      75.3,
+      83.8,
+      88.9,
+      92.0
+    ],
+    "api-gateway:error_rate": [
+      1.6,
+      1.6,
+      92.1,
+      92.1,
+      92.1
+    ],
+    "search-service:error_rate": [
+      1.7,
+      1.7,
+      93.9,
+      93.9,
+      93.9
+    ],
+    "message-queue:error_rate": [
+      1.8,
+      1.8,
+      1.8,
+      66.7,
+      66.7,
+      66.7,
+      66.7
+    ],
+    "user-service:cpu": [
+      28.3,
+      24.2,
+      30.8,
+      35.4,
+      39.0,
+      26.5
+    ],
+    "service-mesh:cpu": [
+      38.3,
+      28.5,
+      34.9,
+      43.5,
+      31.6,
+      25.0
+    ]
+  },
+  "dependencies": {
+    "payment-api": [
+      "payment-api-db",
+      "payment-api-store"
+    ],
+    "api-gateway": [
+      "payment-api",
+      "api-gateway-db"
+    ],
+    "search-service": [
+      "payment-api",
+      "search-service-db"
+    ],
+    "message-queue": [
+      "payment-api",
+      "message-queue-db"
+    ],
+    "user-service": [
+      "user-service-db"
+    ],
+    "service-mesh": [
+      "service-mesh-db"
+    ],
+    "cache-layer": [
+      "cache-layer-db"
+    ]
+  },
+  "root_cause": {
+    "service": "payment-api",
+    "description": "GC pause storm in payment-api 2.4.1 due to excessive object allocation in batch processor",
+    "keywords": [
+      "gc",
+      "garbage collection",
+      "pause",
+      "stop-the-world",
+      "allocation",
+      "heap"
+    ]
+  },
+  "valid_remediations": [
+    {
+      "action": "restart_service",
+      "service": "payment-api"
+    },
+    {
+      "action": "rollback_deploy",
+      "service": "payment-api"
+    },
+    {
+      "action": "scale_service",
+      "service": "payment-api"
+    }
+  ],
+  "expected_diagnostics": [
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "payment-api"
+      }
+    },
+    {
+      "action_type": "check_metrics",
+      "params": {
+        "service": "payment-api"
+      }
+    },
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "api-gateway"
+      }
+    }
+  ],
+  "grading_rubric": {
+    "triage_weight": 0.06,
+    "diagnostic_weight": 0.2,
+    "root_cause_weight": 0.33,
+    "remediation_weight": 0.23,
+    "efficiency_weight": 0.11,
+    "documentation_weight": 0.07
+  }
+}

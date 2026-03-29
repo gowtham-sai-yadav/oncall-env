@@ -1,107 +1,303 @@
 {
-  "incident_id": "INC-20260326-004",
+  "incident_id": "INC-20260326-102",
   "difficulty": "medium",
-  "description": "Users reporting intermittent login failures and slow page loads. Multiple services show elevated error rates but no single service is fully down. Diagnose the root cause through careful investigation.",
+  "description": "SEV2 incident: Connection Pool Exhaustion affecting search-service. Cascading impact on order-service.",
   "expected_severity": "SEV2",
   "initial_alerts": [
     {
-      "alert_id": "alert-301",
+      "alert_id": "alert-10201",
       "severity": "critical",
-      "service": "auth-service",
-      "message": "Authentication failure rate at 18%",
-      "timestamp": "2026-03-26T16:00:00Z",
+      "service": "search-service",
+      "message": "Error rate exceeded 5% threshold - currently at 32.0%",
+      "timestamp": "2026-03-26T09:11:05Z",
       "acknowledged": false,
       "silenced": false
     },
     {
-      "alert_id": "alert-302",
+      "alert_id": "alert-10202",
+      "severity": "critical",
+      "service": "search-service",
+      "message": "P99 latency > 2000ms (currently 1673ms)",
+      "timestamp": "2026-03-26T09:12:10Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-10203",
       "severity": "warning",
-      "service": "session-store",
-      "message": "Redis cluster replication lag > 500ms",
-      "timestamp": "2026-03-26T16:00:15Z",
+      "service": "order-service",
+      "message": "Increased 4xx responses from downstream dependency",
+      "timestamp": "2026-03-26T09:13:15Z",
       "acknowledged": false,
       "silenced": false
     },
     {
-      "alert_id": "alert-303",
-      "severity": "warning",
-      "service": "api-gateway",
-      "message": "Increased 401 responses -- 15% of requests",
-      "timestamp": "2026-03-26T16:00:30Z",
+      "alert_id": "alert-10204",
+      "severity": "critical",
+      "service": "order-service",
+      "message": "order-service error rate spiking - requests failing",
+      "timestamp": "2026-03-26T09:11:06Z",
       "acknowledged": false,
       "silenced": false
     },
     {
-      "alert_id": "alert-304",
+      "alert_id": "alert-10205",
       "severity": "info",
-      "service": "cdn",
-      "message": "Normal operation -- cache hit rate 97%",
-      "timestamp": "2026-03-26T15:55:00Z",
+      "service": "service-mesh",
+      "message": "Feature flag 'new-checkout-flow' enabled for 5% of users",
+      "timestamp": "2026-03-26T09:01:20Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-10206",
+      "severity": "info",
+      "service": "service-mesh",
+      "message": "Model v4.2 deployment started - canary rollout in progress",
+      "timestamp": "2026-03-26T09:02:48Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-10207",
+      "severity": "info",
+      "service": "service-mesh",
+      "message": "Scheduled maintenance window starting in 2 hours",
+      "timestamp": "2026-03-26T09:01:44Z",
       "acknowledged": false,
       "silenced": false
     }
   ],
   "services": [
-    {"name": "auth-service", "status": "degraded", "latency_ms": 800, "error_rate": 18.0, "cpu_percent": 40, "memory_percent": 55, "version": "3.0.2"},
-    {"name": "session-store", "status": "degraded", "latency_ms": 600, "error_rate": 12.0, "cpu_percent": 85, "memory_percent": 90, "version": "6.2.7"},
-    {"name": "api-gateway", "status": "degraded", "latency_ms": 400, "error_rate": 15.0, "cpu_percent": 50, "memory_percent": 45, "version": "5.0.3"},
-    {"name": "cdn", "status": "healthy", "latency_ms": 5, "error_rate": 0.0, "cpu_percent": 10, "memory_percent": 20, "version": "1.0.0"},
-    {"name": "user-service", "status": "healthy", "latency_ms": 80, "error_rate": 0.5, "cpu_percent": 30, "memory_percent": 40, "version": "2.2.0"}
+    {
+      "name": "search-service",
+      "status": "degraded",
+      "latency_ms": 3927,
+      "error_rate": 66.8,
+      "cpu_percent": 96,
+      "memory_percent": 80,
+      "version": "2.3.0"
+    },
+    {
+      "name": "order-service",
+      "status": "degraded",
+      "latency_ms": 3334,
+      "error_rate": 62.2,
+      "cpu_percent": 70,
+      "memory_percent": 69,
+      "version": "3.0.0"
+    },
+    {
+      "name": "metrics-collector",
+      "status": "healthy",
+      "latency_ms": 31,
+      "error_rate": 0.6,
+      "cpu_percent": 47,
+      "memory_percent": 40,
+      "version": "1.1.0"
+    },
+    {
+      "name": "internal-dns",
+      "status": "healthy",
+      "latency_ms": 63,
+      "error_rate": 0.5,
+      "cpu_percent": 38,
+      "memory_percent": 54,
+      "version": "4.2.0"
+    },
+    {
+      "name": "inventory-service",
+      "status": "healthy",
+      "latency_ms": 129,
+      "error_rate": 0.1,
+      "cpu_percent": 39,
+      "memory_percent": 30,
+      "version": "1.0.0"
+    },
+    {
+      "name": "service-mesh",
+      "status": "healthy",
+      "latency_ms": 177,
+      "error_rate": 0.4,
+      "cpu_percent": 30,
+      "memory_percent": 50,
+      "version": "1.5.0"
+    }
   ],
   "recent_deployments": [
-    {"service": "auth-service", "version": "3.0.2", "timestamp": "2026-03-26T15:30:00Z", "deployer": "auth-team"}
+    {
+      "service": "search-service",
+      "version": "2.3.0",
+      "timestamp": "2026-03-26T08:30:00Z",
+      "deployer": "ops-team"
+    }
   ],
   "logs": {
-    "session-store": [
-      {"timestamp": "2026-03-26T15:45:00Z", "service": "session-store", "level": "WARN", "message": "Memory usage at 88% -- eviction policy active"},
-      {"timestamp": "2026-03-26T15:50:00Z", "service": "session-store", "level": "ERROR", "message": "Maxmemory reached -- rejecting new writes with OOM error"},
-      {"timestamp": "2026-03-26T15:55:00Z", "service": "session-store", "level": "WARN", "message": "Key eviction rate: 500 keys/sec -- sessions being dropped"},
-      {"timestamp": "2026-03-26T16:00:00Z", "service": "session-store", "level": "ERROR", "message": "Replication lag to replica-2: 800ms -- writes backing up"}
+    "search-service": [
+      {
+        "timestamp": "2026-03-26T09:10:00Z",
+        "service": "search-service",
+        "level": "ERROR",
+        "message": "Connection pool exhausted - cannot acquire connection to search-service-db"
+      },
+      {
+        "timestamp": "2026-03-26T09:12:30Z",
+        "service": "search-service",
+        "level": "ERROR",
+        "message": "Timeout waiting for DB connection after 5000ms"
+      },
+      {
+        "timestamp": "2026-03-26T09:15:00Z",
+        "service": "search-service",
+        "level": "WARN",
+        "message": "Circuit breaker OPEN for search-service-db connections"
+      },
+      {
+        "timestamp": "2026-03-26T09:17:30Z",
+        "service": "search-service",
+        "level": "ERROR",
+        "message": "Failed to process request txn-33889: DB connection unavailable"
+      }
     ],
-    "auth-service": [
-      {"timestamp": "2026-03-26T16:00:05Z", "service": "auth-service", "level": "ERROR", "message": "Session token validation failed: key not found in session-store"},
-      {"timestamp": "2026-03-26T16:00:10Z", "service": "auth-service", "level": "ERROR", "message": "User usr-12345 session evicted -- forcing re-authentication"},
-      {"timestamp": "2026-03-26T16:00:15Z", "service": "auth-service", "level": "WARN", "message": "Session cache miss rate: 18% (normal: <1%)"}
-    ],
-    "api-gateway": [
-      {"timestamp": "2026-03-26T16:00:05Z", "service": "api-gateway", "level": "WARN", "message": "401 Unauthorized responses increasing -- auth-service rejecting tokens"},
-      {"timestamp": "2026-03-26T16:00:20Z", "service": "api-gateway", "level": "INFO", "message": "Routing auth failures to login page for re-authentication"}
+    "order-service": [
+      {
+        "timestamp": "2026-03-26T09:11:00Z",
+        "service": "order-service",
+        "level": "ERROR",
+        "message": "search-service returned 503 for request req-35115"
+      },
+      {
+        "timestamp": "2026-03-26T09:16:00Z",
+        "service": "order-service",
+        "level": "ERROR",
+        "message": "Failed to complete operation: upstream search-service unavailable"
+      }
     ]
   },
   "metrics": {
-    "session-store:memory_percent": [60, 70, 78, 85, 88, 90, 92],
-    "session-store:eviction_rate": [0, 0, 10, 100, 500, 800],
-    "session-store:connections": [200, 250, 300, 350, 380],
-    "auth-service:error_rate": [0.2, 0.5, 5.0, 12.0, 18.0],
-    "auth-service:session_miss_rate": [0.5, 1.0, 5.0, 12.0, 18.0]
+    "search-service:error_rate": [
+      1.0,
+      3.1,
+      9.5,
+      28.8,
+      87.9
+    ],
+    "search-service:latency_p99": [
+      1.8,
+      2.9,
+      4.6,
+      7.3,
+      11.7,
+      18.6,
+      29.7,
+      47.3
+    ],
+    "search-service:db_connections": [
+      0.0,
+      34.1,
+      54.7,
+      67.3,
+      74.9,
+      79.5,
+      82.3
+    ],
+    "order-service:error_rate": [
+      1.9,
+      3.1,
+      5.0,
+      8.2,
+      13.5,
+      22.1,
+      36.3
+    ],
+    "metrics-collector:cpu": [
+      26.8,
+      29.4,
+      31.4,
+      28.9,
+      32.2,
+      29.6
+    ],
+    "internal-dns:cpu": [
+      41.1,
+      42.5,
+      40.1,
+      36.4,
+      37.0,
+      39.7
+    ]
   },
   "dependencies": {
-    "auth-service": ["session-store", "user-db"],
-    "api-gateway": ["auth-service", "order-service", "search-api"],
-    "session-store": []
+    "search-service": [
+      "search-service-db",
+      "search-service-store"
+    ],
+    "order-service": [
+      "search-service",
+      "order-service-db"
+    ],
+    "metrics-collector": [
+      "search-service",
+      "metrics-collector-db"
+    ],
+    "internal-dns": [
+      "internal-dns-db"
+    ],
+    "inventory-service": [
+      "inventory-service-db"
+    ],
+    "service-mesh": [
+      "service-mesh-db"
+    ]
   },
   "root_cause": {
-    "service": "session-store",
-    "description": "Redis session-store hit maxmemory limit, causing aggressive key eviction. Active user sessions are being evicted, forcing re-authentication and causing cascading auth failures. Root cause: session TTL was not set in auth-service v3.0.2 deployment, causing unbounded session growth.",
-    "keywords": ["session", "redis", "memory", "eviction", "maxmemory", "TTL", "session-store"]
+    "service": "search-service",
+    "description": "DB connection pool exhaustion on search-service caused by connection leak in 2.3.0 deployment",
+    "keywords": [
+      "connection pool",
+      "database",
+      "db",
+      "exhausted",
+      "leak",
+      "connection"
+    ]
   },
   "valid_remediations": [
-    {"action": "scale_service", "service": "session-store"},
-    {"action": "update_config", "service": "session-store", "config_key": "maxmemory", "config_value": "4gb"},
-    {"action": "rollback_deploy", "service": "auth-service"}
+    {
+      "action": "restart_service",
+      "service": "search-service"
+    },
+    {
+      "action": "rollback_deploy",
+      "service": "search-service"
+    }
   ],
   "expected_diagnostics": [
-    {"action_type": "query_logs", "params": {"service": "session-store"}},
-    {"action_type": "check_metrics", "params": {"service": "session-store"}},
-    {"action_type": "query_logs", "params": {"service": "auth-service"}},
-    {"action_type": "view_dependencies", "params": {"service_name": "auth-service"}}
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "search-service"
+      }
+    },
+    {
+      "action_type": "check_metrics",
+      "params": {
+        "service": "search-service"
+      }
+    },
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "order-service"
+      }
+    }
   ],
   "grading_rubric": {
-    "triage_weight": 0.10,
-    "diagnostic_weight": 0.30,
-    "root_cause_weight": 0.30,
-    "remediation_weight": 0.15,
-    "efficiency_weight": 0.10,
-    "documentation_weight": 0.05
+    "triage_weight": 0.18,
+    "diagnostic_weight": 0.23,
+    "root_cause_weight": 0.23,
+    "remediation_weight": 0.18,
+    "efficiency_weight": 0.12,
+    "documentation_weight": 0.06
   }
 }

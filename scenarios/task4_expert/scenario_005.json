@@ -1,0 +1,399 @@
+{
+  "incident_id": "INC-20260326-305",
+  "difficulty": "expert",
+  "description": "SEV1 incident: Memory Leak (OOM) affecting auth-service. Cascading impact on inventory-service, analytics-service. Multiple concurrent events make diagnosis challenging. Red herrings present - focus on evidence-based investigation.",
+  "expected_severity": "SEV1",
+  "initial_alerts": [
+    {
+      "alert_id": "alert-30501",
+      "severity": "critical",
+      "service": "auth-service",
+      "message": "Memory usage at 93% - OOM kill imminent",
+      "timestamp": "2026-03-26T20:14:05Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-30502",
+      "severity": "critical",
+      "service": "auth-service",
+      "message": "Service restarts detected - 14 OOM kills in last 10 minutes",
+      "timestamp": "2026-03-26T20:15:10Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-30503",
+      "severity": "warning",
+      "service": "inventory-service",
+      "message": "Elevated error rate due to auth-service instability",
+      "timestamp": "2026-03-26T20:16:15Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-30504",
+      "severity": "critical",
+      "service": "inventory-service",
+      "message": "inventory-service error rate spiking - requests failing",
+      "timestamp": "2026-03-26T20:14:59Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-30505",
+      "severity": "critical",
+      "service": "analytics-service",
+      "message": "analytics-service error rate spiking - requests failing",
+      "timestamp": "2026-03-26T20:14:52Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-30506",
+      "severity": "warning",
+      "service": "cdn-proxy",
+      "message": "Disk usage at 72% on data volume",
+      "timestamp": "2026-03-26T20:12:03Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-30507",
+      "severity": "info",
+      "service": "search-service",
+      "message": "Automated backup completed successfully",
+      "timestamp": "2026-03-26T20:06:56Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-30508",
+      "severity": "warning",
+      "service": "service-mesh",
+      "message": "Memory usage at 68% - within normal range but trending up",
+      "timestamp": "2026-03-26T20:10:44Z",
+      "acknowledged": false,
+      "silenced": false
+    }
+  ],
+  "services": [
+    {
+      "name": "auth-service",
+      "status": "degraded",
+      "latency_ms": 4013,
+      "error_rate": 60.7,
+      "cpu_percent": 71,
+      "memory_percent": 70,
+      "version": "3.1.2"
+    },
+    {
+      "name": "inventory-service",
+      "status": "degraded",
+      "latency_ms": 3479,
+      "error_rate": 14.0,
+      "cpu_percent": 75,
+      "memory_percent": 35,
+      "version": "1.1.0"
+    },
+    {
+      "name": "analytics-service",
+      "status": "degraded",
+      "latency_ms": 1160,
+      "error_rate": 43.1,
+      "cpu_percent": 22,
+      "memory_percent": 56,
+      "version": "1.1.0"
+    },
+    {
+      "name": "config-server",
+      "status": "healthy",
+      "latency_ms": 193,
+      "error_rate": 0.4,
+      "cpu_percent": 36,
+      "memory_percent": 22,
+      "version": "2.3.0"
+    },
+    {
+      "name": "service-mesh",
+      "status": "healthy",
+      "latency_ms": 63,
+      "error_rate": 0.2,
+      "cpu_percent": 32,
+      "memory_percent": 23,
+      "version": "3.0.0"
+    },
+    {
+      "name": "cdn-proxy",
+      "status": "healthy",
+      "latency_ms": 24,
+      "error_rate": 0.9,
+      "cpu_percent": 31,
+      "memory_percent": 49,
+      "version": "2.1.1"
+    },
+    {
+      "name": "search-service",
+      "status": "healthy",
+      "latency_ms": 59,
+      "error_rate": 0.9,
+      "cpu_percent": 38,
+      "memory_percent": 49,
+      "version": "2.3.0"
+    },
+    {
+      "name": "billing-service",
+      "status": "healthy",
+      "latency_ms": 37,
+      "error_rate": 0.8,
+      "cpu_percent": 21,
+      "memory_percent": 21,
+      "version": "4.2.0"
+    }
+  ],
+  "recent_deployments": [
+    {
+      "service": "auth-service",
+      "version": "3.1.2",
+      "timestamp": "2026-03-26T19:27:00Z",
+      "deployer": "ci-bot"
+    },
+    {
+      "service": "service-mesh",
+      "version": "3.0.0",
+      "timestamp": "2026-03-26T18:16:00Z",
+      "deployer": "dev-team"
+    },
+    {
+      "service": "search-service",
+      "version": "2.3.0",
+      "timestamp": "2026-03-26T17:11:00Z",
+      "deployer": "ops-team"
+    }
+  ],
+  "logs": {
+    "auth-service": [
+      {
+        "timestamp": "2026-03-26T20:13:00Z",
+        "service": "auth-service",
+        "level": "WARN",
+        "message": "Heap usage at 96% - garbage collection ineffective"
+      },
+      {
+        "timestamp": "2026-03-26T20:14:40Z",
+        "service": "auth-service",
+        "level": "ERROR",
+        "message": "Out of memory: process killed by OOM killer (RSS: 7077MB)"
+      },
+      {
+        "timestamp": "2026-03-26T20:16:20Z",
+        "service": "auth-service",
+        "level": "INFO",
+        "message": "Service restarting after OOM kill - attempt 3"
+      },
+      {
+        "timestamp": "2026-03-26T20:18:00Z",
+        "service": "auth-service",
+        "level": "WARN",
+        "message": "Request cache size growing unbounded: 389863 entries"
+      },
+      {
+        "timestamp": "2026-03-26T20:19:40Z",
+        "service": "auth-service",
+        "level": "ERROR",
+        "message": "Failed to allocate memory for request processing"
+      }
+    ],
+    "inventory-service": [
+      {
+        "timestamp": "2026-03-26T20:14:00Z",
+        "service": "inventory-service",
+        "level": "ERROR",
+        "message": "Connection refused from auth-service: service restarting"
+      },
+      {
+        "timestamp": "2026-03-26T20:19:00Z",
+        "service": "inventory-service",
+        "level": "WARN",
+        "message": "Retrying request to auth-service after connection failure"
+      }
+    ],
+    "analytics-service": [
+      {
+        "timestamp": "2026-03-26T20:14:00Z",
+        "service": "analytics-service",
+        "level": "ERROR",
+        "message": "Connection refused from auth-service: service restarting"
+      },
+      {
+        "timestamp": "2026-03-26T20:19:00Z",
+        "service": "analytics-service",
+        "level": "WARN",
+        "message": "Retrying request to auth-service after connection failure"
+      }
+    ],
+    "billing-service": [
+      {
+        "timestamp": "2026-03-26T20:13:00Z",
+        "service": "billing-service",
+        "level": "INFO",
+        "message": "Model serving normally - no dependency issues"
+      }
+    ],
+    "search-service": [
+      {
+        "timestamp": "2026-03-26T20:13:00Z",
+        "service": "search-service",
+        "level": "INFO",
+        "message": "Healthy - serving requests normally"
+      }
+    ]
+  },
+  "metrics": {
+    "auth-service:memory_percent": [
+      0.0,
+      39.3,
+      63.2,
+      77.6,
+      86.4,
+      91.7,
+      95.0
+    ],
+    "auth-service:error_rate": [
+      0.9,
+      0.9,
+      0.9,
+      0.9,
+      67.0,
+      67.0,
+      67.0,
+      67.0
+    ],
+    "auth-service:restarts": [
+      1.2,
+      1.2,
+      52.5,
+      52.5,
+      52.5
+    ],
+    "inventory-service:error_rate": [
+      1.3,
+      1.3,
+      1.3,
+      41.3,
+      41.3,
+      41.3
+    ],
+    "analytics-service:error_rate": [
+      1.5,
+      1.5,
+      1.5,
+      45.5,
+      45.5,
+      45.5
+    ],
+    "config-server:cpu": [
+      48.1,
+      52.0,
+      45.0,
+      46.4,
+      43.4,
+      44.7
+    ],
+    "service-mesh:cpu": [
+      15.6,
+      18.4,
+      29.3,
+      17.6,
+      19.2,
+      19.0
+    ]
+  },
+  "dependencies": {
+    "auth-service": [
+      "auth-service-db",
+      "auth-service-store"
+    ],
+    "inventory-service": [
+      "auth-service",
+      "inventory-service-db"
+    ],
+    "analytics-service": [
+      "auth-service",
+      "analytics-service-db"
+    ],
+    "config-server": [
+      "auth-service",
+      "config-server-db"
+    ],
+    "service-mesh": [
+      "service-mesh-db"
+    ],
+    "cdn-proxy": [
+      "cdn-proxy-db"
+    ],
+    "search-service": [
+      "search-service-db"
+    ],
+    "billing-service": [
+      "billing-service-db"
+    ]
+  },
+  "root_cause": {
+    "service": "auth-service",
+    "description": "Memory leak in auth-service 3.1.2 causing OOM kills - unbounded cache growth in request handler",
+    "keywords": [
+      "memory",
+      "leak",
+      "OOM",
+      "out of memory",
+      "heap",
+      "cache",
+      "growth"
+    ]
+  },
+  "valid_remediations": [
+    {
+      "action": "restart_service",
+      "service": "auth-service"
+    },
+    {
+      "action": "rollback_deploy",
+      "service": "auth-service"
+    }
+  ],
+  "expected_diagnostics": [
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "auth-service"
+      }
+    },
+    {
+      "action_type": "check_metrics",
+      "params": {
+        "service": "auth-service"
+      }
+    },
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "inventory-service"
+      }
+    },
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "analytics-service"
+      }
+    }
+  ],
+  "grading_rubric": {
+    "triage_weight": 0.05,
+    "diagnostic_weight": 0.18,
+    "root_cause_weight": 0.39,
+    "remediation_weight": 0.18,
+    "efficiency_weight": 0.11,
+    "documentation_weight": 0.09
+  }
+}

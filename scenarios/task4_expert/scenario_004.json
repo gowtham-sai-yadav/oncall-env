@@ -1,0 +1,433 @@
+{
+  "incident_id": "INC-20260326-304",
+  "difficulty": "expert",
+  "description": "SEV1 incident: Deadlock Storm affecting order-service. Cascading impact on cdn-proxy, cache-layer. Multiple concurrent events make diagnosis challenging. Red herrings present - focus on evidence-based investigation.",
+  "expected_severity": "SEV1",
+  "initial_alerts": [
+    {
+      "alert_id": "alert-30401",
+      "severity": "critical",
+      "service": "order-service",
+      "message": "Transaction deadlocks spiking - 492/min detected",
+      "timestamp": "2026-03-26T22:19:05Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-30402",
+      "severity": "critical",
+      "service": "order-service",
+      "message": "Request queue depth exceeding 500 - requests backing up",
+      "timestamp": "2026-03-26T22:20:10Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-30403",
+      "severity": "warning",
+      "service": "cdn-proxy",
+      "message": "Upstream order-service response time degraded",
+      "timestamp": "2026-03-26T22:21:15Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-30404",
+      "severity": "critical",
+      "service": "cdn-proxy",
+      "message": "cdn-proxy error rate spiking - requests failing",
+      "timestamp": "2026-03-26T22:19:24Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-30405",
+      "severity": "critical",
+      "service": "cache-layer",
+      "message": "cache-layer error rate spiking - requests failing",
+      "timestamp": "2026-03-26T22:19:13Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-30406",
+      "severity": "info",
+      "service": "logging-pipeline",
+      "message": "Elasticsearch reindex started - expected temporary latency increase",
+      "timestamp": "2026-03-26T22:10:28Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-30407",
+      "severity": "info",
+      "service": "internal-dns",
+      "message": "Model v4.2 deployment started - canary rollout in progress",
+      "timestamp": "2026-03-26T22:15:38Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-30408",
+      "severity": "warning",
+      "service": "search-service",
+      "message": "Log volume increased 20% - review retention policy",
+      "timestamp": "2026-03-26T22:12:11Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-30409",
+      "severity": "info",
+      "service": "logging-pipeline",
+      "message": "SSL certificate renewal scheduled for next week",
+      "timestamp": "2026-03-26T22:14:35Z",
+      "acknowledged": false,
+      "silenced": false
+    }
+  ],
+  "services": [
+    {
+      "name": "order-service",
+      "status": "degraded",
+      "latency_ms": 3058,
+      "error_rate": 40.6,
+      "cpu_percent": 51,
+      "memory_percent": 86,
+      "version": "5.0.3"
+    },
+    {
+      "name": "cdn-proxy",
+      "status": "down",
+      "latency_ms": 0,
+      "error_rate": 74.0,
+      "cpu_percent": 78,
+      "memory_percent": 52,
+      "version": "1.5.0"
+    },
+    {
+      "name": "cache-layer",
+      "status": "degraded",
+      "latency_ms": 2443,
+      "error_rate": 14.2,
+      "cpu_percent": 27,
+      "memory_percent": 36,
+      "version": "1.2.3"
+    },
+    {
+      "name": "logging-pipeline",
+      "status": "healthy",
+      "latency_ms": 51,
+      "error_rate": 0.8,
+      "cpu_percent": 42,
+      "memory_percent": 40,
+      "version": "2.4.1"
+    },
+    {
+      "name": "search-service",
+      "status": "healthy",
+      "latency_ms": 73,
+      "error_rate": 0.4,
+      "cpu_percent": 8,
+      "memory_percent": 41,
+      "version": "5.0.3"
+    },
+    {
+      "name": "session-store",
+      "status": "healthy",
+      "latency_ms": 82,
+      "error_rate": 0.5,
+      "cpu_percent": 33,
+      "memory_percent": 51,
+      "version": "1.5.0"
+    },
+    {
+      "name": "api-gateway",
+      "status": "healthy",
+      "latency_ms": 140,
+      "error_rate": 0.8,
+      "cpu_percent": 23,
+      "memory_percent": 54,
+      "version": "1.5.0"
+    },
+    {
+      "name": "internal-dns",
+      "status": "healthy",
+      "latency_ms": 119,
+      "error_rate": 0.1,
+      "cpu_percent": 14,
+      "memory_percent": 51,
+      "version": "1.5.0"
+    }
+  ],
+  "recent_deployments": [
+    {
+      "service": "order-service",
+      "version": "5.0.3",
+      "timestamp": "2026-03-26T21:27:00Z",
+      "deployer": "sre-bot"
+    },
+    {
+      "service": "session-store",
+      "version": "1.5.0",
+      "timestamp": "2026-03-26T20:35:00Z",
+      "deployer": "ml-team"
+    },
+    {
+      "service": "internal-dns",
+      "version": "1.5.0",
+      "timestamp": "2026-03-26T21:58:00Z",
+      "deployer": "ops-team"
+    },
+    {
+      "service": "search-service",
+      "version": "5.0.3",
+      "timestamp": "2026-03-26T19:45:00Z",
+      "deployer": "dev-team"
+    },
+    {
+      "service": "api-gateway",
+      "version": "1.5.0",
+      "timestamp": "2026-03-26T21:43:00Z",
+      "deployer": "search-team"
+    }
+  ],
+  "logs": {
+    "order-service": [
+      {
+        "timestamp": "2026-03-26T22:18:00Z",
+        "service": "order-service",
+        "level": "ERROR",
+        "message": "Deadlock detected: txn-76093 waiting for lock held by txn-71379"
+      },
+      {
+        "timestamp": "2026-03-26T22:20:00Z",
+        "service": "order-service",
+        "level": "ERROR",
+        "message": "Transaction aborted after deadlock timeout: 30s"
+      },
+      {
+        "timestamp": "2026-03-26T22:22:00Z",
+        "service": "order-service",
+        "level": "WARN",
+        "message": "Request queue depth: 49622 - approaching limit"
+      },
+      {
+        "timestamp": "2026-03-26T22:24:00Z",
+        "service": "order-service",
+        "level": "ERROR",
+        "message": "Lock wait timeout exceeded for table order-service_records"
+      }
+    ],
+    "cdn-proxy": [
+      {
+        "timestamp": "2026-03-26T22:19:00Z",
+        "service": "cdn-proxy",
+        "level": "ERROR",
+        "message": "Timeout calling order-service: exceeded 10s deadline"
+      },
+      {
+        "timestamp": "2026-03-26T22:24:00Z",
+        "service": "cdn-proxy",
+        "level": "WARN",
+        "message": "Circuit breaker half-open for order-service"
+      }
+    ],
+    "cache-layer": [
+      {
+        "timestamp": "2026-03-26T22:19:00Z",
+        "service": "cache-layer",
+        "level": "ERROR",
+        "message": "Timeout calling order-service: exceeded 10s deadline"
+      },
+      {
+        "timestamp": "2026-03-26T22:24:00Z",
+        "service": "cache-layer",
+        "level": "WARN",
+        "message": "Circuit breaker half-open for order-service"
+      }
+    ],
+    "api-gateway": [
+      {
+        "timestamp": "2026-03-26T22:18:00Z",
+        "service": "api-gateway",
+        "level": "INFO",
+        "message": "Scheduled reindex 40% complete - elevated latency expected"
+      }
+    ],
+    "session-store": [
+      {
+        "timestamp": "2026-03-26T22:18:00Z",
+        "service": "session-store",
+        "level": "INFO",
+        "message": "Batch job completed: processed 3911 records"
+      }
+    ],
+    "logging-pipeline": [
+      {
+        "timestamp": "2026-03-26T22:18:00Z",
+        "service": "logging-pipeline",
+        "level": "INFO",
+        "message": "Model serving normally - no dependency issues"
+      }
+    ],
+    "internal-dns": [
+      {
+        "timestamp": "2026-03-26T22:18:00Z",
+        "service": "internal-dns",
+        "level": "INFO",
+        "message": "Batch job completed: processed 34360 records"
+      }
+    ]
+  },
+  "metrics": {
+    "order-service:deadlocks_per_min": [
+      0.9,
+      1.8,
+      3.4,
+      6.5,
+      12.5,
+      23.9,
+      45.8,
+      87.6
+    ],
+    "order-service:error_rate": [
+      0.7,
+      1.2,
+      2.0,
+      3.6,
+      6.3,
+      11.1,
+      19.6,
+      34.6
+    ],
+    "order-service:latency_p99": [
+      1.0,
+      2.3,
+      5.1,
+      11.6,
+      26.0,
+      58.6
+    ],
+    "cdn-proxy:error_rate": [
+      1.7,
+      1.7,
+      1.7,
+      57.7,
+      57.7,
+      57.7
+    ],
+    "cache-layer:error_rate": [
+      0.3,
+      0.3,
+      0.3,
+      0.3,
+      80.5,
+      80.5,
+      80.5,
+      80.5
+    ],
+    "logging-pipeline:cpu": [
+      21.4,
+      29.8,
+      29.3,
+      33.8,
+      28.0,
+      21.6
+    ],
+    "search-service:cpu": [
+      28.7,
+      28.3,
+      32.4,
+      22.0,
+      31.0,
+      23.8
+    ]
+  },
+  "dependencies": {
+    "order-service": [
+      "order-service-db",
+      "order-service-store"
+    ],
+    "cdn-proxy": [
+      "order-service",
+      "cdn-proxy-db"
+    ],
+    "cache-layer": [
+      "order-service",
+      "cache-layer-db"
+    ],
+    "logging-pipeline": [
+      "order-service",
+      "logging-pipeline-db"
+    ],
+    "search-service": [
+      "search-service-db"
+    ],
+    "session-store": [
+      "session-store-db"
+    ],
+    "api-gateway": [
+      "api-gateway-db"
+    ],
+    "internal-dns": [
+      "internal-dns-db"
+    ]
+  },
+  "root_cause": {
+    "service": "order-service",
+    "description": "Deadlock storm in order-service database caused by concurrent transaction ordering bug in 5.0.3",
+    "keywords": [
+      "deadlock",
+      "transaction",
+      "lock",
+      "contention",
+      "database",
+      "concurrent"
+    ]
+  },
+  "valid_remediations": [
+    {
+      "action": "restart_service",
+      "service": "order-service"
+    },
+    {
+      "action": "rollback_deploy",
+      "service": "order-service"
+    }
+  ],
+  "expected_diagnostics": [
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "order-service"
+      }
+    },
+    {
+      "action_type": "check_metrics",
+      "params": {
+        "service": "order-service"
+      }
+    },
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "cdn-proxy"
+      }
+    },
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "cache-layer"
+      }
+    }
+  ],
+  "grading_rubric": {
+    "triage_weight": 0.03,
+    "diagnostic_weight": 0.21,
+    "root_cause_weight": 0.38,
+    "remediation_weight": 0.18,
+    "efficiency_weight": 0.07,
+    "documentation_weight": 0.13
+  }
+}

@@ -1,0 +1,432 @@
+{
+  "incident_id": "INC-20260326-306",
+  "difficulty": "expert",
+  "description": "SEV1 incident: CPU Spin Loop affecting search-service. Cascading impact on billing-service, api-gateway, logging-pipeline. Multiple concurrent events make diagnosis challenging. Red herrings present - focus on evidence-based investigation.",
+  "expected_severity": "SEV1",
+  "initial_alerts": [
+    {
+      "alert_id": "alert-30601",
+      "severity": "critical",
+      "service": "search-service",
+      "message": "CPU usage at 93% - all cores saturated",
+      "timestamp": "2026-03-26T21:27:05Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-30602",
+      "severity": "critical",
+      "service": "search-service",
+      "message": "Service unresponsive - health check failures",
+      "timestamp": "2026-03-26T21:28:10Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-30603",
+      "severity": "warning",
+      "service": "billing-service",
+      "message": "Timeout errors from search-service increasing",
+      "timestamp": "2026-03-26T21:29:15Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-30604",
+      "severity": "critical",
+      "service": "billing-service",
+      "message": "billing-service error rate spiking - requests failing",
+      "timestamp": "2026-03-26T21:27:27Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-30605",
+      "severity": "critical",
+      "service": "api-gateway",
+      "message": "api-gateway error rate spiking - requests failing",
+      "timestamp": "2026-03-26T21:27:00Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-30606",
+      "severity": "critical",
+      "service": "logging-pipeline",
+      "message": "logging-pipeline error rate spiking - requests failing",
+      "timestamp": "2026-03-26T21:27:32Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-30607",
+      "severity": "info",
+      "service": "cache-layer",
+      "message": "Automated backup completed successfully",
+      "timestamp": "2026-03-26T21:18:08Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-30608",
+      "severity": "warning",
+      "service": "cache-layer",
+      "message": "Log volume increased 20% - review retention policy",
+      "timestamp": "2026-03-26T21:24:30Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-30609",
+      "severity": "info",
+      "service": "auth-service",
+      "message": "Canary deployment proceeding as expected",
+      "timestamp": "2026-03-26T21:17:26Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-30610",
+      "severity": "warning",
+      "service": "auth-service",
+      "message": "CPU usage at 60% - approaching threshold",
+      "timestamp": "2026-03-26T21:25:11Z",
+      "acknowledged": false,
+      "silenced": false
+    }
+  ],
+  "services": [
+    {
+      "name": "search-service",
+      "status": "down",
+      "latency_ms": 0,
+      "error_rate": 70.8,
+      "cpu_percent": 73,
+      "memory_percent": 79,
+      "version": "4.0.1"
+    },
+    {
+      "name": "billing-service",
+      "status": "degraded",
+      "latency_ms": 4652,
+      "error_rate": 47.9,
+      "cpu_percent": 29,
+      "memory_percent": 56,
+      "version": "2.4.1"
+    },
+    {
+      "name": "api-gateway",
+      "status": "degraded",
+      "latency_ms": 2246,
+      "error_rate": 27.4,
+      "cpu_percent": 47,
+      "memory_percent": 51,
+      "version": "2.1.1"
+    },
+    {
+      "name": "logging-pipeline",
+      "status": "degraded",
+      "latency_ms": 3236,
+      "error_rate": 41.1,
+      "cpu_percent": 55,
+      "memory_percent": 50,
+      "version": "1.0.0"
+    },
+    {
+      "name": "cache-layer",
+      "status": "healthy",
+      "latency_ms": 111,
+      "error_rate": 0.0,
+      "cpu_percent": 42,
+      "memory_percent": 30,
+      "version": "4.2.0"
+    },
+    {
+      "name": "auth-service",
+      "status": "healthy",
+      "latency_ms": 168,
+      "error_rate": 0.3,
+      "cpu_percent": 37,
+      "memory_percent": 21,
+      "version": "1.1.0"
+    },
+    {
+      "name": "payment-api",
+      "status": "healthy",
+      "latency_ms": 93,
+      "error_rate": 0.9,
+      "cpu_percent": 25,
+      "memory_percent": 37,
+      "version": "3.2.0"
+    }
+  ],
+  "recent_deployments": [
+    {
+      "service": "search-service",
+      "version": "4.0.1",
+      "timestamp": "2026-03-26T20:55:00Z",
+      "deployer": "ci-bot"
+    },
+    {
+      "service": "payment-api",
+      "version": "3.2.0",
+      "timestamp": "2026-03-26T20:12:00Z",
+      "deployer": "dev-team"
+    },
+    {
+      "service": "cache-layer",
+      "version": "4.2.0",
+      "timestamp": "2026-03-26T19:01:00Z",
+      "deployer": "ops-team"
+    },
+    {
+      "service": "auth-service",
+      "version": "1.1.0",
+      "timestamp": "2026-03-26T19:57:00Z",
+      "deployer": "dev-team"
+    }
+  ],
+  "logs": {
+    "search-service": [
+      {
+        "timestamp": "2026-03-26T21:26:00Z",
+        "service": "search-service",
+        "level": "WARN",
+        "message": "CPU usage at 94% - throttling requests"
+      },
+      {
+        "timestamp": "2026-03-26T21:27:15Z",
+        "service": "search-service",
+        "level": "ERROR",
+        "message": "Worker thread pool exhausted - all threads blocked"
+      },
+      {
+        "timestamp": "2026-03-26T21:28:30Z",
+        "service": "search-service",
+        "level": "ERROR",
+        "message": "Health check timeout after 5s - service appears hung"
+      },
+      {
+        "timestamp": "2026-03-26T21:29:45Z",
+        "service": "search-service",
+        "level": "WARN",
+        "message": "Error handler retry loop detected: 2711 retries in 10s"
+      }
+    ],
+    "billing-service": [
+      {
+        "timestamp": "2026-03-26T21:27:00Z",
+        "service": "billing-service",
+        "level": "ERROR",
+        "message": "search-service health check failed: timeout after 10s"
+      },
+      {
+        "timestamp": "2026-03-26T21:32:00Z",
+        "service": "billing-service",
+        "level": "WARN",
+        "message": "Load balancer removed search-service from pool"
+      }
+    ],
+    "api-gateway": [
+      {
+        "timestamp": "2026-03-26T21:27:00Z",
+        "service": "api-gateway",
+        "level": "ERROR",
+        "message": "search-service health check failed: timeout after 10s"
+      },
+      {
+        "timestamp": "2026-03-26T21:32:00Z",
+        "service": "api-gateway",
+        "level": "WARN",
+        "message": "Load balancer removed search-service from pool"
+      }
+    ],
+    "logging-pipeline": [
+      {
+        "timestamp": "2026-03-26T21:27:00Z",
+        "service": "logging-pipeline",
+        "level": "ERROR",
+        "message": "search-service health check failed: timeout after 10s"
+      },
+      {
+        "timestamp": "2026-03-26T21:32:00Z",
+        "service": "logging-pipeline",
+        "level": "WARN",
+        "message": "Load balancer removed search-service from pool"
+      }
+    ],
+    "cache-layer": [
+      {
+        "timestamp": "2026-03-26T21:26:00Z",
+        "service": "cache-layer",
+        "level": "INFO",
+        "message": "Batch job completed: processed 37982 records"
+      }
+    ],
+    "payment-api": [
+      {
+        "timestamp": "2026-03-26T21:26:00Z",
+        "service": "payment-api",
+        "level": "INFO",
+        "message": "Cache hit ratio: 85%"
+      }
+    ],
+    "auth-service": [
+      {
+        "timestamp": "2026-03-26T21:26:00Z",
+        "service": "auth-service",
+        "level": "INFO",
+        "message": "Healthy - serving requests normally"
+      }
+    ]
+  },
+  "metrics": {
+    "search-service:cpu_percent": [
+      0.0,
+      38.5,
+      61.9,
+      76.0,
+      84.6,
+      89.8,
+      93.0
+    ],
+    "search-service:latency_p99": [
+      1.6,
+      4.2,
+      11.2,
+      30.0,
+      80.4
+    ],
+    "billing-service:error_rate": [
+      0.5,
+      0.5,
+      0.5,
+      93.9,
+      93.9,
+      93.9,
+      93.9
+    ],
+    "api-gateway:error_rate": [
+      1.6,
+      1.6,
+      1.6,
+      90.0,
+      90.0,
+      90.0,
+      90.0
+    ],
+    "logging-pipeline:error_rate": [
+      0.9,
+      0.9,
+      53.9,
+      53.9,
+      53.9
+    ],
+    "cache-layer:cpu": [
+      26.0,
+      27.9,
+      26.5,
+      14.5,
+      20.6,
+      23.3
+    ],
+    "auth-service:cpu": [
+      47.3,
+      44.9,
+      50.5,
+      47.6,
+      32.3,
+      41.7
+    ]
+  },
+  "dependencies": {
+    "search-service": [
+      "search-service-db",
+      "search-service-store"
+    ],
+    "billing-service": [
+      "search-service",
+      "billing-service-db"
+    ],
+    "api-gateway": [
+      "search-service",
+      "api-gateway-db"
+    ],
+    "logging-pipeline": [
+      "search-service",
+      "logging-pipeline-db"
+    ],
+    "cache-layer": [
+      "cache-layer-db"
+    ],
+    "auth-service": [
+      "auth-service-db"
+    ],
+    "payment-api": [
+      "payment-api-db"
+    ]
+  },
+  "root_cause": {
+    "service": "search-service",
+    "description": "CPU spin loop in search-service 4.0.1 caused by infinite retry loop in error handler",
+    "keywords": [
+      "cpu",
+      "spin",
+      "loop",
+      "100%",
+      "retry",
+      "infinite",
+      "hang"
+    ]
+  },
+  "valid_remediations": [
+    {
+      "action": "restart_service",
+      "service": "search-service"
+    },
+    {
+      "action": "rollback_deploy",
+      "service": "search-service"
+    }
+  ],
+  "expected_diagnostics": [
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "search-service"
+      }
+    },
+    {
+      "action_type": "check_metrics",
+      "params": {
+        "service": "search-service"
+      }
+    },
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "billing-service"
+      }
+    },
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "api-gateway"
+      }
+    },
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "logging-pipeline"
+      }
+    }
+  ],
+  "grading_rubric": {
+    "triage_weight": 0.06,
+    "diagnostic_weight": 0.2,
+    "root_cause_weight": 0.33,
+    "remediation_weight": 0.2,
+    "efficiency_weight": 0.1,
+    "documentation_weight": 0.11
+  }
+}

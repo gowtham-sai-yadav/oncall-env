@@ -1,0 +1,244 @@
+{
+  "incident_id": "INC-20260326-003",
+  "difficulty": "easy",
+  "description": "SEV3 incident: Replication Lag affecting order-service. Cascading impact on notification-service.",
+  "expected_severity": "SEV3",
+  "initial_alerts": [
+    {
+      "alert_id": "alert-301",
+      "severity": "critical",
+      "service": "order-service",
+      "message": "Data inconsistency detected - read replicas 40s behind primary",
+      "timestamp": "2026-03-26T11:02:05Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-302",
+      "severity": "warning",
+      "service": "order-service",
+      "message": "Replication lag exceeding 30s threshold",
+      "timestamp": "2026-03-26T11:03:10Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-303",
+      "severity": "warning",
+      "service": "notification-service",
+      "message": "Stale data returned for user queries",
+      "timestamp": "2026-03-26T11:04:15Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-304",
+      "severity": "critical",
+      "service": "notification-service",
+      "message": "notification-service error rate spiking - requests failing",
+      "timestamp": "2026-03-26T11:02:10Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-305",
+      "severity": "info",
+      "service": "inventory-service",
+      "message": "SSL certificate renewal scheduled for next week",
+      "timestamp": "2026-03-26T11:54:28Z",
+      "acknowledged": false,
+      "silenced": false
+    }
+  ],
+  "services": [
+    {
+      "name": "order-service",
+      "status": "down",
+      "latency_ms": 0,
+      "error_rate": 95.1,
+      "cpu_percent": 41,
+      "memory_percent": 93,
+      "version": "2.1.1"
+    },
+    {
+      "name": "notification-service",
+      "status": "degraded",
+      "latency_ms": 2514,
+      "error_rate": 33.3,
+      "cpu_percent": 26,
+      "memory_percent": 50,
+      "version": "4.0.1"
+    },
+    {
+      "name": "analytics-service",
+      "status": "healthy",
+      "latency_ms": 150,
+      "error_rate": 0.1,
+      "cpu_percent": 35,
+      "memory_percent": 43,
+      "version": "2.3.0"
+    },
+    {
+      "name": "inventory-service",
+      "status": "healthy",
+      "latency_ms": 110,
+      "error_rate": 0.3,
+      "cpu_percent": 38,
+      "memory_percent": 24,
+      "version": "2.0.0"
+    }
+  ],
+  "recent_deployments": [
+    {
+      "service": "order-service",
+      "version": "2.1.1",
+      "timestamp": "2026-03-26T10:09:00Z",
+      "deployer": "release-manager"
+    }
+  ],
+  "logs": {
+    "order-service": [
+      {
+        "timestamp": "2026-03-26T11:01:00Z",
+        "service": "order-service",
+        "level": "ERROR",
+        "message": "Replication lag at 110s - exceeds SLO of 5s"
+      },
+      {
+        "timestamp": "2026-03-26T11:03:00Z",
+        "service": "order-service",
+        "level": "WARN",
+        "message": "Read replica order-service-replica-2 falling behind primary"
+      },
+      {
+        "timestamp": "2026-03-26T11:05:00Z",
+        "service": "order-service",
+        "level": "ERROR",
+        "message": "Schema migration v2.1.1 causing replication bottleneck"
+      },
+      {
+        "timestamp": "2026-03-26T11:07:00Z",
+        "service": "order-service",
+        "level": "INFO",
+        "message": "Attempting to pause non-critical replication streams"
+      }
+    ],
+    "notification-service": [
+      {
+        "timestamp": "2026-03-26T11:02:00Z",
+        "service": "notification-service",
+        "level": "WARN",
+        "message": "Inconsistent read from order-service: got stale version"
+      },
+      {
+        "timestamp": "2026-03-26T11:07:00Z",
+        "service": "notification-service",
+        "level": "ERROR",
+        "message": "Cache invalidation failed: stale data propagated from order-service"
+      }
+    ]
+  },
+  "metrics": {
+    "order-service:replication_lag_s": [
+      1.7,
+      2.8,
+      4.6,
+      7.5,
+      12.3,
+      20.1,
+      33.0
+    ],
+    "order-service:error_rate": [
+      0.5,
+      0.5,
+      89.4,
+      89.4,
+      89.4
+    ],
+    "notification-service:error_rate": [
+      0.7,
+      0.7,
+      0.7,
+      71.4,
+      71.4,
+      71.4
+    ],
+    "analytics-service:cpu": [
+      34.4,
+      33.3,
+      31.0,
+      35.4,
+      33.2,
+      30.8
+    ],
+    "inventory-service:cpu": [
+      44.8,
+      30.3,
+      29.3,
+      34.5,
+      35.8,
+      30.4
+    ]
+  },
+  "dependencies": {
+    "order-service": [
+      "order-service-db",
+      "order-service-store"
+    ],
+    "notification-service": [
+      "order-service",
+      "notification-service-db"
+    ],
+    "analytics-service": [
+      "analytics-service-db"
+    ],
+    "inventory-service": [
+      "inventory-service-db"
+    ]
+  },
+  "root_cause": {
+    "service": "order-service",
+    "description": "Database replication lag on order-service caused read replicas to serve stale data after 2.1.1 schema migration",
+    "keywords": [
+      "replication",
+      "lag",
+      "stale",
+      "replica",
+      "schema",
+      "migration",
+      "database"
+    ]
+  },
+  "valid_remediations": [
+    {
+      "action": "rollback_deploy",
+      "service": "order-service"
+    },
+    {
+      "action": "restart_service",
+      "service": "order-service"
+    }
+  ],
+  "expected_diagnostics": [
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "order-service"
+      }
+    },
+    {
+      "action_type": "check_metrics",
+      "params": {
+        "service": "order-service"
+      }
+    }
+  ],
+  "grading_rubric": {
+    "triage_weight": 0.29,
+    "diagnostic_weight": 0.22,
+    "root_cause_weight": 0.16,
+    "remediation_weight": 0.16,
+    "efficiency_weight": 0.09,
+    "documentation_weight": 0.08
+  }
+}

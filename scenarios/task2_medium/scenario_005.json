@@ -1,0 +1,290 @@
+{
+  "incident_id": "INC-20260326-105",
+  "difficulty": "medium",
+  "description": "SEV2 incident: Memory Leak (OOM) affecting payment-api. Cascading impact on internal-dns.",
+  "expected_severity": "SEV2",
+  "initial_alerts": [
+    {
+      "alert_id": "alert-10501",
+      "severity": "critical",
+      "service": "payment-api",
+      "message": "Memory usage at 88% - OOM kill imminent",
+      "timestamp": "2026-03-26T21:10:05Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-10502",
+      "severity": "critical",
+      "service": "payment-api",
+      "message": "Service restarts detected - 13 OOM kills in last 10 minutes",
+      "timestamp": "2026-03-26T21:11:10Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-10503",
+      "severity": "warning",
+      "service": "internal-dns",
+      "message": "Elevated error rate due to payment-api instability",
+      "timestamp": "2026-03-26T21:12:15Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-10504",
+      "severity": "critical",
+      "service": "internal-dns",
+      "message": "internal-dns error rate spiking - requests failing",
+      "timestamp": "2026-03-26T21:10:06Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-10505",
+      "severity": "warning",
+      "service": "session-store",
+      "message": "Disk usage at 72% on data volume",
+      "timestamp": "2026-03-26T21:06:13Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-10506",
+      "severity": "info",
+      "service": "inventory-service",
+      "message": "Feature flag 'new-checkout-flow' enabled for 5% of users",
+      "timestamp": "2026-03-26T21:04:54Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-10507",
+      "severity": "warning",
+      "service": "session-store",
+      "message": "CPU usage at 60% - approaching threshold",
+      "timestamp": "2026-03-26T21:08:19Z",
+      "acknowledged": false,
+      "silenced": false
+    }
+  ],
+  "services": [
+    {
+      "name": "payment-api",
+      "status": "down",
+      "latency_ms": 0,
+      "error_rate": 78.1,
+      "cpu_percent": 48,
+      "memory_percent": 59,
+      "version": "2.3.0"
+    },
+    {
+      "name": "internal-dns",
+      "status": "degraded",
+      "latency_ms": 3203,
+      "error_rate": 67.3,
+      "cpu_percent": 60,
+      "memory_percent": 54,
+      "version": "3.0.0"
+    },
+    {
+      "name": "auth-service",
+      "status": "healthy",
+      "latency_ms": 89,
+      "error_rate": 0.3,
+      "cpu_percent": 32,
+      "memory_percent": 41,
+      "version": "3.1.2"
+    },
+    {
+      "name": "session-store",
+      "status": "healthy",
+      "latency_ms": 31,
+      "error_rate": 0.6,
+      "cpu_percent": 15,
+      "memory_percent": 26,
+      "version": "4.0.1"
+    },
+    {
+      "name": "inventory-service",
+      "status": "healthy",
+      "latency_ms": 41,
+      "error_rate": 0.2,
+      "cpu_percent": 18,
+      "memory_percent": 41,
+      "version": "5.0.3"
+    }
+  ],
+  "recent_deployments": [
+    {
+      "service": "payment-api",
+      "version": "2.3.0",
+      "timestamp": "2026-03-26T20:42:00Z",
+      "deployer": "ci-bot"
+    }
+  ],
+  "logs": {
+    "payment-api": [
+      {
+        "timestamp": "2026-03-26T21:09:00Z",
+        "service": "payment-api",
+        "level": "WARN",
+        "message": "Heap usage at 89% - garbage collection ineffective"
+      },
+      {
+        "timestamp": "2026-03-26T21:11:30Z",
+        "service": "payment-api",
+        "level": "ERROR",
+        "message": "Out of memory: process killed by OOM killer (RSS: 3197MB)"
+      },
+      {
+        "timestamp": "2026-03-26T21:14:00Z",
+        "service": "payment-api",
+        "level": "INFO",
+        "message": "Service restarting after OOM kill - attempt 3"
+      },
+      {
+        "timestamp": "2026-03-26T21:16:30Z",
+        "service": "payment-api",
+        "level": "WARN",
+        "message": "Request cache size growing unbounded: 352162 entries"
+      }
+    ],
+    "internal-dns": [
+      {
+        "timestamp": "2026-03-26T21:10:00Z",
+        "service": "internal-dns",
+        "level": "ERROR",
+        "message": "Connection refused from payment-api: service restarting"
+      },
+      {
+        "timestamp": "2026-03-26T21:15:00Z",
+        "service": "internal-dns",
+        "level": "WARN",
+        "message": "Retrying request to payment-api after connection failure"
+      }
+    ]
+  },
+  "metrics": {
+    "payment-api:memory_percent": [
+      0.0,
+      32.4,
+      53.5,
+      67.2,
+      76.1,
+      82.0,
+      85.8,
+      88.2
+    ],
+    "payment-api:error_rate": [
+      1.0,
+      1.0,
+      97.7,
+      97.7,
+      97.7
+    ],
+    "payment-api:restarts": [
+      1.3,
+      1.3,
+      1.3,
+      54.0,
+      54.0,
+      54.0
+    ],
+    "internal-dns:error_rate": [
+      0.7,
+      0.7,
+      0.7,
+      41.8,
+      41.8,
+      41.8
+    ],
+    "auth-service:cpu": [
+      52.2,
+      38.8,
+      48.7,
+      38.5,
+      40.8,
+      42.6
+    ],
+    "session-store:cpu": [
+      35.9,
+      23.3,
+      28.2,
+      24.9,
+      26.4,
+      23.8
+    ]
+  },
+  "dependencies": {
+    "payment-api": [
+      "payment-api-db",
+      "payment-api-store"
+    ],
+    "internal-dns": [
+      "payment-api",
+      "internal-dns-db"
+    ],
+    "auth-service": [
+      "payment-api",
+      "auth-service-db"
+    ],
+    "session-store": [
+      "session-store-db"
+    ],
+    "inventory-service": [
+      "inventory-service-db"
+    ]
+  },
+  "root_cause": {
+    "service": "payment-api",
+    "description": "Memory leak in payment-api 2.3.0 causing OOM kills - unbounded cache growth in request handler",
+    "keywords": [
+      "memory",
+      "leak",
+      "OOM",
+      "out of memory",
+      "heap",
+      "cache",
+      "growth"
+    ]
+  },
+  "valid_remediations": [
+    {
+      "action": "restart_service",
+      "service": "payment-api"
+    },
+    {
+      "action": "rollback_deploy",
+      "service": "payment-api"
+    }
+  ],
+  "expected_diagnostics": [
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "payment-api"
+      }
+    },
+    {
+      "action_type": "check_metrics",
+      "params": {
+        "service": "payment-api"
+      }
+    },
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "internal-dns"
+      }
+    }
+  ],
+  "grading_rubric": {
+    "triage_weight": 0.2,
+    "diagnostic_weight": 0.25,
+    "root_cause_weight": 0.21,
+    "remediation_weight": 0.18,
+    "efficiency_weight": 0.12,
+    "documentation_weight": 0.04
+  }
+}

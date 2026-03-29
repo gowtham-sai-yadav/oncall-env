@@ -1,0 +1,320 @@
+{
+  "incident_id": "INC-20260326-104",
+  "difficulty": "medium",
+  "description": "SEV2 incident: Deadlock Storm affecting user-service. Cascading impact on internal-dns, payment-api.",
+  "expected_severity": "SEV2",
+  "initial_alerts": [
+    {
+      "alert_id": "alert-10401",
+      "severity": "critical",
+      "service": "user-service",
+      "message": "Transaction deadlocks spiking - 401/min detected",
+      "timestamp": "2026-03-26T18:41:05Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-10402",
+      "severity": "critical",
+      "service": "user-service",
+      "message": "Request queue depth exceeding 500 - requests backing up",
+      "timestamp": "2026-03-26T18:42:10Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-10403",
+      "severity": "warning",
+      "service": "internal-dns",
+      "message": "Upstream user-service response time degraded",
+      "timestamp": "2026-03-26T18:43:15Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-10404",
+      "severity": "critical",
+      "service": "internal-dns",
+      "message": "internal-dns error rate spiking - requests failing",
+      "timestamp": "2026-03-26T18:41:15Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-10405",
+      "severity": "critical",
+      "service": "payment-api",
+      "message": "payment-api error rate spiking - requests failing",
+      "timestamp": "2026-03-26T18:41:42Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-10406",
+      "severity": "info",
+      "service": "inventory-service",
+      "message": "SSL certificate renewal scheduled for next week",
+      "timestamp": "2026-03-26T18:33:44Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-10407",
+      "severity": "warning",
+      "service": "analytics-service",
+      "message": "Memory usage at 68% - within normal range but trending up",
+      "timestamp": "2026-03-26T18:30:37Z",
+      "acknowledged": false,
+      "silenced": false
+    }
+  ],
+  "services": [
+    {
+      "name": "user-service",
+      "status": "degraded",
+      "latency_ms": 7871,
+      "error_rate": 45.7,
+      "cpu_percent": 97,
+      "memory_percent": 82,
+      "version": "4.0.1"
+    },
+    {
+      "name": "internal-dns",
+      "status": "degraded",
+      "latency_ms": 1977,
+      "error_rate": 27.6,
+      "cpu_percent": 41,
+      "memory_percent": 41,
+      "version": "3.1.2"
+    },
+    {
+      "name": "payment-api",
+      "status": "degraded",
+      "latency_ms": 844,
+      "error_rate": 56.3,
+      "cpu_percent": 71,
+      "memory_percent": 59,
+      "version": "4.1.0"
+    },
+    {
+      "name": "inventory-service",
+      "status": "healthy",
+      "latency_ms": 122,
+      "error_rate": 0.2,
+      "cpu_percent": 34,
+      "memory_percent": 42,
+      "version": "3.2.0"
+    },
+    {
+      "name": "analytics-service",
+      "status": "healthy",
+      "latency_ms": 154,
+      "error_rate": 0.1,
+      "cpu_percent": 17,
+      "memory_percent": 33,
+      "version": "2.1.1"
+    },
+    {
+      "name": "metrics-collector",
+      "status": "healthy",
+      "latency_ms": 159,
+      "error_rate": 0.4,
+      "cpu_percent": 36,
+      "memory_percent": 31,
+      "version": "1.1.0"
+    }
+  ],
+  "recent_deployments": [
+    {
+      "service": "user-service",
+      "version": "4.0.1",
+      "timestamp": "2026-03-26T17:16:00Z",
+      "deployer": "infra-team"
+    }
+  ],
+  "logs": {
+    "user-service": [
+      {
+        "timestamp": "2026-03-26T18:40:00Z",
+        "service": "user-service",
+        "level": "ERROR",
+        "message": "Deadlock detected: txn-46572 waiting for lock held by txn-36423"
+      },
+      {
+        "timestamp": "2026-03-26T18:42:30Z",
+        "service": "user-service",
+        "level": "ERROR",
+        "message": "Transaction aborted after deadlock timeout: 30s"
+      },
+      {
+        "timestamp": "2026-03-26T18:45:00Z",
+        "service": "user-service",
+        "level": "WARN",
+        "message": "Request queue depth: 86895 - approaching limit"
+      },
+      {
+        "timestamp": "2026-03-26T18:47:30Z",
+        "service": "user-service",
+        "level": "ERROR",
+        "message": "Lock wait timeout exceeded for table user-service_records"
+      }
+    ],
+    "internal-dns": [
+      {
+        "timestamp": "2026-03-26T18:41:00Z",
+        "service": "internal-dns",
+        "level": "ERROR",
+        "message": "Timeout calling user-service: exceeded 10s deadline"
+      },
+      {
+        "timestamp": "2026-03-26T18:46:00Z",
+        "service": "internal-dns",
+        "level": "WARN",
+        "message": "Circuit breaker half-open for user-service"
+      }
+    ],
+    "payment-api": [
+      {
+        "timestamp": "2026-03-26T18:41:00Z",
+        "service": "payment-api",
+        "level": "ERROR",
+        "message": "Timeout calling user-service: exceeded 10s deadline"
+      },
+      {
+        "timestamp": "2026-03-26T18:46:00Z",
+        "service": "payment-api",
+        "level": "WARN",
+        "message": "Circuit breaker half-open for user-service"
+      }
+    ]
+  },
+  "metrics": {
+    "user-service:deadlocks_per_min": [
+      0.6,
+      1.4,
+      3.1,
+      6.8,
+      15.0,
+      33.1,
+      72.9
+    ],
+    "user-service:error_rate": [
+      1.2,
+      3.6,
+      10.9,
+      32.7,
+      98.4
+    ],
+    "user-service:latency_p99": [
+      0.8,
+      1.6,
+      3.4,
+      7.1,
+      14.8,
+      30.9,
+      64.4
+    ],
+    "internal-dns:error_rate": [
+      0.2,
+      0.2,
+      0.2,
+      66.7,
+      66.7,
+      66.7,
+      66.7
+    ],
+    "payment-api:error_rate": [
+      1.1,
+      1.1,
+      1.1,
+      1.1,
+      88.0,
+      88.0,
+      88.0,
+      88.0
+    ],
+    "inventory-service:cpu": [
+      23.5,
+      23.3,
+      33.9,
+      25.4,
+      25.4,
+      20.9
+    ],
+    "analytics-service:cpu": [
+      43.1,
+      52.4,
+      48.5,
+      60.8,
+      50.6,
+      48.0
+    ]
+  },
+  "dependencies": {
+    "user-service": [
+      "user-service-db",
+      "user-service-store"
+    ],
+    "internal-dns": [
+      "user-service",
+      "internal-dns-db"
+    ],
+    "payment-api": [
+      "user-service",
+      "payment-api-db"
+    ],
+    "inventory-service": [
+      "inventory-service-db"
+    ],
+    "analytics-service": [
+      "analytics-service-db"
+    ],
+    "metrics-collector": [
+      "metrics-collector-db"
+    ]
+  },
+  "root_cause": {
+    "service": "user-service",
+    "description": "Deadlock storm in user-service database caused by concurrent transaction ordering bug in 4.0.1",
+    "keywords": [
+      "deadlock",
+      "transaction",
+      "lock",
+      "contention",
+      "database",
+      "concurrent"
+    ]
+  },
+  "valid_remediations": [
+    {
+      "action": "restart_service",
+      "service": "user-service"
+    },
+    {
+      "action": "rollback_deploy",
+      "service": "user-service"
+    }
+  ],
+  "expected_diagnostics": [
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "user-service"
+      }
+    },
+    {
+      "action_type": "check_metrics",
+      "params": {
+        "service": "user-service"
+      }
+    }
+  ],
+  "grading_rubric": {
+    "triage_weight": 0.18,
+    "diagnostic_weight": 0.24,
+    "root_cause_weight": 0.2,
+    "remediation_weight": 0.21,
+    "efficiency_weight": 0.13,
+    "documentation_weight": 0.04
+  }
+}

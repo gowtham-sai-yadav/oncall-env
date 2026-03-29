@@ -1,0 +1,330 @@
+{
+  "incident_id": "INC-20260326-211",
+  "difficulty": "hard",
+  "description": "SEV1 incident: Bad Config Rollout affecting payment-api. Cascading impact on order-service, config-server. Multiple concurrent events make diagnosis challenging.",
+  "expected_severity": "SEV1",
+  "initial_alerts": [
+    {
+      "alert_id": "alert-21101",
+      "severity": "critical",
+      "service": "payment-api",
+      "message": "Error rate at 68.1% after config deployment",
+      "timestamp": "2026-03-26T10:22:05Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-21102",
+      "severity": "warning",
+      "service": "payment-api",
+      "message": "Config refresh failed - serving with invalid config",
+      "timestamp": "2026-03-26T10:23:10Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-21103",
+      "severity": "warning",
+      "service": "order-service",
+      "message": "Upstream dependency payment-api returning errors",
+      "timestamp": "2026-03-26T10:24:15Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-21104",
+      "severity": "critical",
+      "service": "order-service",
+      "message": "order-service error rate spiking - requests failing",
+      "timestamp": "2026-03-26T10:22:56Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-21105",
+      "severity": "critical",
+      "service": "config-server",
+      "message": "config-server error rate spiking - requests failing",
+      "timestamp": "2026-03-26T10:22:58Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-21106",
+      "severity": "warning",
+      "service": "api-gateway",
+      "message": "Log volume increased 20% - review retention policy",
+      "timestamp": "2026-03-26T10:11:04Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-21107",
+      "severity": "info",
+      "service": "api-gateway",
+      "message": "New dashboard version deployed - no action required",
+      "timestamp": "2026-03-26T10:18:14Z",
+      "acknowledged": false,
+      "silenced": false
+    }
+  ],
+  "services": [
+    {
+      "name": "payment-api",
+      "status": "degraded",
+      "latency_ms": 1027,
+      "error_rate": 26.8,
+      "cpu_percent": 43,
+      "memory_percent": 93,
+      "version": "3.1.2"
+    },
+    {
+      "name": "order-service",
+      "status": "degraded",
+      "latency_ms": 3180,
+      "error_rate": 32.9,
+      "cpu_percent": 43,
+      "memory_percent": 31,
+      "version": "2.1.1"
+    },
+    {
+      "name": "config-server",
+      "status": "degraded",
+      "latency_ms": 2457,
+      "error_rate": 65.6,
+      "cpu_percent": 21,
+      "memory_percent": 33,
+      "version": "4.1.0"
+    },
+    {
+      "name": "message-queue",
+      "status": "healthy",
+      "latency_ms": 47,
+      "error_rate": 0.7,
+      "cpu_percent": 16,
+      "memory_percent": 23,
+      "version": "3.0.0"
+    },
+    {
+      "name": "auth-service",
+      "status": "healthy",
+      "latency_ms": 76,
+      "error_rate": 0.6,
+      "cpu_percent": 15,
+      "memory_percent": 18,
+      "version": "4.1.0"
+    },
+    {
+      "name": "api-gateway",
+      "status": "healthy",
+      "latency_ms": 94,
+      "error_rate": 0.5,
+      "cpu_percent": 11,
+      "memory_percent": 50,
+      "version": "2.0.0"
+    }
+  ],
+  "recent_deployments": [
+    {
+      "service": "payment-api",
+      "version": "3.1.2",
+      "timestamp": "2026-03-26T09:45:00Z",
+      "deployer": "platform-team"
+    },
+    {
+      "service": "auth-service",
+      "version": "4.1.0",
+      "timestamp": "2026-03-26T09:54:00Z",
+      "deployer": "ops-team"
+    }
+  ],
+  "logs": {
+    "payment-api": [
+      {
+        "timestamp": "2026-03-26T10:21:00Z",
+        "service": "payment-api",
+        "level": "ERROR",
+        "message": "Database connection failed: invalid connection string in config v3.1.2"
+      },
+      {
+        "timestamp": "2026-03-26T10:22:40Z",
+        "service": "payment-api",
+        "level": "ERROR",
+        "message": "Config validation skipped in deployment pipeline"
+      },
+      {
+        "timestamp": "2026-03-26T10:24:20Z",
+        "service": "payment-api",
+        "level": "FATAL",
+        "message": "Cannot initialize connection pool: malformed DSN"
+      },
+      {
+        "timestamp": "2026-03-26T10:26:00Z",
+        "service": "payment-api",
+        "level": "WARN",
+        "message": "Rolling back to cached config from previous version"
+      }
+    ],
+    "order-service": [
+      {
+        "timestamp": "2026-03-26T10:22:00Z",
+        "service": "order-service",
+        "level": "ERROR",
+        "message": "payment-api returning 500 for all requests"
+      },
+      {
+        "timestamp": "2026-03-26T10:27:00Z",
+        "service": "order-service",
+        "level": "WARN",
+        "message": "Dependency payment-api health check failing"
+      }
+    ],
+    "config-server": [
+      {
+        "timestamp": "2026-03-26T10:22:00Z",
+        "service": "config-server",
+        "level": "ERROR",
+        "message": "payment-api returning 500 for all requests"
+      },
+      {
+        "timestamp": "2026-03-26T10:27:00Z",
+        "service": "config-server",
+        "level": "WARN",
+        "message": "Dependency payment-api health check failing"
+      }
+    ],
+    "message-queue": [
+      {
+        "timestamp": "2026-03-26T10:21:00Z",
+        "service": "message-queue",
+        "level": "INFO",
+        "message": "Healthy - serving requests normally"
+      }
+    ]
+  },
+  "metrics": {
+    "payment-api:error_rate": [
+      1.4,
+      1.4,
+      1.4,
+      52.3,
+      52.3,
+      52.3,
+      52.3
+    ],
+    "payment-api:db_connections": [
+      1.5,
+      1.5,
+      1.5,
+      66.8,
+      66.8,
+      66.8
+    ],
+    "order-service:error_rate": [
+      1.8,
+      1.8,
+      1.8,
+      78.9,
+      78.9,
+      78.9,
+      78.9
+    ],
+    "config-server:error_rate": [
+      1.6,
+      1.6,
+      1.6,
+      78.0,
+      78.0,
+      78.0
+    ],
+    "message-queue:cpu": [
+      24.2,
+      23.4,
+      19.5,
+      22.8,
+      26.9,
+      20.8
+    ],
+    "auth-service:cpu": [
+      45.9,
+      45.6,
+      37.9,
+      50.8,
+      41.5,
+      37.9
+    ]
+  },
+  "dependencies": {
+    "payment-api": [
+      "payment-api-db",
+      "payment-api-store"
+    ],
+    "order-service": [
+      "payment-api",
+      "order-service-db"
+    ],
+    "config-server": [
+      "payment-api",
+      "config-server-db"
+    ],
+    "message-queue": [
+      "message-queue-db"
+    ],
+    "auth-service": [
+      "auth-service-db"
+    ],
+    "api-gateway": [
+      "api-gateway-db"
+    ]
+  },
+  "root_cause": {
+    "service": "payment-api",
+    "description": "Bad configuration rollout to payment-api in 3.1.2 - invalid database connection string causing all queries to fail",
+    "keywords": [
+      "config",
+      "configuration",
+      "rollout",
+      "invalid",
+      "connection string",
+      "misconfigured"
+    ]
+  },
+  "valid_remediations": [
+    {
+      "action": "rollback_deploy",
+      "service": "payment-api"
+    },
+    {
+      "action": "update_config",
+      "service": "payment-api"
+    }
+  ],
+  "expected_diagnostics": [
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "payment-api"
+      }
+    },
+    {
+      "action_type": "check_metrics",
+      "params": {
+        "service": "payment-api"
+      }
+    },
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "order-service"
+      }
+    }
+  ],
+  "grading_rubric": {
+    "triage_weight": 0.12,
+    "diagnostic_weight": 0.26,
+    "root_cause_weight": 0.31,
+    "remediation_weight": 0.19,
+    "efficiency_weight": 0.09,
+    "documentation_weight": 0.03
+  }
+}

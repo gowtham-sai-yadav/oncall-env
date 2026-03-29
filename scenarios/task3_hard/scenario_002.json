@@ -1,171 +1,375 @@
 {
-  "incident_id": "INC-20260326-007",
+  "incident_id": "INC-20260326-202",
   "difficulty": "hard",
-  "description": "SEV1 incident: Multiple services experiencing cascading failures. Cache, session, and query systems all impacted with elevated error rates across the platform. You must triage the alerts, diagnose the root cause through careful investigation of logs, metrics, and dependencies, apply the correct remediation, and document the incident.",
+  "description": "SEV1 incident: Connection Pool Exhaustion affecting order-service. Cascading impact on email-service, session-store. Multiple concurrent events make diagnosis challenging.",
   "expected_severity": "SEV1",
   "initial_alerts": [
     {
-      "alert_id": "alert-421",
-      "severity": "critical",
-      "service": "cache-layer",
-      "message": "Service DOWN -- OOM kill detected, container restarting in crash loop",
-      "timestamp": "2026-03-26T14:00:00Z",
-      "acknowledged": false,
-      "silenced": false
-    },
-    {
-      "alert_id": "alert-422",
-      "severity": "critical",
-      "service": "api-gateway",
-      "message": "Error rate 52% -- session validation failures causing 503s",
-      "timestamp": "2026-03-26T14:00:08Z",
-      "acknowledged": false,
-      "silenced": false
-    },
-    {
-      "alert_id": "alert-423",
+      "alert_id": "alert-20201",
       "severity": "critical",
       "service": "order-service",
-      "message": "Database query latency p99 > 15s -- query cache unavailable",
-      "timestamp": "2026-03-26T14:00:15Z",
+      "message": "Error rate exceeded 5% threshold - currently at 53.5%",
+      "timestamp": "2026-03-26T15:40:05Z",
       "acknowledged": false,
       "silenced": false
     },
     {
-      "alert_id": "alert-424",
-      "severity": "warning",
-      "service": "user-service",
-      "message": "Session lookup failure rate 78% -- cache-layer unreachable",
-      "timestamp": "2026-03-26T14:00:25Z",
-      "acknowledged": false,
-      "silenced": false
-    },
-    {
-      "alert_id": "alert-425",
-      "severity": "warning",
-      "service": "inventory-service",
-      "message": "Cache miss rate 100% -- falling back to direct DB reads, latency elevated",
-      "timestamp": "2026-03-26T14:00:35Z",
-      "acknowledged": false,
-      "silenced": false
-    },
-    {
-      "alert_id": "alert-426",
+      "alert_id": "alert-20202",
       "severity": "critical",
-      "service": "payment-api",
-      "message": "Transaction authorization rate dropped 65% -- upstream session failures",
-      "timestamp": "2026-03-26T14:00:45Z",
+      "service": "order-service",
+      "message": "P99 latency > 2000ms (currently 2194ms)",
+      "timestamp": "2026-03-26T15:41:10Z",
       "acknowledged": false,
       "silenced": false
     },
     {
-      "alert_id": "alert-427",
+      "alert_id": "alert-20203",
       "severity": "warning",
-      "service": "order-db",
-      "message": "Connection pool at 98% capacity -- direct cache-bypass reads flooding DB",
-      "timestamp": "2026-03-26T14:01:00Z",
+      "service": "email-service",
+      "message": "Increased 4xx responses from downstream dependency",
+      "timestamp": "2026-03-26T15:42:15Z",
       "acknowledged": false,
       "silenced": false
     },
     {
-      "alert_id": "alert-428",
+      "alert_id": "alert-20204",
+      "severity": "critical",
+      "service": "email-service",
+      "message": "email-service error rate spiking - requests failing",
+      "timestamp": "2026-03-26T15:40:13Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-20205",
+      "severity": "critical",
+      "service": "session-store",
+      "message": "session-store error rate spiking - requests failing",
+      "timestamp": "2026-03-26T15:40:02Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-20206",
       "severity": "info",
-      "service": "monitoring",
-      "message": "PagerDuty escalation triggered for oncall-primary",
-      "timestamp": "2026-03-26T14:01:30Z",
+      "service": "service-mesh",
+      "message": "Feature flag 'new-checkout-flow' enabled for 5% of users",
+      "timestamp": "2026-03-26T15:30:15Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-20207",
+      "severity": "info",
+      "service": "service-mesh",
+      "message": "New dashboard version deployed - no action required",
+      "timestamp": "2026-03-26T15:35:59Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-20208",
+      "severity": "warning",
+      "service": "service-mesh",
+      "message": "Disk usage at 72% on data volume",
+      "timestamp": "2026-03-26T15:38:29Z",
       "acknowledged": false,
       "silenced": false
     }
   ],
   "services": [
-    {"name": "cache-layer", "status": "down", "latency_ms": 0, "error_rate": 100.0, "cpu_percent": 0, "memory_percent": 0, "version": "2.1.0"},
-    {"name": "api-gateway", "status": "degraded", "latency_ms": 6200, "error_rate": 52.0, "cpu_percent": 88, "memory_percent": 74, "version": "5.0.4"},
-    {"name": "order-service", "status": "degraded", "latency_ms": 12000, "error_rate": 38.0, "cpu_percent": 72, "memory_percent": 69, "version": "3.3.1"},
-    {"name": "payment-api", "status": "degraded", "latency_ms": 8500, "error_rate": 65.0, "cpu_percent": 66, "memory_percent": 60, "version": "4.1.1"},
-    {"name": "user-service", "status": "degraded", "latency_ms": 3400, "error_rate": 78.0, "cpu_percent": 58, "memory_percent": 55, "version": "2.4.0"},
-    {"name": "inventory-service", "status": "degraded", "latency_ms": 4100, "error_rate": 20.0, "cpu_percent": 80, "memory_percent": 72, "version": "1.9.2"},
-    {"name": "order-db", "status": "degraded", "latency_ms": 3800, "error_rate": 12.0, "cpu_percent": 96, "memory_percent": 91, "version": "14.3"}
+    {
+      "name": "order-service",
+      "status": "down",
+      "latency_ms": 0,
+      "error_rate": 82.3,
+      "cpu_percent": 65,
+      "memory_percent": 77,
+      "version": "2.0.0"
+    },
+    {
+      "name": "email-service",
+      "status": "down",
+      "latency_ms": 0,
+      "error_rate": 76.0,
+      "cpu_percent": 67,
+      "memory_percent": 52,
+      "version": "1.1.0"
+    },
+    {
+      "name": "session-store",
+      "status": "down",
+      "latency_ms": 0,
+      "error_rate": 75.2,
+      "cpu_percent": 59,
+      "memory_percent": 44,
+      "version": "1.0.0"
+    },
+    {
+      "name": "payment-api",
+      "status": "healthy",
+      "latency_ms": 34,
+      "error_rate": 0.0,
+      "cpu_percent": 6,
+      "memory_percent": 17,
+      "version": "3.2.0"
+    },
+    {
+      "name": "message-queue",
+      "status": "healthy",
+      "latency_ms": 75,
+      "error_rate": 0.3,
+      "cpu_percent": 39,
+      "memory_percent": 30,
+      "version": "4.1.0"
+    },
+    {
+      "name": "service-mesh",
+      "status": "healthy",
+      "latency_ms": 176,
+      "error_rate": 0.6,
+      "cpu_percent": 49,
+      "memory_percent": 53,
+      "version": "4.1.0"
+    }
   ],
   "recent_deployments": [
-    {"service": "cache-layer", "version": "2.1.0", "timestamp": "2026-03-26T12:30:00Z", "deployer": "platform-team"},
-    {"service": "inventory-service", "version": "1.9.2", "timestamp": "2026-03-26T11:00:00Z", "deployer": "inventory-team"}
+    {
+      "service": "order-service",
+      "version": "2.0.0",
+      "timestamp": "2026-03-26T14:03:00Z",
+      "deployer": "platform-team"
+    },
+    {
+      "service": "message-queue",
+      "version": "4.1.0",
+      "timestamp": "2026-03-26T14:47:00Z",
+      "deployer": "ml-team"
+    },
+    {
+      "service": "service-mesh",
+      "version": "4.1.0",
+      "timestamp": "2026-03-26T14:55:00Z",
+      "deployer": "ml-team"
+    }
   ],
   "logs": {
-    "cache-layer": [
-      {"timestamp": "2026-03-26T12:35:00Z", "service": "cache-layer", "level": "INFO", "message": "Deployed v2.1.0 -- config loaded: cache.eviction_policy=none"},
-      {"timestamp": "2026-03-26T13:10:00Z", "service": "cache-layer", "level": "WARN", "message": "Heap memory usage growing: 3.1GB / 8GB limit -- eviction policy is none, no keys being expired"},
-      {"timestamp": "2026-03-26T13:30:00Z", "service": "cache-layer", "level": "WARN", "message": "Memory usage: 5.4GB / 8GB -- cache.eviction_policy=none preventing any key eviction under load"},
-      {"timestamp": "2026-03-26T13:45:00Z", "service": "cache-layer", "level": "ERROR", "message": "Memory usage: 7.2GB / 8GB -- GC unable to reclaim space, all allocated cache slots in use"},
-      {"timestamp": "2026-03-26T13:55:00Z", "service": "cache-layer", "level": "ERROR", "message": "Memory usage: 7.9GB / 8GB -- new SET operations being rejected: ENOMEM"},
-      {"timestamp": "2026-03-26T14:00:00Z", "service": "cache-layer", "level": "FATAL", "message": "OOM kill signal received -- process terminated (cache.eviction_policy=none caused unbounded memory growth)"}
-    ],
-    "api-gateway": [
-      {"timestamp": "2026-03-26T14:00:05Z", "service": "api-gateway", "level": "ERROR", "message": "Session validation failed: cache-layer connection refused on port 6379"},
-      {"timestamp": "2026-03-26T14:00:10Z", "service": "api-gateway", "level": "ERROR", "message": "503 Service Unavailable returned for 52% of requests -- session backend unavailable"},
-      {"timestamp": "2026-03-26T14:00:20Z", "service": "api-gateway", "level": "WARN", "message": "Retrying cache-layer connection: attempt 3/3 -- all attempts failed"}
-    ],
-    "user-service": [
-      {"timestamp": "2026-03-26T14:00:08Z", "service": "user-service", "level": "ERROR", "message": "Session lookup timeout: cache-layer not responding after 5000ms"},
-      {"timestamp": "2026-03-26T14:00:18Z", "service": "user-service", "level": "ERROR", "message": "Falling back to DB session store -- latency impact expected"},
-      {"timestamp": "2026-03-26T14:00:35Z", "service": "user-service", "level": "WARN", "message": "DB session store overloaded -- 78% of session lookups failing"}
-    ],
     "order-service": [
-      {"timestamp": "2026-03-26T14:00:10Z", "service": "order-service", "level": "ERROR", "message": "Query cache unavailable: cache-layer DOWN -- executing uncached DB queries"},
-      {"timestamp": "2026-03-26T14:00:25Z", "service": "order-service", "level": "WARN", "message": "Order DB query latency p99 spiked to 12000ms -- full table scans without cache"},
-      {"timestamp": "2026-03-26T14:00:40Z", "service": "order-service", "level": "ERROR", "message": "Circuit breaker OPEN for cache-layer dependency -- all reads going to DB directly"}
+      {
+        "timestamp": "2026-03-26T15:39:00Z",
+        "service": "order-service",
+        "level": "ERROR",
+        "message": "Connection pool exhausted - cannot acquire connection to order-service-db"
+      },
+      {
+        "timestamp": "2026-03-26T15:41:00Z",
+        "service": "order-service",
+        "level": "ERROR",
+        "message": "Timeout waiting for DB connection after 5000ms"
+      },
+      {
+        "timestamp": "2026-03-26T15:43:00Z",
+        "service": "order-service",
+        "level": "WARN",
+        "message": "Circuit breaker OPEN for order-service-db connections"
+      },
+      {
+        "timestamp": "2026-03-26T15:45:00Z",
+        "service": "order-service",
+        "level": "ERROR",
+        "message": "Failed to process request txn-72814: DB connection unavailable"
+      },
+      {
+        "timestamp": "2026-03-26T15:47:00Z",
+        "service": "order-service",
+        "level": "INFO",
+        "message": "Retrying DB connection pool initialization"
+      }
+    ],
+    "email-service": [
+      {
+        "timestamp": "2026-03-26T15:40:00Z",
+        "service": "email-service",
+        "level": "ERROR",
+        "message": "order-service returned 503 for request req-27015"
+      },
+      {
+        "timestamp": "2026-03-26T15:45:00Z",
+        "service": "email-service",
+        "level": "ERROR",
+        "message": "Failed to complete operation: upstream order-service unavailable"
+      }
+    ],
+    "session-store": [
+      {
+        "timestamp": "2026-03-26T15:40:00Z",
+        "service": "session-store",
+        "level": "ERROR",
+        "message": "order-service returned 503 for request req-94066"
+      },
+      {
+        "timestamp": "2026-03-26T15:43:20Z",
+        "service": "session-store",
+        "level": "ERROR",
+        "message": "Failed to complete operation: upstream order-service unavailable"
+      },
+      {
+        "timestamp": "2026-03-26T15:46:40Z",
+        "service": "session-store",
+        "level": "WARN",
+        "message": "Fallback: queuing request for retry"
+      }
+    ],
+    "service-mesh": [
+      {
+        "timestamp": "2026-03-26T15:39:00Z",
+        "service": "service-mesh",
+        "level": "INFO",
+        "message": "Scheduled reindex 40% complete - elevated latency expected"
+      }
     ],
     "payment-api": [
-      {"timestamp": "2026-03-26T14:00:15Z", "service": "payment-api", "level": "ERROR", "message": "User session not found: cannot authorize transaction without valid session"},
-      {"timestamp": "2026-03-26T14:00:30Z", "service": "payment-api", "level": "ERROR", "message": "Transaction failure: session validation returned 503 from user-service"},
-      {"timestamp": "2026-03-26T14:00:50Z", "service": "payment-api", "level": "WARN", "message": "Transaction authorization rate dropped to 35% -- upstream session failures blocking payment flow"}
-    ],
-    "order-db": [
-      {"timestamp": "2026-03-26T14:00:20Z", "service": "order-db", "level": "WARN", "message": "Connection pool at 98% capacity: 490/500 connections in use"},
-      {"timestamp": "2026-03-26T14:00:35Z", "service": "order-db", "level": "ERROR", "message": "Slow query detected: full scan on orders table (missing cached query plan) -- 14s execution"},
-      {"timestamp": "2026-03-26T14:01:00Z", "service": "order-db", "level": "WARN", "message": "CPU at 96% -- volume of uncached direct queries unsustainable"}
+      {
+        "timestamp": "2026-03-26T15:39:00Z",
+        "service": "payment-api",
+        "level": "INFO",
+        "message": "Cache hit ratio: 98%"
+      }
     ]
   },
   "metrics": {
-    "cache-layer:memory_mb": [1200, 2800, 4200, 5400, 7200, 7900, 8192],
-    "cache-layer:evicted_keys": [0, 0, 0, 0, 0, 0],
-    "cache-layer:error_rate": [0.0, 0.1, 0.5, 5.0, 40.0, 100.0],
-    "api-gateway:error_rate": [0.2, 1.0, 12.0, 35.0, 52.0],
-    "order-service:latency_p99_ms": [120, 300, 800, 4000, 12000],
-    "user-service:session_failure_rate": [0.1, 0.5, 10.0, 45.0, 78.0],
-    "order-db:connections": [180, 220, 320, 430, 490, 500],
-    "payment-api:error_rate": [0.1, 0.8, 15.0, 42.0, 65.0]
+    "order-service:error_rate": [
+      1.8,
+      4.4,
+      11.3,
+      28.6,
+      72.7
+    ],
+    "order-service:latency_p99": [
+      1.6,
+      2.7,
+      4.8,
+      8.5,
+      15.1,
+      26.6,
+      46.8
+    ],
+    "order-service:db_connections": [
+      0.0,
+      28.0,
+      46.2,
+      58.1,
+      65.8,
+      70.9,
+      74.2,
+      76.3
+    ],
+    "email-service:error_rate": [
+      1.6,
+      3.5,
+      7.4,
+      15.8,
+      33.8,
+      72.3
+    ],
+    "session-store:error_rate": [
+      0.4,
+      0.8,
+      1.5,
+      2.7,
+      5.0,
+      9.1,
+      16.6,
+      30.3
+    ],
+    "payment-api:cpu": [
+      20.5,
+      25.5,
+      37.9,
+      27.7,
+      23.5,
+      21.5
+    ],
+    "message-queue:cpu": [
+      48.1,
+      52.9,
+      51.7,
+      47.5,
+      47.2,
+      42.7
+    ]
   },
   "dependencies": {
-    "api-gateway": ["order-service", "payment-api", "user-service", "inventory-service"],
-    "order-service": ["order-db", "cache-layer", "inventory-service"],
-    "user-service": ["cache-layer", "user-db"],
-    "payment-api": ["user-service", "order-service", "payment-db"],
-    "inventory-service": ["cache-layer", "inventory-db"],
-    "cache-layer": ["redis-cluster"]
+    "order-service": [
+      "order-service-db",
+      "order-service-store"
+    ],
+    "email-service": [
+      "order-service",
+      "email-service-db"
+    ],
+    "session-store": [
+      "order-service",
+      "session-store-db"
+    ],
+    "payment-api": [
+      "payment-api-db"
+    ],
+    "message-queue": [
+      "message-queue-db"
+    ],
+    "service-mesh": [
+      "service-mesh-db"
+    ]
   },
   "root_cause": {
-    "service": "cache-layer",
-    "description": "cache-layer v2.1.0 introduced a config change 'cache.eviction_policy=none' that disabled all key eviction. Under afternoon traffic load, the cache grew without bound until the process was OOM-killed. With cache-layer down, all services relying on it for session data (user-service, api-gateway) and query caching (order-service, inventory-service) experienced cascading failures. The flood of uncached direct DB reads overwhelmed order-db, amplifying the outage.",
-    "keywords": ["cache-layer", "eviction", "memory", "OOM", "cache.eviction_policy", "none", "v2.1.0", "session", "unbounded"]
+    "service": "order-service",
+    "description": "DB connection pool exhaustion on order-service caused by connection leak in 2.0.0 deployment",
+    "keywords": [
+      "connection pool",
+      "database",
+      "db",
+      "exhausted",
+      "leak",
+      "connection"
+    ]
   },
   "valid_remediations": [
-    {"action": "update_config", "service": "cache-layer", "config_key": "cache.eviction_policy", "config_value": "lru"},
-    {"action": "rollback_deploy", "service": "cache-layer"},
-    {"action": "restart_service", "service": "cache-layer"}
+    {
+      "action": "restart_service",
+      "service": "order-service"
+    },
+    {
+      "action": "rollback_deploy",
+      "service": "order-service"
+    }
   ],
   "expected_diagnostics": [
-    {"action_type": "query_logs", "params": {"service": "cache-layer"}},
-    {"action_type": "check_metrics", "params": {"service": "cache-layer"}},
-    {"action_type": "view_dependencies", "params": {"service_name": "api-gateway"}},
-    {"action_type": "query_logs", "params": {"service": "user-service"}},
-    {"action_type": "check_metrics", "params": {"service": "order-db"}}
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "order-service"
+      }
+    },
+    {
+      "action_type": "check_metrics",
+      "params": {
+        "service": "order-service"
+      }
+    },
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "email-service"
+      }
+    }
   ],
   "grading_rubric": {
-    "triage_weight": 0.10,
-    "diagnostic_weight": 0.25,
-    "root_cause_weight": 0.30,
-    "remediation_weight": 0.20,
-    "efficiency_weight": 0.10,
-    "documentation_weight": 0.05
+    "triage_weight": 0.09,
+    "diagnostic_weight": 0.29,
+    "root_cause_weight": 0.3,
+    "remediation_weight": 0.21,
+    "efficiency_weight": 0.08,
+    "documentation_weight": 0.03
   }
 }

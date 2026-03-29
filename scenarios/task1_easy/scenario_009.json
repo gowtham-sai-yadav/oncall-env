@@ -1,0 +1,254 @@
+{
+  "incident_id": "INC-20260326-009",
+  "difficulty": "easy",
+  "description": "SEV3 incident: TLS Certificate Expiry affecting billing-service. Cascading impact on analytics-service.",
+  "expected_severity": "SEV3",
+  "initial_alerts": [
+    {
+      "alert_id": "alert-901",
+      "severity": "critical",
+      "service": "billing-service",
+      "message": "TLS certificate expired - all HTTPS connections failing",
+      "timestamp": "2026-03-26T18:12:05Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-902",
+      "severity": "critical",
+      "service": "analytics-service",
+      "message": "Connection refused: TLS handshake failure with billing-service",
+      "timestamp": "2026-03-26T18:13:10Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-903",
+      "severity": "warning",
+      "service": "billing-service",
+      "message": "Certificate validity: EXPIRED since 2026-03-26T16:00:00Z",
+      "timestamp": "2026-03-26T18:14:15Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-904",
+      "severity": "critical",
+      "service": "analytics-service",
+      "message": "analytics-service error rate spiking - requests failing",
+      "timestamp": "2026-03-26T18:12:56Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-905",
+      "severity": "warning",
+      "service": "internal-dns",
+      "message": "CPU usage at 65% - approaching threshold",
+      "timestamp": "2026-03-26T18:08:38Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-906",
+      "severity": "info",
+      "service": "message-queue",
+      "message": "Canary deployment proceeding as expected",
+      "timestamp": "2026-03-26T18:07:54Z",
+      "acknowledged": false,
+      "silenced": false
+    }
+  ],
+  "services": [
+    {
+      "name": "billing-service",
+      "status": "down",
+      "latency_ms": 0,
+      "error_rate": 83.6,
+      "cpu_percent": 75,
+      "memory_percent": 64,
+      "version": "2.0.0"
+    },
+    {
+      "name": "analytics-service",
+      "status": "degraded",
+      "latency_ms": 2978,
+      "error_rate": 58.9,
+      "cpu_percent": 20,
+      "memory_percent": 46,
+      "version": "1.2.3"
+    },
+    {
+      "name": "message-queue",
+      "status": "healthy",
+      "latency_ms": 109,
+      "error_rate": 0.9,
+      "cpu_percent": 6,
+      "memory_percent": 26,
+      "version": "3.1.2"
+    },
+    {
+      "name": "internal-dns",
+      "status": "healthy",
+      "latency_ms": 54,
+      "error_rate": 0.9,
+      "cpu_percent": 23,
+      "memory_percent": 46,
+      "version": "3.2.0"
+    }
+  ],
+  "recent_deployments": [
+    {
+      "service": "billing-service",
+      "version": "2.0.0",
+      "timestamp": "2026-03-26T17:09:00Z",
+      "deployer": "dev-team"
+    }
+  ],
+  "logs": {
+    "billing-service": [
+      {
+        "timestamp": "2026-03-26T18:11:00Z",
+        "service": "billing-service",
+        "level": "ERROR",
+        "message": "TLS handshake failed: certificate expired at 2026-03-26T16:00:00Z"
+      },
+      {
+        "timestamp": "2026-03-26T18:13:00Z",
+        "service": "billing-service",
+        "level": "ERROR",
+        "message": "x509: certificate has expired or is not yet valid"
+      },
+      {
+        "timestamp": "2026-03-26T18:15:00Z",
+        "service": "billing-service",
+        "level": "WARN",
+        "message": "Auto-renewal of TLS cert failed: ACME challenge timeout"
+      },
+      {
+        "timestamp": "2026-03-26T18:17:00Z",
+        "service": "billing-service",
+        "level": "ERROR",
+        "message": "All incoming HTTPS connections rejected: invalid certificate"
+      }
+    ],
+    "analytics-service": [
+      {
+        "timestamp": "2026-03-26T18:12:00Z",
+        "service": "analytics-service",
+        "level": "ERROR",
+        "message": "TLS handshake failed connecting to billing-service: certificate expired"
+      },
+      {
+        "timestamp": "2026-03-26T18:17:00Z",
+        "service": "analytics-service",
+        "level": "WARN",
+        "message": "Falling back to cached data - billing-service unreachable"
+      }
+    ]
+  },
+  "metrics": {
+    "billing-service:tls_errors": [
+      0.3,
+      0.3,
+      0.3,
+      95.2,
+      95.2,
+      95.2
+    ],
+    "billing-service:error_rate": [
+      0.8,
+      0.8,
+      0.8,
+      74.8,
+      74.8,
+      74.8
+    ],
+    "analytics-service:error_rate": [
+      1.0,
+      1.0,
+      1.0,
+      58.9,
+      58.9,
+      58.9,
+      58.9
+    ],
+    "message-queue:cpu": [
+      26.8,
+      41.5,
+      27.2,
+      41.5,
+      38.6,
+      37.5
+    ],
+    "internal-dns:cpu": [
+      35.0,
+      37.6,
+      31.5,
+      31.4,
+      29.5,
+      30.3
+    ]
+  },
+  "dependencies": {
+    "billing-service": [
+      "billing-service-db",
+      "billing-service-store"
+    ],
+    "analytics-service": [
+      "billing-service",
+      "analytics-service-db"
+    ],
+    "message-queue": [
+      "message-queue-db"
+    ],
+    "internal-dns": [
+      "internal-dns-db"
+    ]
+  },
+  "root_cause": {
+    "service": "billing-service",
+    "description": "TLS certificate expired on billing-service causing all HTTPS connections to fail",
+    "keywords": [
+      "tls",
+      "certificate",
+      "expired",
+      "ssl",
+      "https",
+      "cert",
+      "x509"
+    ]
+  },
+  "valid_remediations": [
+    {
+      "action": "restart_service",
+      "service": "billing-service"
+    },
+    {
+      "action": "update_config",
+      "service": "billing-service"
+    }
+  ],
+  "expected_diagnostics": [
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "billing-service"
+      }
+    },
+    {
+      "action_type": "check_metrics",
+      "params": {
+        "service": "billing-service"
+      }
+    }
+  ],
+  "grading_rubric": {
+    "triage_weight": 0.28,
+    "diagnostic_weight": 0.22,
+    "root_cause_weight": 0.12,
+    "remediation_weight": 0.16,
+    "efficiency_weight": 0.12,
+    "documentation_weight": 0.1
+  }
+}

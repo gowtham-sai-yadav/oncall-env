@@ -1,0 +1,350 @@
+{
+  "incident_id": "INC-20260326-110",
+  "difficulty": "medium",
+  "description": "SEV2 incident: Load Balancer Misconfiguration affecting cdn-proxy. Cascading impact on user-service, auth-service.",
+  "expected_severity": "SEV2",
+  "initial_alerts": [
+    {
+      "alert_id": "alert-11001",
+      "severity": "critical",
+      "service": "cdn-proxy",
+      "message": "Uneven traffic distribution - single backend receiving 100% traffic",
+      "timestamp": "2026-03-26T15:36:05Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-11002",
+      "severity": "critical",
+      "service": "user-service",
+      "message": "Service overloaded - receiving all routed traffic",
+      "timestamp": "2026-03-26T15:37:10Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-11003",
+      "severity": "warning",
+      "service": "cdn-proxy",
+      "message": "Health check configuration mismatch detected",
+      "timestamp": "2026-03-26T15:38:15Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-11004",
+      "severity": "critical",
+      "service": "user-service",
+      "message": "user-service error rate spiking - requests failing",
+      "timestamp": "2026-03-26T15:36:51Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-11005",
+      "severity": "critical",
+      "service": "auth-service",
+      "message": "auth-service error rate spiking - requests failing",
+      "timestamp": "2026-03-26T15:36:36Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-11006",
+      "severity": "info",
+      "service": "session-store",
+      "message": "New dashboard version deployed - no action required",
+      "timestamp": "2026-03-26T15:33:04Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-11007",
+      "severity": "warning",
+      "service": "session-store",
+      "message": "CPU usage at 70% - approaching threshold",
+      "timestamp": "2026-03-26T15:34:57Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-11008",
+      "severity": "warning",
+      "service": "api-gateway",
+      "message": "Log volume increased 20% - review retention policy",
+      "timestamp": "2026-03-26T15:30:30Z",
+      "acknowledged": false,
+      "silenced": false
+    }
+  ],
+  "services": [
+    {
+      "name": "cdn-proxy",
+      "status": "degraded",
+      "latency_ms": 5735,
+      "error_rate": 21.5,
+      "cpu_percent": 54,
+      "memory_percent": 89,
+      "version": "4.2.0"
+    },
+    {
+      "name": "user-service",
+      "status": "degraded",
+      "latency_ms": 2201,
+      "error_rate": 23.7,
+      "cpu_percent": 78,
+      "memory_percent": 42,
+      "version": "2.1.1"
+    },
+    {
+      "name": "auth-service",
+      "status": "degraded",
+      "latency_ms": 4170,
+      "error_rate": 50.3,
+      "cpu_percent": 40,
+      "memory_percent": 31,
+      "version": "4.0.1"
+    },
+    {
+      "name": "session-store",
+      "status": "healthy",
+      "latency_ms": 78,
+      "error_rate": 0.2,
+      "cpu_percent": 47,
+      "memory_percent": 29,
+      "version": "3.1.2"
+    },
+    {
+      "name": "api-gateway",
+      "status": "healthy",
+      "latency_ms": 102,
+      "error_rate": 0.5,
+      "cpu_percent": 27,
+      "memory_percent": 28,
+      "version": "1.1.0"
+    }
+  ],
+  "recent_deployments": [
+    {
+      "service": "cdn-proxy",
+      "version": "4.2.0",
+      "timestamp": "2026-03-26T14:04:00Z",
+      "deployer": "infra-team"
+    },
+    {
+      "service": "session-store",
+      "version": "3.1.2",
+      "timestamp": "2026-03-26T14:34:00Z",
+      "deployer": "ops-team"
+    }
+  ],
+  "logs": {
+    "cdn-proxy": [
+      {
+        "timestamp": "2026-03-26T15:35:00Z",
+        "service": "cdn-proxy",
+        "level": "ERROR",
+        "message": "Backend pool misconfigured: only 1 of 8 backends active"
+      },
+      {
+        "timestamp": "2026-03-26T15:37:30Z",
+        "service": "cdn-proxy",
+        "level": "WARN",
+        "message": "Health check endpoint changed in 4.2.0 but LB config not updated"
+      },
+      {
+        "timestamp": "2026-03-26T15:40:00Z",
+        "service": "cdn-proxy",
+        "level": "ERROR",
+        "message": "All traffic routed to user-service: other backends marked unhealthy"
+      },
+      {
+        "timestamp": "2026-03-26T15:42:30Z",
+        "service": "cdn-proxy",
+        "level": "WARN",
+        "message": "Backend user-service reporting 503: overloaded from traffic spike"
+      }
+    ],
+    "user-service": [
+      {
+        "timestamp": "2026-03-26T15:36:00Z",
+        "service": "user-service",
+        "level": "ERROR",
+        "message": "Request rate 10x normal - possible routing issue"
+      },
+      {
+        "timestamp": "2026-03-26T15:41:00Z",
+        "service": "user-service",
+        "level": "WARN",
+        "message": "Thread pool exhausted from unexpected traffic volume"
+      }
+    ],
+    "auth-service": [
+      {
+        "timestamp": "2026-03-26T15:36:00Z",
+        "service": "auth-service",
+        "level": "ERROR",
+        "message": "Request rate 10x normal - possible routing issue"
+      },
+      {
+        "timestamp": "2026-03-26T15:41:00Z",
+        "service": "auth-service",
+        "level": "WARN",
+        "message": "Thread pool exhausted from unexpected traffic volume"
+      }
+    ],
+    "api-gateway": [
+      {
+        "timestamp": "2026-03-26T15:35:00Z",
+        "service": "api-gateway",
+        "level": "INFO",
+        "message": "Healthy - serving requests normally"
+      }
+    ]
+  },
+  "metrics": {
+    "cdn-proxy:backend_health_pct": [
+      1.1,
+      1.1,
+      1.1,
+      98.8,
+      98.8,
+      98.8
+    ],
+    "cdn-proxy:error_rate": [
+      1.5,
+      1.5,
+      1.5,
+      87.3,
+      87.3,
+      87.3,
+      87.3
+    ],
+    "user-service:cpu_percent": [
+      0.0,
+      42.7,
+      66.2,
+      79.0,
+      86.1,
+      90.0
+    ],
+    "user-service:error_rate": [
+      0.7,
+      1.5,
+      3.0,
+      6.0,
+      12.1,
+      24.4,
+      49.2,
+      99.3
+    ],
+    "auth-service:cpu_percent": [
+      0.0,
+      33.6,
+      55.4,
+      69.7,
+      78.9,
+      85.0,
+      88.9,
+      91.5
+    ],
+    "auth-service:error_rate": [
+      0.7,
+      1.8,
+      4.8,
+      12.8,
+      34.5,
+      92.9
+    ],
+    "session-store:cpu": [
+      32.9,
+      26.0,
+      30.6,
+      27.8,
+      35.8,
+      34.6
+    ],
+    "api-gateway:cpu": [
+      26.2,
+      19.4,
+      25.3,
+      33.6,
+      24.7,
+      25.1
+    ]
+  },
+  "dependencies": {
+    "cdn-proxy": [
+      "cdn-proxy-db",
+      "cdn-proxy-store"
+    ],
+    "user-service": [
+      "cdn-proxy",
+      "user-service-db"
+    ],
+    "auth-service": [
+      "cdn-proxy",
+      "auth-service-db"
+    ],
+    "session-store": [
+      "session-store-db"
+    ],
+    "api-gateway": [
+      "api-gateway-db"
+    ]
+  },
+  "root_cause": {
+    "service": "cdn-proxy",
+    "description": "Load balancer misconfiguration on cdn-proxy routing all traffic to single unhealthy backend after 4.2.0 config change",
+    "keywords": [
+      "load balancer",
+      "routing",
+      "misconfiguration",
+      "config",
+      "backend",
+      "traffic"
+    ]
+  },
+  "valid_remediations": [
+    {
+      "action": "update_config",
+      "service": "cdn-proxy"
+    },
+    {
+      "action": "rollback_deploy",
+      "service": "cdn-proxy"
+    },
+    {
+      "action": "restart_service",
+      "service": "cdn-proxy"
+    }
+  ],
+  "expected_diagnostics": [
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "cdn-proxy"
+      }
+    },
+    {
+      "action_type": "check_metrics",
+      "params": {
+        "service": "cdn-proxy"
+      }
+    },
+    {
+      "action_type": "view_dependencies",
+      "params": {
+        "service_name": "user-service"
+      }
+    }
+  ],
+  "grading_rubric": {
+    "triage_weight": 0.2,
+    "diagnostic_weight": 0.25,
+    "root_cause_weight": 0.2,
+    "remediation_weight": 0.19,
+    "efficiency_weight": 0.11,
+    "documentation_weight": 0.05
+  }
+}

@@ -1,0 +1,258 @@
+{
+  "incident_id": "INC-20260326-005",
+  "difficulty": "easy",
+  "description": "SEV3 incident: Memory Leak (OOM) affecting inventory-service. Cascading impact on auth-service.",
+  "expected_severity": "SEV3",
+  "initial_alerts": [
+    {
+      "alert_id": "alert-501",
+      "severity": "critical",
+      "service": "inventory-service",
+      "message": "Memory usage at 90% - OOM kill imminent",
+      "timestamp": "2026-03-26T14:06:05Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-502",
+      "severity": "critical",
+      "service": "inventory-service",
+      "message": "Service restarts detected - 13 OOM kills in last 10 minutes",
+      "timestamp": "2026-03-26T14:07:10Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-503",
+      "severity": "warning",
+      "service": "auth-service",
+      "message": "Elevated error rate due to inventory-service instability",
+      "timestamp": "2026-03-26T14:08:15Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-504",
+      "severity": "critical",
+      "service": "auth-service",
+      "message": "auth-service error rate spiking - requests failing",
+      "timestamp": "2026-03-26T14:06:13Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-505",
+      "severity": "info",
+      "service": "config-server",
+      "message": "Scheduled maintenance window starting in 2 hours",
+      "timestamp": "2026-03-26T14:01:03Z",
+      "acknowledged": false,
+      "silenced": false
+    }
+  ],
+  "services": [
+    {
+      "name": "inventory-service",
+      "status": "down",
+      "latency_ms": 0,
+      "error_rate": 99.7,
+      "cpu_percent": 71,
+      "memory_percent": 88,
+      "version": "1.2.3"
+    },
+    {
+      "name": "auth-service",
+      "status": "down",
+      "latency_ms": 0,
+      "error_rate": 70.4,
+      "cpu_percent": 70,
+      "memory_percent": 61,
+      "version": "1.0.0"
+    },
+    {
+      "name": "config-server",
+      "status": "healthy",
+      "latency_ms": 179,
+      "error_rate": 0.7,
+      "cpu_percent": 15,
+      "memory_percent": 44,
+      "version": "2.3.0"
+    },
+    {
+      "name": "cdn-proxy",
+      "status": "healthy",
+      "latency_ms": 32,
+      "error_rate": 0.6,
+      "cpu_percent": 48,
+      "memory_percent": 53,
+      "version": "3.2.0"
+    }
+  ],
+  "recent_deployments": [
+    {
+      "service": "inventory-service",
+      "version": "1.2.3",
+      "timestamp": "2026-03-26T13:42:00Z",
+      "deployer": "sre-bot"
+    }
+  ],
+  "logs": {
+    "inventory-service": [
+      {
+        "timestamp": "2026-03-26T14:05:00Z",
+        "service": "inventory-service",
+        "level": "WARN",
+        "message": "Heap usage at 85% - garbage collection ineffective"
+      },
+      {
+        "timestamp": "2026-03-26T14:07:00Z",
+        "service": "inventory-service",
+        "level": "ERROR",
+        "message": "Out of memory: process killed by OOM killer (RSS: 4523MB)"
+      },
+      {
+        "timestamp": "2026-03-26T14:09:00Z",
+        "service": "inventory-service",
+        "level": "INFO",
+        "message": "Service restarting after OOM kill - attempt 2"
+      },
+      {
+        "timestamp": "2026-03-26T14:11:00Z",
+        "service": "inventory-service",
+        "level": "WARN",
+        "message": "Request cache size growing unbounded: 697993 entries"
+      },
+      {
+        "timestamp": "2026-03-26T14:13:00Z",
+        "service": "inventory-service",
+        "level": "ERROR",
+        "message": "Failed to allocate memory for request processing"
+      }
+    ],
+    "auth-service": [
+      {
+        "timestamp": "2026-03-26T14:06:00Z",
+        "service": "auth-service",
+        "level": "ERROR",
+        "message": "Connection refused from inventory-service: service restarting"
+      },
+      {
+        "timestamp": "2026-03-26T14:11:00Z",
+        "service": "auth-service",
+        "level": "WARN",
+        "message": "Retrying request to inventory-service after connection failure"
+      }
+    ]
+  },
+  "metrics": {
+    "inventory-service:memory_percent": [
+      0.0,
+      47.1,
+      69.3,
+      79.8,
+      84.7
+    ],
+    "inventory-service:error_rate": [
+      1.5,
+      1.5,
+      1.5,
+      46.1,
+      46.1,
+      46.1
+    ],
+    "inventory-service:restarts": [
+      0.9,
+      0.9,
+      0.9,
+      79.8,
+      79.8,
+      79.8,
+      79.8
+    ],
+    "auth-service:error_rate": [
+      0.4,
+      0.4,
+      0.4,
+      76.1,
+      76.1,
+      76.1
+    ],
+    "config-server:cpu": [
+      36.0,
+      50.2,
+      36.2,
+      40.4,
+      49.0,
+      42.4
+    ],
+    "cdn-proxy:cpu": [
+      41.3,
+      40.4,
+      43.2,
+      43.4,
+      42.8,
+      38.7
+    ]
+  },
+  "dependencies": {
+    "inventory-service": [
+      "inventory-service-db",
+      "inventory-service-store"
+    ],
+    "auth-service": [
+      "inventory-service",
+      "auth-service-db"
+    ],
+    "config-server": [
+      "config-server-db"
+    ],
+    "cdn-proxy": [
+      "cdn-proxy-db"
+    ]
+  },
+  "root_cause": {
+    "service": "inventory-service",
+    "description": "Memory leak in inventory-service 1.2.3 causing OOM kills - unbounded cache growth in request handler",
+    "keywords": [
+      "memory",
+      "leak",
+      "OOM",
+      "out of memory",
+      "heap",
+      "cache",
+      "growth"
+    ]
+  },
+  "valid_remediations": [
+    {
+      "action": "restart_service",
+      "service": "inventory-service"
+    },
+    {
+      "action": "rollback_deploy",
+      "service": "inventory-service"
+    }
+  ],
+  "expected_diagnostics": [
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "inventory-service"
+      }
+    },
+    {
+      "action_type": "check_metrics",
+      "params": {
+        "service": "inventory-service"
+      }
+    }
+  ],
+  "grading_rubric": {
+    "triage_weight": 0.32,
+    "diagnostic_weight": 0.18,
+    "root_cause_weight": 0.18,
+    "remediation_weight": 0.14,
+    "efficiency_weight": 0.09,
+    "documentation_weight": 0.09
+  }
+}

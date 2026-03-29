@@ -1,0 +1,369 @@
+{
+  "incident_id": "INC-20260326-204",
+  "difficulty": "hard",
+  "description": "SEV1 incident: Deadlock Storm affecting user-service. Cascading impact on cache-layer, message-queue. Multiple concurrent events make diagnosis challenging.",
+  "expected_severity": "SEV1",
+  "initial_alerts": [
+    {
+      "alert_id": "alert-20401",
+      "severity": "critical",
+      "service": "user-service",
+      "message": "Transaction deadlocks spiking - 448/min detected",
+      "timestamp": "2026-03-26T22:49:05Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-20402",
+      "severity": "critical",
+      "service": "user-service",
+      "message": "Request queue depth exceeding 500 - requests backing up",
+      "timestamp": "2026-03-26T22:50:10Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-20403",
+      "severity": "warning",
+      "service": "cache-layer",
+      "message": "Upstream user-service response time degraded",
+      "timestamp": "2026-03-26T22:51:15Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-20404",
+      "severity": "critical",
+      "service": "cache-layer",
+      "message": "cache-layer error rate spiking - requests failing",
+      "timestamp": "2026-03-26T22:49:42Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-20405",
+      "severity": "critical",
+      "service": "message-queue",
+      "message": "message-queue error rate spiking - requests failing",
+      "timestamp": "2026-03-26T22:49:49Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-20406",
+      "severity": "info",
+      "service": "config-server",
+      "message": "Elasticsearch reindex started - expected temporary latency increase",
+      "timestamp": "2026-03-26T22:45:09Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-20407",
+      "severity": "warning",
+      "service": "service-mesh",
+      "message": "CPU usage at 71% - approaching threshold",
+      "timestamp": "2026-03-26T22:47:32Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-20408",
+      "severity": "info",
+      "service": "config-server",
+      "message": "SSL certificate renewal scheduled for next week",
+      "timestamp": "2026-03-26T22:47:38Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-20409",
+      "severity": "info",
+      "service": "config-server",
+      "message": "Model v4.2 deployment started - canary rollout in progress",
+      "timestamp": "2026-03-26T22:44:43Z",
+      "acknowledged": false,
+      "silenced": false
+    }
+  ],
+  "services": [
+    {
+      "name": "user-service",
+      "status": "down",
+      "latency_ms": 0,
+      "error_rate": 79.6,
+      "cpu_percent": 93,
+      "memory_percent": 43,
+      "version": "2.3.0"
+    },
+    {
+      "name": "cache-layer",
+      "status": "degraded",
+      "latency_ms": 3042,
+      "error_rate": 20.7,
+      "cpu_percent": 42,
+      "memory_percent": 66,
+      "version": "3.2.0"
+    },
+    {
+      "name": "message-queue",
+      "status": "degraded",
+      "latency_ms": 876,
+      "error_rate": 49.6,
+      "cpu_percent": 20,
+      "memory_percent": 43,
+      "version": "2.4.1"
+    },
+    {
+      "name": "config-server",
+      "status": "healthy",
+      "latency_ms": 80,
+      "error_rate": 0.8,
+      "cpu_percent": 5,
+      "memory_percent": 35,
+      "version": "4.0.1"
+    },
+    {
+      "name": "auth-service",
+      "status": "healthy",
+      "latency_ms": 182,
+      "error_rate": 0.6,
+      "cpu_percent": 29,
+      "memory_percent": 22,
+      "version": "4.2.0"
+    },
+    {
+      "name": "service-mesh",
+      "status": "healthy",
+      "latency_ms": 48,
+      "error_rate": 0.8,
+      "cpu_percent": 36,
+      "memory_percent": 35,
+      "version": "2.1.1"
+    }
+  ],
+  "recent_deployments": [
+    {
+      "service": "user-service",
+      "version": "2.3.0",
+      "timestamp": "2026-03-26T21:03:00Z",
+      "deployer": "ml-team"
+    },
+    {
+      "service": "service-mesh",
+      "version": "2.1.1",
+      "timestamp": "2026-03-26T21:45:00Z",
+      "deployer": "search-team"
+    },
+    {
+      "service": "config-server",
+      "version": "4.0.1",
+      "timestamp": "2026-03-26T19:00:00Z",
+      "deployer": "search-team"
+    }
+  ],
+  "logs": {
+    "user-service": [
+      {
+        "timestamp": "2026-03-26T22:48:00Z",
+        "service": "user-service",
+        "level": "ERROR",
+        "message": "Deadlock detected: txn-22616 waiting for lock held by txn-60838"
+      },
+      {
+        "timestamp": "2026-03-26T22:49:15Z",
+        "service": "user-service",
+        "level": "ERROR",
+        "message": "Transaction aborted after deadlock timeout: 30s"
+      },
+      {
+        "timestamp": "2026-03-26T22:50:30Z",
+        "service": "user-service",
+        "level": "WARN",
+        "message": "Request queue depth: 31662 - approaching limit"
+      },
+      {
+        "timestamp": "2026-03-26T22:51:45Z",
+        "service": "user-service",
+        "level": "ERROR",
+        "message": "Lock wait timeout exceeded for table user-service_records"
+      }
+    ],
+    "cache-layer": [
+      {
+        "timestamp": "2026-03-26T22:49:00Z",
+        "service": "cache-layer",
+        "level": "ERROR",
+        "message": "Timeout calling user-service: exceeded 10s deadline"
+      },
+      {
+        "timestamp": "2026-03-26T22:54:00Z",
+        "service": "cache-layer",
+        "level": "WARN",
+        "message": "Circuit breaker half-open for user-service"
+      }
+    ],
+    "message-queue": [
+      {
+        "timestamp": "2026-03-26T22:49:00Z",
+        "service": "message-queue",
+        "level": "ERROR",
+        "message": "Timeout calling user-service: exceeded 10s deadline"
+      },
+      {
+        "timestamp": "2026-03-26T22:54:00Z",
+        "service": "message-queue",
+        "level": "WARN",
+        "message": "Circuit breaker half-open for user-service"
+      }
+    ],
+    "service-mesh": [
+      {
+        "timestamp": "2026-03-26T22:48:00Z",
+        "service": "service-mesh",
+        "level": "INFO",
+        "message": "Healthy - serving requests normally"
+      }
+    ],
+    "config-server": [
+      {
+        "timestamp": "2026-03-26T22:48:00Z",
+        "service": "config-server",
+        "level": "INFO",
+        "message": "Model serving normally - no dependency issues"
+      }
+    ]
+  },
+  "metrics": {
+    "user-service:deadlocks_per_min": [
+      1.7,
+      4.0,
+      9.7,
+      23.2,
+      55.5
+    ],
+    "user-service:error_rate": [
+      1.1,
+      3.0,
+      8.0,
+      21.6,
+      58.2
+    ],
+    "user-service:latency_p99": [
+      0.1,
+      0.6,
+      3.1,
+      15.8,
+      81.9
+    ],
+    "cache-layer:error_rate": [
+      1.9,
+      1.9,
+      44.1,
+      44.1,
+      44.1
+    ],
+    "message-queue:error_rate": [
+      0.9,
+      0.9,
+      78.2,
+      78.2,
+      78.2
+    ],
+    "config-server:cpu": [
+      35.9,
+      29.1,
+      35.9,
+      34.5,
+      38.9,
+      30.8
+    ],
+    "auth-service:cpu": [
+      38.2,
+      40.9,
+      17.8,
+      34.6,
+      39.6,
+      31.4
+    ]
+  },
+  "dependencies": {
+    "user-service": [
+      "user-service-db",
+      "user-service-store"
+    ],
+    "cache-layer": [
+      "user-service",
+      "cache-layer-db"
+    ],
+    "message-queue": [
+      "user-service",
+      "message-queue-db"
+    ],
+    "config-server": [
+      "config-server-db"
+    ],
+    "auth-service": [
+      "auth-service-db"
+    ],
+    "service-mesh": [
+      "service-mesh-db"
+    ]
+  },
+  "root_cause": {
+    "service": "user-service",
+    "description": "Deadlock storm in user-service database caused by concurrent transaction ordering bug in 2.3.0",
+    "keywords": [
+      "deadlock",
+      "transaction",
+      "lock",
+      "contention",
+      "database",
+      "concurrent"
+    ]
+  },
+  "valid_remediations": [
+    {
+      "action": "restart_service",
+      "service": "user-service"
+    },
+    {
+      "action": "rollback_deploy",
+      "service": "user-service"
+    }
+  ],
+  "expected_diagnostics": [
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "user-service"
+      }
+    },
+    {
+      "action_type": "check_metrics",
+      "params": {
+        "service": "user-service"
+      }
+    },
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "cache-layer"
+      }
+    },
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "message-queue"
+      }
+    }
+  ],
+  "grading_rubric": {
+    "triage_weight": 0.11,
+    "diagnostic_weight": 0.24,
+    "root_cause_weight": 0.28,
+    "remediation_weight": 0.21,
+    "efficiency_weight": 0.11,
+    "documentation_weight": 0.05
+  }
+}

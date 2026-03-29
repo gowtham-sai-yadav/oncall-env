@@ -1,104 +1,271 @@
 {
   "incident_id": "INC-20260326-002",
   "difficulty": "easy",
-  "description": "Alerts firing across multiple services after a routine deployment. Determine which alerts are real issues vs deployment noise, triage appropriately.",
+  "description": "SEV3 incident: Connection Pool Exhaustion affecting billing-service. Cascading impact on api-gateway.",
   "expected_severity": "SEV3",
   "initial_alerts": [
     {
-      "alert_id": "alert-101",
-      "severity": "warning",
-      "service": "search-api",
-      "message": "Latency increased to 450ms (threshold 400ms)",
-      "timestamp": "2026-03-26T10:00:00Z",
-      "acknowledged": false,
-      "silenced": false
-    },
-    {
-      "alert_id": "alert-102",
+      "alert_id": "alert-201",
       "severity": "critical",
-      "service": "auth-service",
-      "message": "Login failure rate at 8% - above 5% threshold",
-      "timestamp": "2026-03-26T10:00:30Z",
+      "service": "billing-service",
+      "message": "Error rate exceeded 5% threshold - currently at 13.1%",
+      "timestamp": "2026-03-26T14:06:05Z",
       "acknowledged": false,
       "silenced": false
     },
     {
-      "alert_id": "alert-103",
-      "severity": "info",
-      "service": "search-api",
-      "message": "Deployment v3.2.0 completed successfully",
-      "timestamp": "2026-03-26T09:55:00Z",
+      "alert_id": "alert-202",
+      "severity": "critical",
+      "service": "billing-service",
+      "message": "P99 latency > 2000ms (currently 7971ms)",
+      "timestamp": "2026-03-26T14:07:10Z",
       "acknowledged": false,
       "silenced": false
     },
     {
-      "alert_id": "alert-104",
-      "severity": "info",
-      "service": "cdn",
-      "message": "Cache purge completed for static assets",
-      "timestamp": "2026-03-26T09:58:00Z",
-      "acknowledged": false,
-      "silenced": false
-    },
-    {
-      "alert_id": "alert-105",
+      "alert_id": "alert-203",
       "severity": "warning",
-      "service": "auth-service",
-      "message": "Redis connection timeout - retry succeeded",
-      "timestamp": "2026-03-26T10:01:00Z",
+      "service": "api-gateway",
+      "message": "Increased 4xx responses from downstream dependency",
+      "timestamp": "2026-03-26T14:08:15Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-204",
+      "severity": "critical",
+      "service": "api-gateway",
+      "message": "api-gateway error rate spiking - requests failing",
+      "timestamp": "2026-03-26T14:06:25Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-205",
+      "severity": "info",
+      "service": "cdn-proxy",
+      "message": "New dashboard version deployed - no action required",
+      "timestamp": "2026-03-26T14:02:11Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-206",
+      "severity": "info",
+      "service": "cdn-proxy",
+      "message": "SSL certificate renewal scheduled for next week",
+      "timestamp": "2026-03-26T14:55:05Z",
       "acknowledged": false,
       "silenced": false
     }
   ],
   "services": [
-    {"name": "search-api", "status": "healthy", "latency_ms": 450, "error_rate": 0.5, "cpu_percent": 35, "memory_percent": 40, "version": "3.2.0"},
-    {"name": "auth-service", "status": "degraded", "latency_ms": 200, "error_rate": 8.0, "cpu_percent": 55, "memory_percent": 72, "version": "2.1.0"},
-    {"name": "cdn", "status": "healthy", "latency_ms": 5, "error_rate": 0.0, "cpu_percent": 10, "memory_percent": 15, "version": "1.0.0"}
+    {
+      "name": "billing-service",
+      "status": "down",
+      "latency_ms": 0,
+      "error_rate": 71.8,
+      "cpu_percent": 94,
+      "memory_percent": 77,
+      "version": "4.0.1"
+    },
+    {
+      "name": "api-gateway",
+      "status": "degraded",
+      "latency_ms": 3447,
+      "error_rate": 57.4,
+      "cpu_percent": 40,
+      "memory_percent": 45,
+      "version": "1.5.0"
+    },
+    {
+      "name": "cache-layer",
+      "status": "healthy",
+      "latency_ms": 148,
+      "error_rate": 0.6,
+      "cpu_percent": 31,
+      "memory_percent": 55,
+      "version": "4.1.0"
+    },
+    {
+      "name": "payment-api",
+      "status": "healthy",
+      "latency_ms": 28,
+      "error_rate": 0.7,
+      "cpu_percent": 31,
+      "memory_percent": 52,
+      "version": "4.1.0"
+    },
+    {
+      "name": "cdn-proxy",
+      "status": "healthy",
+      "latency_ms": 131,
+      "error_rate": 0.8,
+      "cpu_percent": 14,
+      "memory_percent": 45,
+      "version": "5.0.3"
+    }
   ],
   "recent_deployments": [
-    {"service": "search-api", "version": "3.2.0", "timestamp": "2026-03-26T09:55:00Z", "deployer": "ci-bot"},
-    {"service": "auth-service", "version": "2.1.0", "timestamp": "2026-03-25T16:00:00Z", "deployer": "backend-team"}
+    {
+      "service": "billing-service",
+      "version": "4.0.1",
+      "timestamp": "2026-03-26T13:50:00Z",
+      "deployer": "platform-team"
+    }
   ],
   "logs": {
-    "auth-service": [
-      {"timestamp": "2026-03-26T10:00:20Z", "service": "auth-service", "level": "ERROR", "message": "Redis ETIMEDOUT connecting to auth-redis-primary:6379"},
-      {"timestamp": "2026-03-26T10:00:25Z", "service": "auth-service", "level": "ERROR", "message": "Session validation failed: cache miss, DB fallback triggered"},
-      {"timestamp": "2026-03-26T10:00:35Z", "service": "auth-service", "level": "WARN", "message": "Redis reconnection attempt 3/5"},
-      {"timestamp": "2026-03-26T10:01:05Z", "service": "auth-service", "level": "INFO", "message": "Redis connection re-established"}
+    "billing-service": [
+      {
+        "timestamp": "2026-03-26T14:05:00Z",
+        "service": "billing-service",
+        "level": "ERROR",
+        "message": "Connection pool exhausted - cannot acquire connection to billing-service-db"
+      },
+      {
+        "timestamp": "2026-03-26T14:08:20Z",
+        "service": "billing-service",
+        "level": "ERROR",
+        "message": "Timeout waiting for DB connection after 5000ms"
+      },
+      {
+        "timestamp": "2026-03-26T14:11:40Z",
+        "service": "billing-service",
+        "level": "WARN",
+        "message": "Circuit breaker OPEN for billing-service-db connections"
+      }
     ],
-    "search-api": [
-      {"timestamp": "2026-03-26T09:56:00Z", "service": "search-api", "level": "INFO", "message": "v3.2.0 startup: warming search index cache"},
-      {"timestamp": "2026-03-26T09:58:00Z", "service": "search-api", "level": "INFO", "message": "Cache warm complete - 95% coverage"},
-      {"timestamp": "2026-03-26T10:00:00Z", "service": "search-api", "level": "INFO", "message": "Latency elevated during cache warm - expected transient"}
+    "api-gateway": [
+      {
+        "timestamp": "2026-03-26T14:06:00Z",
+        "service": "api-gateway",
+        "level": "ERROR",
+        "message": "billing-service returned 503 for request req-19876"
+      },
+      {
+        "timestamp": "2026-03-26T14:09:20Z",
+        "service": "api-gateway",
+        "level": "ERROR",
+        "message": "Failed to complete operation: upstream billing-service unavailable"
+      },
+      {
+        "timestamp": "2026-03-26T14:12:40Z",
+        "service": "api-gateway",
+        "level": "WARN",
+        "message": "Fallback: queuing request for retry"
+      }
     ]
   },
   "metrics": {
-    "auth-service:error_rate": [0.1, 0.2, 1.5, 5.2, 8.0],
-    "auth-service:redis_connections": [10, 10, 8, 2, 0, 5, 10],
-    "search-api:latency_p99": [200, 200, 350, 450, 420, 380]
+    "billing-service:error_rate": [
+      1.0,
+      2.9,
+      8.2,
+      23.0,
+      64.5
+    ],
+    "billing-service:latency_p99": [
+      1.8,
+      3.7,
+      7.6,
+      15.7,
+      32.5
+    ],
+    "billing-service:db_connections": [
+      0.0,
+      46.8,
+      68.9,
+      79.3,
+      84.2
+    ],
+    "api-gateway:error_rate": [
+      0.6,
+      1.3,
+      2.5,
+      5.0,
+      10.1,
+      20.1,
+      40.2
+    ],
+    "cache-layer:cpu": [
+      43.4,
+      50.5,
+      47.4,
+      50.3,
+      44.4,
+      41.5
+    ],
+    "payment-api:cpu": [
+      19.5,
+      35.4,
+      26.5,
+      29.8,
+      23.6,
+      22.4
+    ]
   },
   "dependencies": {
-    "auth-service": ["auth-redis-primary", "user-db"],
-    "search-api": ["elasticsearch", "search-cache"]
+    "billing-service": [
+      "billing-service-db",
+      "billing-service-store"
+    ],
+    "api-gateway": [
+      "billing-service",
+      "api-gateway-db"
+    ],
+    "cache-layer": [
+      "billing-service",
+      "cache-layer-db"
+    ],
+    "payment-api": [
+      "payment-api-db"
+    ],
+    "cdn-proxy": [
+      "cdn-proxy-db"
+    ]
   },
   "root_cause": {
-    "service": "auth-service",
-    "description": "Redis primary node experienced brief connectivity issue causing auth failures. Self-recovered.",
-    "keywords": ["redis", "auth", "connection", "timeout", "session"]
+    "service": "billing-service",
+    "description": "DB connection pool exhaustion on billing-service caused by connection leak in 4.0.1 deployment",
+    "keywords": [
+      "connection pool",
+      "database",
+      "db",
+      "exhausted",
+      "leak",
+      "connection"
+    ]
   },
   "valid_remediations": [
-    {"action": "restart_service", "service": "auth-service"}
+    {
+      "action": "restart_service",
+      "service": "billing-service"
+    },
+    {
+      "action": "rollback_deploy",
+      "service": "billing-service"
+    }
   ],
   "expected_diagnostics": [
-    {"action_type": "query_logs", "params": {"service": "auth-service"}},
-    {"action_type": "check_metrics", "params": {"service": "auth-service"}}
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "billing-service"
+      }
+    },
+    {
+      "action_type": "check_metrics",
+      "params": {
+        "service": "billing-service"
+      }
+    }
   ],
   "grading_rubric": {
-    "triage_weight": 0.35,
-    "diagnostic_weight": 0.20,
-    "root_cause_weight": 0.15,
-    "remediation_weight": 0.10,
-    "efficiency_weight": 0.10,
-    "documentation_weight": 0.10
+    "triage_weight": 0.3,
+    "diagnostic_weight": 0.21,
+    "root_cause_weight": 0.13,
+    "remediation_weight": 0.17,
+    "efficiency_weight": 0.1,
+    "documentation_weight": 0.09
   }
 }

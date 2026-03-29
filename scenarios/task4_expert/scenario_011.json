@@ -1,0 +1,461 @@
+{
+  "incident_id": "INC-20260326-311",
+  "difficulty": "expert",
+  "description": "SEV1 incident: Bad Config Rollout affecting user-service. Cascading impact on payment-api, email-service, config-server. Multiple concurrent events make diagnosis challenging. Red herrings present - focus on evidence-based investigation.",
+  "expected_severity": "SEV1",
+  "initial_alerts": [
+    {
+      "alert_id": "alert-31101",
+      "severity": "critical",
+      "service": "user-service",
+      "message": "Error rate at 11.0% after config deployment",
+      "timestamp": "2026-03-26T13:46:05Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-31102",
+      "severity": "warning",
+      "service": "user-service",
+      "message": "Config refresh failed - serving with invalid config",
+      "timestamp": "2026-03-26T13:47:10Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-31103",
+      "severity": "warning",
+      "service": "payment-api",
+      "message": "Upstream dependency user-service returning errors",
+      "timestamp": "2026-03-26T13:48:15Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-31104",
+      "severity": "critical",
+      "service": "payment-api",
+      "message": "payment-api error rate spiking - requests failing",
+      "timestamp": "2026-03-26T13:46:32Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-31105",
+      "severity": "critical",
+      "service": "email-service",
+      "message": "email-service error rate spiking - requests failing",
+      "timestamp": "2026-03-26T13:46:28Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-31106",
+      "severity": "critical",
+      "service": "config-server",
+      "message": "config-server error rate spiking - requests failing",
+      "timestamp": "2026-03-26T13:46:28Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-31107",
+      "severity": "info",
+      "service": "auth-service",
+      "message": "Automated backup completed successfully",
+      "timestamp": "2026-03-26T13:35:40Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-31108",
+      "severity": "info",
+      "service": "analytics-service",
+      "message": "Feature flag 'new-checkout-flow' enabled for 5% of users",
+      "timestamp": "2026-03-26T13:35:32Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-31109",
+      "severity": "info",
+      "service": "auth-service",
+      "message": "Model v4.2 deployment started - canary rollout in progress",
+      "timestamp": "2026-03-26T13:41:12Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-31110",
+      "severity": "warning",
+      "service": "search-service",
+      "message": "CPU usage at 63% - approaching threshold",
+      "timestamp": "2026-03-26T13:37:25Z",
+      "acknowledged": false,
+      "silenced": false
+    }
+  ],
+  "services": [
+    {
+      "name": "user-service",
+      "status": "degraded",
+      "latency_ms": 7513,
+      "error_rate": 23.1,
+      "cpu_percent": 60,
+      "memory_percent": 45,
+      "version": "5.0.3"
+    },
+    {
+      "name": "payment-api",
+      "status": "down",
+      "latency_ms": 0,
+      "error_rate": 75.6,
+      "cpu_percent": 51,
+      "memory_percent": 59,
+      "version": "4.1.0"
+    },
+    {
+      "name": "email-service",
+      "status": "degraded",
+      "latency_ms": 894,
+      "error_rate": 31.7,
+      "cpu_percent": 36,
+      "memory_percent": 68,
+      "version": "1.2.3"
+    },
+    {
+      "name": "config-server",
+      "status": "degraded",
+      "latency_ms": 2113,
+      "error_rate": 52.1,
+      "cpu_percent": 63,
+      "memory_percent": 70,
+      "version": "2.0.0"
+    },
+    {
+      "name": "notification-service",
+      "status": "healthy",
+      "latency_ms": 65,
+      "error_rate": 0.6,
+      "cpu_percent": 42,
+      "memory_percent": 26,
+      "version": "4.2.0"
+    },
+    {
+      "name": "analytics-service",
+      "status": "healthy",
+      "latency_ms": 200,
+      "error_rate": 0.4,
+      "cpu_percent": 10,
+      "memory_percent": 47,
+      "version": "5.0.3"
+    },
+    {
+      "name": "search-service",
+      "status": "healthy",
+      "latency_ms": 169,
+      "error_rate": 0.4,
+      "cpu_percent": 48,
+      "memory_percent": 31,
+      "version": "2.4.1"
+    },
+    {
+      "name": "auth-service",
+      "status": "healthy",
+      "latency_ms": 25,
+      "error_rate": 0.8,
+      "cpu_percent": 6,
+      "memory_percent": 54,
+      "version": "3.0.0"
+    }
+  ],
+  "recent_deployments": [
+    {
+      "service": "user-service",
+      "version": "5.0.3",
+      "timestamp": "2026-03-26T12:06:00Z",
+      "deployer": "release-manager"
+    },
+    {
+      "service": "notification-service",
+      "version": "4.2.0",
+      "timestamp": "2026-03-26T12:51:00Z",
+      "deployer": "ops-team"
+    },
+    {
+      "service": "analytics-service",
+      "version": "5.0.3",
+      "timestamp": "2026-03-26T12:14:00Z",
+      "deployer": "search-team"
+    },
+    {
+      "service": "auth-service",
+      "version": "3.0.0",
+      "timestamp": "2026-03-26T11:21:00Z",
+      "deployer": "ml-team"
+    },
+    {
+      "service": "search-service",
+      "version": "2.4.1",
+      "timestamp": "2026-03-26T11:09:00Z",
+      "deployer": "ml-team"
+    }
+  ],
+  "logs": {
+    "user-service": [
+      {
+        "timestamp": "2026-03-26T13:45:00Z",
+        "service": "user-service",
+        "level": "ERROR",
+        "message": "Database connection failed: invalid connection string in config v5.0.3"
+      },
+      {
+        "timestamp": "2026-03-26T13:47:00Z",
+        "service": "user-service",
+        "level": "ERROR",
+        "message": "Config validation skipped in deployment pipeline"
+      },
+      {
+        "timestamp": "2026-03-26T13:49:00Z",
+        "service": "user-service",
+        "level": "FATAL",
+        "message": "Cannot initialize connection pool: malformed DSN"
+      },
+      {
+        "timestamp": "2026-03-26T13:51:00Z",
+        "service": "user-service",
+        "level": "WARN",
+        "message": "Rolling back to cached config from previous version"
+      }
+    ],
+    "payment-api": [
+      {
+        "timestamp": "2026-03-26T13:46:00Z",
+        "service": "payment-api",
+        "level": "ERROR",
+        "message": "user-service returning 500 for all requests"
+      },
+      {
+        "timestamp": "2026-03-26T13:51:00Z",
+        "service": "payment-api",
+        "level": "WARN",
+        "message": "Dependency user-service health check failing"
+      }
+    ],
+    "email-service": [
+      {
+        "timestamp": "2026-03-26T13:46:00Z",
+        "service": "email-service",
+        "level": "ERROR",
+        "message": "user-service returning 500 for all requests"
+      },
+      {
+        "timestamp": "2026-03-26T13:51:00Z",
+        "service": "email-service",
+        "level": "WARN",
+        "message": "Dependency user-service health check failing"
+      }
+    ],
+    "config-server": [
+      {
+        "timestamp": "2026-03-26T13:46:00Z",
+        "service": "config-server",
+        "level": "ERROR",
+        "message": "user-service returning 500 for all requests"
+      },
+      {
+        "timestamp": "2026-03-26T13:51:00Z",
+        "service": "config-server",
+        "level": "WARN",
+        "message": "Dependency user-service health check failing"
+      }
+    ],
+    "auth-service": [
+      {
+        "timestamp": "2026-03-26T13:45:00Z",
+        "service": "auth-service",
+        "level": "INFO",
+        "message": "Batch job completed: processed 5518 records"
+      }
+    ],
+    "analytics-service": [
+      {
+        "timestamp": "2026-03-26T13:45:00Z",
+        "service": "analytics-service",
+        "level": "INFO",
+        "message": "Scheduled reindex 40% complete - elevated latency expected"
+      }
+    ],
+    "notification-service": [
+      {
+        "timestamp": "2026-03-26T13:45:00Z",
+        "service": "notification-service",
+        "level": "INFO",
+        "message": "Scheduled reindex 40% complete - elevated latency expected"
+      }
+    ],
+    "search-service": [
+      {
+        "timestamp": "2026-03-26T13:45:00Z",
+        "service": "search-service",
+        "level": "INFO",
+        "message": "Batch job completed: processed 2579 records"
+      }
+    ]
+  },
+  "metrics": {
+    "user-service:error_rate": [
+      0.6,
+      0.6,
+      0.6,
+      89.6,
+      89.6,
+      89.6
+    ],
+    "user-service:db_connections": [
+      0.1,
+      0.1,
+      0.1,
+      47.4,
+      47.4,
+      47.4,
+      47.4
+    ],
+    "payment-api:error_rate": [
+      1.9,
+      1.9,
+      1.9,
+      80.7,
+      80.7,
+      80.7,
+      80.7
+    ],
+    "email-service:error_rate": [
+      0.8,
+      0.8,
+      0.8,
+      0.8,
+      41.3,
+      41.3,
+      41.3,
+      41.3
+    ],
+    "config-server:error_rate": [
+      0.4,
+      0.4,
+      0.4,
+      80.3,
+      80.3,
+      80.3,
+      80.3
+    ],
+    "notification-service:cpu": [
+      43.2,
+      46.9,
+      31.7,
+      48.3,
+      43.4,
+      43.3
+    ],
+    "analytics-service:cpu": [
+      36.0,
+      21.7,
+      30.6,
+      32.1,
+      33.1,
+      35.8
+    ]
+  },
+  "dependencies": {
+    "user-service": [
+      "user-service-db",
+      "user-service-store"
+    ],
+    "payment-api": [
+      "user-service",
+      "payment-api-db"
+    ],
+    "email-service": [
+      "user-service",
+      "email-service-db"
+    ],
+    "config-server": [
+      "user-service",
+      "config-server-db"
+    ],
+    "notification-service": [
+      "notification-service-db"
+    ],
+    "analytics-service": [
+      "analytics-service-db"
+    ],
+    "search-service": [
+      "search-service-db"
+    ],
+    "auth-service": [
+      "auth-service-db"
+    ]
+  },
+  "root_cause": {
+    "service": "user-service",
+    "description": "Bad configuration rollout to user-service in 5.0.3 - invalid database connection string causing all queries to fail",
+    "keywords": [
+      "config",
+      "configuration",
+      "rollout",
+      "invalid",
+      "connection string",
+      "misconfigured"
+    ]
+  },
+  "valid_remediations": [
+    {
+      "action": "rollback_deploy",
+      "service": "user-service"
+    },
+    {
+      "action": "update_config",
+      "service": "user-service"
+    }
+  ],
+  "expected_diagnostics": [
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "user-service"
+      }
+    },
+    {
+      "action_type": "check_metrics",
+      "params": {
+        "service": "user-service"
+      }
+    },
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "payment-api"
+      }
+    },
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "email-service"
+      }
+    },
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "config-server"
+      }
+    }
+  ],
+  "grading_rubric": {
+    "triage_weight": 0.07,
+    "diagnostic_weight": 0.2,
+    "root_cause_weight": 0.36,
+    "remediation_weight": 0.17,
+    "efficiency_weight": 0.08,
+    "documentation_weight": 0.12
+  }
+}

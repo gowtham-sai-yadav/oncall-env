@@ -1,0 +1,430 @@
+{
+  "incident_id": "INC-20260326-312",
+  "difficulty": "expert",
+  "description": "SEV1 incident: Dependency Version Mismatch affecting inventory-service. Cascading impact on billing-service, logging-pipeline, session-store. Multiple concurrent events make diagnosis challenging. Red herrings present - focus on evidence-based investigation.",
+  "expected_severity": "SEV1",
+  "initial_alerts": [
+    {
+      "alert_id": "alert-31201",
+      "severity": "critical",
+      "service": "inventory-service",
+      "message": "Deserialization errors spiking - 74.7% request failure",
+      "timestamp": "2026-03-26T20:22:05Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-31202",
+      "severity": "warning",
+      "service": "inventory-service",
+      "message": "API contract violation detected in responses from upstream",
+      "timestamp": "2026-03-26T20:23:10Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-31203",
+      "severity": "warning",
+      "service": "billing-service",
+      "message": "Increased error responses from inventory-service",
+      "timestamp": "2026-03-26T20:24:15Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-31204",
+      "severity": "critical",
+      "service": "billing-service",
+      "message": "billing-service error rate spiking - requests failing",
+      "timestamp": "2026-03-26T20:22:12Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-31205",
+      "severity": "critical",
+      "service": "logging-pipeline",
+      "message": "logging-pipeline error rate spiking - requests failing",
+      "timestamp": "2026-03-26T20:22:03Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-31206",
+      "severity": "critical",
+      "service": "session-store",
+      "message": "session-store error rate spiking - requests failing",
+      "timestamp": "2026-03-26T20:22:04Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-31207",
+      "severity": "warning",
+      "service": "cache-layer",
+      "message": "Disk usage at 72% on data volume",
+      "timestamp": "2026-03-26T20:13:03Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-31208",
+      "severity": "warning",
+      "service": "order-service",
+      "message": "Log volume increased 20% - review retention policy",
+      "timestamp": "2026-03-26T20:17:14Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-31209",
+      "severity": "info",
+      "service": "search-service",
+      "message": "Automated backup completed successfully",
+      "timestamp": "2026-03-26T20:17:11Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-31210",
+      "severity": "info",
+      "service": "cache-layer",
+      "message": "New dashboard version deployed - no action required",
+      "timestamp": "2026-03-26T20:12:17Z",
+      "acknowledged": false,
+      "silenced": false
+    }
+  ],
+  "services": [
+    {
+      "name": "inventory-service",
+      "status": "degraded",
+      "latency_ms": 4757,
+      "error_rate": 60.7,
+      "cpu_percent": 86,
+      "memory_percent": 41,
+      "version": "4.0.1"
+    },
+    {
+      "name": "billing-service",
+      "status": "degraded",
+      "latency_ms": 4915,
+      "error_rate": 32.9,
+      "cpu_percent": 24,
+      "memory_percent": 47,
+      "version": "4.0.1"
+    },
+    {
+      "name": "logging-pipeline",
+      "status": "down",
+      "latency_ms": 0,
+      "error_rate": 78.6,
+      "cpu_percent": 31,
+      "memory_percent": 57,
+      "version": "4.2.0"
+    },
+    {
+      "name": "session-store",
+      "status": "degraded",
+      "latency_ms": 2296,
+      "error_rate": 61.5,
+      "cpu_percent": 62,
+      "memory_percent": 41,
+      "version": "2.1.1"
+    },
+    {
+      "name": "cache-layer",
+      "status": "healthy",
+      "latency_ms": 120,
+      "error_rate": 0.3,
+      "cpu_percent": 6,
+      "memory_percent": 49,
+      "version": "3.0.0"
+    },
+    {
+      "name": "search-service",
+      "status": "healthy",
+      "latency_ms": 24,
+      "error_rate": 0.6,
+      "cpu_percent": 29,
+      "memory_percent": 52,
+      "version": "3.1.2"
+    },
+    {
+      "name": "internal-dns",
+      "status": "healthy",
+      "latency_ms": 83,
+      "error_rate": 0.5,
+      "cpu_percent": 10,
+      "memory_percent": 45,
+      "version": "3.0.0"
+    },
+    {
+      "name": "order-service",
+      "status": "healthy",
+      "latency_ms": 89,
+      "error_rate": 0.5,
+      "cpu_percent": 43,
+      "memory_percent": 23,
+      "version": "1.5.0"
+    }
+  ],
+  "recent_deployments": [
+    {
+      "service": "inventory-service",
+      "version": "4.0.1",
+      "timestamp": "2026-03-26T19:10:00Z",
+      "deployer": "search-team"
+    },
+    {
+      "service": "search-service",
+      "version": "3.1.2",
+      "timestamp": "2026-03-26T19:05:00Z",
+      "deployer": "search-team"
+    },
+    {
+      "service": "internal-dns",
+      "version": "3.0.0",
+      "timestamp": "2026-03-26T18:12:00Z",
+      "deployer": "ops-team"
+    }
+  ],
+  "logs": {
+    "inventory-service": [
+      {
+        "timestamp": "2026-03-26T20:21:00Z",
+        "service": "inventory-service",
+        "level": "ERROR",
+        "message": "Failed to deserialize response from upstream: unexpected field format"
+      },
+      {
+        "timestamp": "2026-03-26T20:22:40Z",
+        "service": "inventory-service",
+        "level": "ERROR",
+        "message": "API version mismatch: expected v3 response, got v2 schema"
+      },
+      {
+        "timestamp": "2026-03-26T20:24:20Z",
+        "service": "inventory-service",
+        "level": "WARN",
+        "message": "Contract test failures detected post-deployment of 4.0.1"
+      },
+      {
+        "timestamp": "2026-03-26T20:26:00Z",
+        "service": "inventory-service",
+        "level": "ERROR",
+        "message": "Null pointer: response missing required field 'metadata.trace_id'"
+      }
+    ],
+    "billing-service": [
+      {
+        "timestamp": "2026-03-26T20:22:00Z",
+        "service": "billing-service",
+        "level": "WARN",
+        "message": "inventory-service returning malformed responses"
+      },
+      {
+        "timestamp": "2026-03-26T20:27:00Z",
+        "service": "billing-service",
+        "level": "ERROR",
+        "message": "Failed to process response from inventory-service: schema mismatch"
+      }
+    ],
+    "logging-pipeline": [
+      {
+        "timestamp": "2026-03-26T20:22:00Z",
+        "service": "logging-pipeline",
+        "level": "WARN",
+        "message": "inventory-service returning malformed responses"
+      },
+      {
+        "timestamp": "2026-03-26T20:27:00Z",
+        "service": "logging-pipeline",
+        "level": "ERROR",
+        "message": "Failed to process response from inventory-service: schema mismatch"
+      }
+    ],
+    "session-store": [
+      {
+        "timestamp": "2026-03-26T20:22:00Z",
+        "service": "session-store",
+        "level": "WARN",
+        "message": "inventory-service returning malformed responses"
+      },
+      {
+        "timestamp": "2026-03-26T20:27:00Z",
+        "service": "session-store",
+        "level": "ERROR",
+        "message": "Failed to process response from inventory-service: schema mismatch"
+      }
+    ],
+    "internal-dns": [
+      {
+        "timestamp": "2026-03-26T20:21:00Z",
+        "service": "internal-dns",
+        "level": "INFO",
+        "message": "Cache hit ratio: 86%"
+      }
+    ],
+    "cache-layer": [
+      {
+        "timestamp": "2026-03-26T20:21:00Z",
+        "service": "cache-layer",
+        "level": "INFO",
+        "message": "Cache hit ratio: 93%"
+      }
+    ]
+  },
+  "metrics": {
+    "inventory-service:error_rate": [
+      1.4,
+      1.4,
+      1.4,
+      88.9,
+      88.9,
+      88.9
+    ],
+    "inventory-service:deserialization_errors": [
+      0.1,
+      0.1,
+      0.1,
+      93.7,
+      93.7,
+      93.7,
+      93.7
+    ],
+    "billing-service:error_rate": [
+      1.5,
+      1.5,
+      1.5,
+      75.5,
+      75.5,
+      75.5,
+      75.5
+    ],
+    "logging-pipeline:error_rate": [
+      1.2,
+      1.2,
+      60.6,
+      60.6,
+      60.6
+    ],
+    "session-store:error_rate": [
+      1.8,
+      1.8,
+      1.8,
+      88.5,
+      88.5,
+      88.5
+    ],
+    "cache-layer:cpu": [
+      29.2,
+      31.4,
+      32.9,
+      38.6,
+      28.3,
+      21.6
+    ],
+    "search-service:cpu": [
+      28.9,
+      29.4,
+      29.2,
+      30.2,
+      29.0,
+      26.5
+    ]
+  },
+  "dependencies": {
+    "inventory-service": [
+      "inventory-service-db",
+      "inventory-service-store"
+    ],
+    "billing-service": [
+      "inventory-service",
+      "billing-service-db"
+    ],
+    "logging-pipeline": [
+      "inventory-service",
+      "logging-pipeline-db"
+    ],
+    "session-store": [
+      "inventory-service",
+      "session-store-db"
+    ],
+    "cache-layer": [
+      "cache-layer-db"
+    ],
+    "search-service": [
+      "search-service-db"
+    ],
+    "internal-dns": [
+      "internal-dns-db"
+    ],
+    "order-service": [
+      "order-service-db"
+    ]
+  },
+  "root_cause": {
+    "service": "inventory-service",
+    "description": "Dependency version mismatch: inventory-service 4.0.1 expects API v3 but upstream provides v2, causing deserialization failures",
+    "keywords": [
+      "version",
+      "mismatch",
+      "api",
+      "incompatible",
+      "deserialization",
+      "contract",
+      "breaking change"
+    ]
+  },
+  "valid_remediations": [
+    {
+      "action": "rollback_deploy",
+      "service": "inventory-service"
+    },
+    {
+      "action": "restart_service",
+      "service": "inventory-service"
+    }
+  ],
+  "expected_diagnostics": [
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "inventory-service"
+      }
+    },
+    {
+      "action_type": "check_metrics",
+      "params": {
+        "service": "inventory-service"
+      }
+    },
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "billing-service"
+      }
+    },
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "logging-pipeline"
+      }
+    },
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "session-store"
+      }
+    }
+  ],
+  "grading_rubric": {
+    "triage_weight": 0.03,
+    "diagnostic_weight": 0.18,
+    "root_cause_weight": 0.36,
+    "remediation_weight": 0.2,
+    "efficiency_weight": 0.11,
+    "documentation_weight": 0.12
+  }
+}

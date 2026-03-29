@@ -1,0 +1,322 @@
+{
+  "incident_id": "INC-20260326-107",
+  "difficulty": "medium",
+  "description": "SEV2 incident: GC Pause Storm affecting order-service. Cascading impact on inventory-service, payment-api.",
+  "expected_severity": "SEV2",
+  "initial_alerts": [
+    {
+      "alert_id": "alert-10701",
+      "severity": "critical",
+      "service": "order-service",
+      "message": "P99 latency spiked to 7727ms - GC pauses detected",
+      "timestamp": "2026-03-26T19:06:05Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-10702",
+      "severity": "warning",
+      "service": "order-service",
+      "message": "GC pause time exceeding 2s per cycle",
+      "timestamp": "2026-03-26T19:07:10Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-10703",
+      "severity": "warning",
+      "service": "inventory-service",
+      "message": "Intermittent timeouts from order-service",
+      "timestamp": "2026-03-26T19:08:15Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-10704",
+      "severity": "critical",
+      "service": "inventory-service",
+      "message": "inventory-service error rate spiking - requests failing",
+      "timestamp": "2026-03-26T19:06:13Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-10705",
+      "severity": "critical",
+      "service": "payment-api",
+      "message": "payment-api error rate spiking - requests failing",
+      "timestamp": "2026-03-26T19:06:07Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-10706",
+      "severity": "info",
+      "service": "service-mesh",
+      "message": "Automated backup completed successfully",
+      "timestamp": "2026-03-26T19:04:48Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-10707",
+      "severity": "info",
+      "service": "service-mesh",
+      "message": "New dashboard version deployed - no action required",
+      "timestamp": "2026-03-26T19:58:16Z",
+      "acknowledged": false,
+      "silenced": false
+    }
+  ],
+  "services": [
+    {
+      "name": "order-service",
+      "status": "degraded",
+      "latency_ms": 7905,
+      "error_rate": 68.6,
+      "cpu_percent": 88,
+      "memory_percent": 68,
+      "version": "3.1.2"
+    },
+    {
+      "name": "inventory-service",
+      "status": "down",
+      "latency_ms": 0,
+      "error_rate": 75.6,
+      "cpu_percent": 53,
+      "memory_percent": 67,
+      "version": "4.1.0"
+    },
+    {
+      "name": "payment-api",
+      "status": "degraded",
+      "latency_ms": 644,
+      "error_rate": 25.1,
+      "cpu_percent": 80,
+      "memory_percent": 36,
+      "version": "2.4.1"
+    },
+    {
+      "name": "cache-layer",
+      "status": "healthy",
+      "latency_ms": 75,
+      "error_rate": 0.7,
+      "cpu_percent": 22,
+      "memory_percent": 53,
+      "version": "2.0.0"
+    },
+    {
+      "name": "logging-pipeline",
+      "status": "healthy",
+      "latency_ms": 37,
+      "error_rate": 0.4,
+      "cpu_percent": 17,
+      "memory_percent": 44,
+      "version": "1.1.0"
+    },
+    {
+      "name": "service-mesh",
+      "status": "healthy",
+      "latency_ms": 154,
+      "error_rate": 0.9,
+      "cpu_percent": 15,
+      "memory_percent": 37,
+      "version": "2.1.1"
+    }
+  ],
+  "recent_deployments": [
+    {
+      "service": "order-service",
+      "version": "3.1.2",
+      "timestamp": "2026-03-26T18:30:00Z",
+      "deployer": "release-manager"
+    }
+  ],
+  "logs": {
+    "order-service": [
+      {
+        "timestamp": "2026-03-26T19:05:00Z",
+        "service": "order-service",
+        "level": "WARN",
+        "message": "GC pause duration: 4638ms (threshold: 500ms)"
+      },
+      {
+        "timestamp": "2026-03-26T19:07:00Z",
+        "service": "order-service",
+        "level": "ERROR",
+        "message": "Stop-the-world GC: 3786ms - request processing halted"
+      },
+      {
+        "timestamp": "2026-03-26T19:09:00Z",
+        "service": "order-service",
+        "level": "WARN",
+        "message": "Heap occupancy at 92% - frequent full GC cycles"
+      },
+      {
+        "timestamp": "2026-03-26T19:11:00Z",
+        "service": "order-service",
+        "level": "INFO",
+        "message": "GC tuning: concurrent mark phase taking 4894ms"
+      }
+    ],
+    "inventory-service": [
+      {
+        "timestamp": "2026-03-26T19:06:00Z",
+        "service": "inventory-service",
+        "level": "WARN",
+        "message": "Intermittent timeout from order-service: latency spike detected"
+      },
+      {
+        "timestamp": "2026-03-26T19:11:00Z",
+        "service": "inventory-service",
+        "level": "ERROR",
+        "message": "Request to order-service timed out during GC pause"
+      }
+    ],
+    "payment-api": [
+      {
+        "timestamp": "2026-03-26T19:06:00Z",
+        "service": "payment-api",
+        "level": "WARN",
+        "message": "Intermittent timeout from order-service: latency spike detected"
+      },
+      {
+        "timestamp": "2026-03-26T19:11:00Z",
+        "service": "payment-api",
+        "level": "ERROR",
+        "message": "Request to order-service timed out during GC pause"
+      }
+    ]
+  },
+  "metrics": {
+    "order-service:gc_pause_ms": [
+      0.8,
+      1.9,
+      4.5,
+      11.0,
+      26.9,
+      65.5
+    ],
+    "order-service:latency_p99": [
+      0.6,
+      1.5,
+      3.4,
+      7.8,
+      18.1,
+      41.6
+    ],
+    "order-service:memory_percent": [
+      0.0,
+      27.9,
+      46.1,
+      57.9,
+      65.6,
+      70.6,
+      73.9,
+      76.0
+    ],
+    "inventory-service:error_rate": [
+      1.5,
+      1.5,
+      72.1,
+      72.1,
+      72.1
+    ],
+    "payment-api:error_rate": [
+      1.7,
+      1.7,
+      1.7,
+      74.1,
+      74.1,
+      74.1,
+      74.1
+    ],
+    "cache-layer:cpu": [
+      38.7,
+      45.5,
+      37.5,
+      42.3,
+      45.8,
+      39.3
+    ],
+    "logging-pipeline:cpu": [
+      45.6,
+      46.4,
+      36.8,
+      48.5,
+      32.9,
+      48.9
+    ]
+  },
+  "dependencies": {
+    "order-service": [
+      "order-service-db",
+      "order-service-store"
+    ],
+    "inventory-service": [
+      "order-service",
+      "inventory-service-db"
+    ],
+    "payment-api": [
+      "order-service",
+      "payment-api-db"
+    ],
+    "cache-layer": [
+      "cache-layer-db"
+    ],
+    "logging-pipeline": [
+      "logging-pipeline-db"
+    ],
+    "service-mesh": [
+      "service-mesh-db"
+    ]
+  },
+  "root_cause": {
+    "service": "order-service",
+    "description": "GC pause storm in order-service 3.1.2 due to excessive object allocation in batch processor",
+    "keywords": [
+      "gc",
+      "garbage collection",
+      "pause",
+      "stop-the-world",
+      "allocation",
+      "heap"
+    ]
+  },
+  "valid_remediations": [
+    {
+      "action": "restart_service",
+      "service": "order-service"
+    },
+    {
+      "action": "rollback_deploy",
+      "service": "order-service"
+    },
+    {
+      "action": "scale_service",
+      "service": "order-service"
+    }
+  ],
+  "expected_diagnostics": [
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "order-service"
+      }
+    },
+    {
+      "action_type": "check_metrics",
+      "params": {
+        "service": "order-service"
+      }
+    }
+  ],
+  "grading_rubric": {
+    "triage_weight": 0.22,
+    "diagnostic_weight": 0.26,
+    "root_cause_weight": 0.18,
+    "remediation_weight": 0.17,
+    "efficiency_weight": 0.09,
+    "documentation_weight": 0.08
+  }
+}

@@ -1,0 +1,253 @@
+{
+  "incident_id": "INC-20260326-004",
+  "difficulty": "easy",
+  "description": "SEV3 incident: Deadlock Storm affecting order-service. Cascading impact on search-service.",
+  "expected_severity": "SEV3",
+  "initial_alerts": [
+    {
+      "alert_id": "alert-401",
+      "severity": "critical",
+      "service": "order-service",
+      "message": "Transaction deadlocks spiking - 164/min detected",
+      "timestamp": "2026-03-26T15:22:05Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-402",
+      "severity": "critical",
+      "service": "order-service",
+      "message": "Request queue depth exceeding 500 - requests backing up",
+      "timestamp": "2026-03-26T15:23:10Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-403",
+      "severity": "warning",
+      "service": "search-service",
+      "message": "Upstream order-service response time degraded",
+      "timestamp": "2026-03-26T15:24:15Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-404",
+      "severity": "critical",
+      "service": "search-service",
+      "message": "search-service error rate spiking - requests failing",
+      "timestamp": "2026-03-26T15:22:54Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-405",
+      "severity": "info",
+      "service": "notification-service",
+      "message": "New dashboard version deployed - no action required",
+      "timestamp": "2026-03-26T15:20:40Z",
+      "acknowledged": false,
+      "silenced": false
+    }
+  ],
+  "services": [
+    {
+      "name": "order-service",
+      "status": "degraded",
+      "latency_ms": 2931,
+      "error_rate": 38.3,
+      "cpu_percent": 40,
+      "memory_percent": 67,
+      "version": "5.0.3"
+    },
+    {
+      "name": "search-service",
+      "status": "degraded",
+      "latency_ms": 3725,
+      "error_rate": 33.2,
+      "cpu_percent": 72,
+      "memory_percent": 65,
+      "version": "4.2.0"
+    },
+    {
+      "name": "notification-service",
+      "status": "healthy",
+      "latency_ms": 165,
+      "error_rate": 0.3,
+      "cpu_percent": 37,
+      "memory_percent": 45,
+      "version": "2.3.0"
+    },
+    {
+      "name": "config-server",
+      "status": "healthy",
+      "latency_ms": 171,
+      "error_rate": 0.1,
+      "cpu_percent": 8,
+      "memory_percent": 47,
+      "version": "4.2.0"
+    }
+  ],
+  "recent_deployments": [
+    {
+      "service": "order-service",
+      "version": "5.0.3",
+      "timestamp": "2026-03-26T14:13:00Z",
+      "deployer": "infra-team"
+    }
+  ],
+  "logs": {
+    "order-service": [
+      {
+        "timestamp": "2026-03-26T15:21:00Z",
+        "service": "order-service",
+        "level": "ERROR",
+        "message": "Deadlock detected: txn-13649 waiting for lock held by txn-38234"
+      },
+      {
+        "timestamp": "2026-03-26T15:23:00Z",
+        "service": "order-service",
+        "level": "ERROR",
+        "message": "Transaction aborted after deadlock timeout: 30s"
+      },
+      {
+        "timestamp": "2026-03-26T15:25:00Z",
+        "service": "order-service",
+        "level": "WARN",
+        "message": "Request queue depth: 40687 - approaching limit"
+      },
+      {
+        "timestamp": "2026-03-26T15:27:00Z",
+        "service": "order-service",
+        "level": "ERROR",
+        "message": "Lock wait timeout exceeded for table order-service_records"
+      }
+    ],
+    "search-service": [
+      {
+        "timestamp": "2026-03-26T15:22:00Z",
+        "service": "search-service",
+        "level": "ERROR",
+        "message": "Timeout calling order-service: exceeded 10s deadline"
+      },
+      {
+        "timestamp": "2026-03-26T15:27:00Z",
+        "service": "search-service",
+        "level": "WARN",
+        "message": "Circuit breaker half-open for order-service"
+      }
+    ]
+  },
+  "metrics": {
+    "order-service:deadlocks_per_min": [
+      1.8,
+      3.8,
+      8.0,
+      17.1,
+      36.2,
+      77.0
+    ],
+    "order-service:error_rate": [
+      1.6,
+      2.8,
+      4.8,
+      8.3,
+      14.3,
+      24.6,
+      42.5,
+      73.2
+    ],
+    "order-service:latency_p99": [
+      0.3,
+      0.8,
+      2.6,
+      8.1,
+      25.1,
+      77.7
+    ],
+    "search-service:error_rate": [
+      0.4,
+      0.4,
+      0.4,
+      57.4,
+      57.4,
+      57.4
+    ],
+    "notification-service:cpu": [
+      32.4,
+      34.2,
+      25.6,
+      21.9,
+      24.4,
+      27.0
+    ],
+    "config-server:cpu": [
+      31.8,
+      33.0,
+      32.0,
+      38.9,
+      34.7,
+      35.0
+    ]
+  },
+  "dependencies": {
+    "order-service": [
+      "order-service-db",
+      "order-service-store"
+    ],
+    "search-service": [
+      "order-service",
+      "search-service-db"
+    ],
+    "notification-service": [
+      "notification-service-db"
+    ],
+    "config-server": [
+      "config-server-db"
+    ]
+  },
+  "root_cause": {
+    "service": "order-service",
+    "description": "Deadlock storm in order-service database caused by concurrent transaction ordering bug in 5.0.3",
+    "keywords": [
+      "deadlock",
+      "transaction",
+      "lock",
+      "contention",
+      "database",
+      "concurrent"
+    ]
+  },
+  "valid_remediations": [
+    {
+      "action": "restart_service",
+      "service": "order-service"
+    },
+    {
+      "action": "rollback_deploy",
+      "service": "order-service"
+    }
+  ],
+  "expected_diagnostics": [
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "order-service"
+      }
+    },
+    {
+      "action_type": "check_metrics",
+      "params": {
+        "service": "order-service"
+      }
+    }
+  ],
+  "grading_rubric": {
+    "triage_weight": 0.3,
+    "diagnostic_weight": 0.21,
+    "root_cause_weight": 0.15,
+    "remediation_weight": 0.14,
+    "efficiency_weight": 0.08,
+    "documentation_weight": 0.12
+  }
+}

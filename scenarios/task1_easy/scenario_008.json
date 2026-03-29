@@ -1,0 +1,252 @@
+{
+  "incident_id": "INC-20260326-008",
+  "difficulty": "easy",
+  "description": "SEV3 incident: DNS Resolution Failure affecting logging-pipeline. Cascading impact on session-store.",
+  "expected_severity": "SEV3",
+  "initial_alerts": [
+    {
+      "alert_id": "alert-801",
+      "severity": "critical",
+      "service": "logging-pipeline",
+      "message": "DNS query failure rate at 67.5% - resolution failing",
+      "timestamp": "2026-03-26T13:27:05Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-802",
+      "severity": "critical",
+      "service": "session-store",
+      "message": "Service connectivity lost - DNS resolution failed",
+      "timestamp": "2026-03-26T13:28:10Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-803",
+      "severity": "warning",
+      "service": "logging-pipeline",
+      "message": "DNS resolution latency increased to 3377ms",
+      "timestamp": "2026-03-26T13:29:15Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-804",
+      "severity": "critical",
+      "service": "session-store",
+      "message": "session-store error rate spiking - requests failing",
+      "timestamp": "2026-03-26T13:27:04Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-805",
+      "severity": "warning",
+      "service": "cdn-proxy",
+      "message": "CPU usage at 75% - approaching threshold",
+      "timestamp": "2026-03-26T13:22:31Z",
+      "acknowledged": false,
+      "silenced": false
+    }
+  ],
+  "services": [
+    {
+      "name": "logging-pipeline",
+      "status": "down",
+      "latency_ms": 0,
+      "error_rate": 85.9,
+      "cpu_percent": 81,
+      "memory_percent": 59,
+      "version": "2.3.0"
+    },
+    {
+      "name": "session-store",
+      "status": "degraded",
+      "latency_ms": 2354,
+      "error_rate": 35.6,
+      "cpu_percent": 55,
+      "memory_percent": 59,
+      "version": "2.0.0"
+    },
+    {
+      "name": "internal-dns",
+      "status": "healthy",
+      "latency_ms": 150,
+      "error_rate": 1.0,
+      "cpu_percent": 17,
+      "memory_percent": 52,
+      "version": "2.1.1"
+    },
+    {
+      "name": "cdn-proxy",
+      "status": "healthy",
+      "latency_ms": 172,
+      "error_rate": 0.3,
+      "cpu_percent": 26,
+      "memory_percent": 54,
+      "version": "2.4.1"
+    }
+  ],
+  "recent_deployments": [
+    {
+      "service": "logging-pipeline",
+      "version": "2.3.0",
+      "timestamp": "2026-03-26T12:39:00Z",
+      "deployer": "ops-team"
+    }
+  ],
+  "logs": {
+    "logging-pipeline": [
+      {
+        "timestamp": "2026-03-26T13:26:00Z",
+        "service": "logging-pipeline",
+        "level": "ERROR",
+        "message": "SERVFAIL for session-store.internal: zone file contains invalid A record"
+      },
+      {
+        "timestamp": "2026-03-26T13:28:30Z",
+        "service": "logging-pipeline",
+        "level": "ERROR",
+        "message": "NXDOMAIN for session-store-db.internal: record missing from 2.3.0 zone file"
+      },
+      {
+        "timestamp": "2026-03-26T13:31:00Z",
+        "service": "logging-pipeline",
+        "level": "ERROR",
+        "message": "SERVFAIL rate increasing: 26.7% of queries failing"
+      },
+      {
+        "timestamp": "2026-03-26T13:33:30Z",
+        "service": "logging-pipeline",
+        "level": "FATAL",
+        "message": "Multiple critical DNS records missing/corrupted after 2.3.0 zone migration"
+      }
+    ],
+    "session-store": [
+      {
+        "timestamp": "2026-03-26T13:27:00Z",
+        "service": "session-store",
+        "level": "ERROR",
+        "message": "Cannot resolve session-store-db.internal.internal - DNS lookup failed"
+      },
+      {
+        "timestamp": "2026-03-26T13:30:20Z",
+        "service": "session-store",
+        "level": "FATAL",
+        "message": "Database connection pool empty: all connections failed DNS resolution"
+      },
+      {
+        "timestamp": "2026-03-26T13:33:40Z",
+        "service": "session-store",
+        "level": "FATAL",
+        "message": "Service degraded: critical dependency unreachable via DNS"
+      }
+    ]
+  },
+  "metrics": {
+    "logging-pipeline:query_failure_rate": [
+      0.8,
+      2.5,
+      7.6,
+      22.9,
+      69.0
+    ],
+    "logging-pipeline:resolution_latency_ms": [
+      1.1,
+      2.6,
+      6.3,
+      15.1,
+      36.2
+    ],
+    "session-store:error_rate": [
+      0.7,
+      0.7,
+      42.4,
+      42.4,
+      42.4
+    ],
+    "internal-dns:cpu": [
+      57.6,
+      44.1,
+      45.3,
+      45.6,
+      52.0,
+      46.5
+    ],
+    "cdn-proxy:cpu": [
+      52.0,
+      47.4,
+      55.8,
+      51.2,
+      44.8,
+      55.7
+    ]
+  },
+  "dependencies": {
+    "logging-pipeline": [],
+    "session-store": [
+      "session-store-db.internal",
+      "logging-pipeline"
+    ],
+    "internal-dns": [
+      "internal-dns-db.internal",
+      "logging-pipeline"
+    ],
+    "cdn-proxy": [
+      "cdn-proxy-db.internal",
+      "logging-pipeline"
+    ]
+  },
+  "root_cause": {
+    "service": "logging-pipeline",
+    "description": "DNS resolution failure on logging-pipeline after 2.3.0 deployment corrupted zone file records",
+    "keywords": [
+      "dns",
+      "resolution",
+      "zone",
+      "corrupted",
+      "SERVFAIL",
+      "NXDOMAIN",
+      "zone file"
+    ]
+  },
+  "valid_remediations": [
+    {
+      "action": "rollback_deploy",
+      "service": "logging-pipeline"
+    },
+    {
+      "action": "restart_service",
+      "service": "logging-pipeline"
+    }
+  ],
+  "expected_diagnostics": [
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "logging-pipeline"
+      }
+    },
+    {
+      "action_type": "check_metrics",
+      "params": {
+        "service": "logging-pipeline"
+      }
+    },
+    {
+      "action_type": "view_dependencies",
+      "params": {
+        "service_name": "session-store"
+      }
+    }
+  ],
+  "grading_rubric": {
+    "triage_weight": 0.3,
+    "diagnostic_weight": 0.21,
+    "root_cause_weight": 0.13,
+    "remediation_weight": 0.14,
+    "efficiency_weight": 0.08,
+    "documentation_weight": 0.14
+  }
+}

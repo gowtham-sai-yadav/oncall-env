@@ -1,0 +1,406 @@
+{
+  "incident_id": "INC-20260326-210",
+  "difficulty": "hard",
+  "description": "SEV1 incident: Load Balancer Misconfiguration affecting logging-pipeline. Cascading impact on internal-dns, payment-api, email-service. Multiple concurrent events make diagnosis challenging.",
+  "expected_severity": "SEV1",
+  "initial_alerts": [
+    {
+      "alert_id": "alert-21001",
+      "severity": "critical",
+      "service": "logging-pipeline",
+      "message": "Uneven traffic distribution - single backend receiving 100% traffic",
+      "timestamp": "2026-03-26T10:29:05Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-21002",
+      "severity": "critical",
+      "service": "internal-dns",
+      "message": "Service overloaded - receiving all routed traffic",
+      "timestamp": "2026-03-26T10:30:10Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-21003",
+      "severity": "warning",
+      "service": "logging-pipeline",
+      "message": "Health check configuration mismatch detected",
+      "timestamp": "2026-03-26T10:31:15Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-21004",
+      "severity": "critical",
+      "service": "internal-dns",
+      "message": "internal-dns error rate spiking - requests failing",
+      "timestamp": "2026-03-26T10:29:03Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-21005",
+      "severity": "critical",
+      "service": "payment-api",
+      "message": "payment-api error rate spiking - requests failing",
+      "timestamp": "2026-03-26T10:29:34Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-21006",
+      "severity": "warning",
+      "service": "metrics-collector",
+      "message": "Log volume increased 20% - review retention policy",
+      "timestamp": "2026-03-26T10:26:08Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-21007",
+      "severity": "info",
+      "service": "metrics-collector",
+      "message": "SSL certificate renewal scheduled for next week",
+      "timestamp": "2026-03-26T10:23:31Z",
+      "acknowledged": false,
+      "silenced": false
+    }
+  ],
+  "services": [
+    {
+      "name": "logging-pipeline",
+      "status": "degraded",
+      "latency_ms": 1580,
+      "error_rate": 24.7,
+      "cpu_percent": 86,
+      "memory_percent": 75,
+      "version": "1.0.0"
+    },
+    {
+      "name": "internal-dns",
+      "status": "degraded",
+      "latency_ms": 2109,
+      "error_rate": 40.2,
+      "cpu_percent": 54,
+      "memory_percent": 49,
+      "version": "4.2.0"
+    },
+    {
+      "name": "payment-api",
+      "status": "degraded",
+      "latency_ms": 4782,
+      "error_rate": 13.8,
+      "cpu_percent": 71,
+      "memory_percent": 32,
+      "version": "1.5.0"
+    },
+    {
+      "name": "email-service",
+      "status": "degraded",
+      "latency_ms": 3582,
+      "error_rate": 45.6,
+      "cpu_percent": 24,
+      "memory_percent": 37,
+      "version": "5.0.3"
+    },
+    {
+      "name": "session-store",
+      "status": "healthy",
+      "latency_ms": 165,
+      "error_rate": 0.7,
+      "cpu_percent": 33,
+      "memory_percent": 35,
+      "version": "1.0.0"
+    },
+    {
+      "name": "metrics-collector",
+      "status": "healthy",
+      "latency_ms": 197,
+      "error_rate": 1.0,
+      "cpu_percent": 41,
+      "memory_percent": 38,
+      "version": "2.3.0"
+    },
+    {
+      "name": "user-service",
+      "status": "healthy",
+      "latency_ms": 192,
+      "error_rate": 0.8,
+      "cpu_percent": 9,
+      "memory_percent": 20,
+      "version": "3.2.0"
+    }
+  ],
+  "recent_deployments": [
+    {
+      "service": "logging-pipeline",
+      "version": "1.0.0",
+      "timestamp": "2026-03-26T09:19:00Z",
+      "deployer": "search-team"
+    },
+    {
+      "service": "metrics-collector",
+      "version": "2.3.0",
+      "timestamp": "2026-03-26T08:12:00Z",
+      "deployer": "ml-team"
+    },
+    {
+      "service": "session-store",
+      "version": "1.0.0",
+      "timestamp": "2026-03-26T07:11:00Z",
+      "deployer": "dev-team"
+    }
+  ],
+  "logs": {
+    "logging-pipeline": [
+      {
+        "timestamp": "2026-03-26T10:28:00Z",
+        "service": "logging-pipeline",
+        "level": "ERROR",
+        "message": "Backend pool misconfigured: only 1 of 3 backends active"
+      },
+      {
+        "timestamp": "2026-03-26T10:29:25Z",
+        "service": "logging-pipeline",
+        "level": "WARN",
+        "message": "Health check endpoint changed in 1.0.0 but LB config not updated"
+      },
+      {
+        "timestamp": "2026-03-26T10:30:50Z",
+        "service": "logging-pipeline",
+        "level": "ERROR",
+        "message": "All traffic routed to internal-dns: other backends marked unhealthy"
+      },
+      {
+        "timestamp": "2026-03-26T10:32:15Z",
+        "service": "logging-pipeline",
+        "level": "WARN",
+        "message": "Backend internal-dns reporting 503: overloaded from traffic spike"
+      }
+    ],
+    "internal-dns": [
+      {
+        "timestamp": "2026-03-26T10:29:00Z",
+        "service": "internal-dns",
+        "level": "ERROR",
+        "message": "Request rate 10x normal - possible routing issue"
+      },
+      {
+        "timestamp": "2026-03-26T10:34:00Z",
+        "service": "internal-dns",
+        "level": "WARN",
+        "message": "Thread pool exhausted from unexpected traffic volume"
+      }
+    ],
+    "payment-api": [
+      {
+        "timestamp": "2026-03-26T10:29:00Z",
+        "service": "payment-api",
+        "level": "ERROR",
+        "message": "Request rate 10x normal - possible routing issue"
+      },
+      {
+        "timestamp": "2026-03-26T10:34:00Z",
+        "service": "payment-api",
+        "level": "WARN",
+        "message": "Thread pool exhausted from unexpected traffic volume"
+      }
+    ],
+    "email-service": [
+      {
+        "timestamp": "2026-03-26T10:29:00Z",
+        "service": "email-service",
+        "level": "ERROR",
+        "message": "Request rate 10x normal - possible routing issue"
+      },
+      {
+        "timestamp": "2026-03-26T10:34:00Z",
+        "service": "email-service",
+        "level": "WARN",
+        "message": "Thread pool exhausted from unexpected traffic volume"
+      }
+    ],
+    "session-store": [
+      {
+        "timestamp": "2026-03-26T10:28:00Z",
+        "service": "session-store",
+        "level": "INFO",
+        "message": "Cache hit ratio: 87%"
+      }
+    ],
+    "metrics-collector": [
+      {
+        "timestamp": "2026-03-26T10:28:00Z",
+        "service": "metrics-collector",
+        "level": "INFO",
+        "message": "Batch job completed: processed 17160 records"
+      }
+    ]
+  },
+  "metrics": {
+    "logging-pipeline:backend_health_pct": [
+      0.5,
+      0.5,
+      0.5,
+      64.4,
+      64.4,
+      64.4
+    ],
+    "logging-pipeline:error_rate": [
+      1.6,
+      1.6,
+      1.6,
+      66.7,
+      66.7,
+      66.7
+    ],
+    "internal-dns:cpu_percent": [
+      0.0,
+      41.2,
+      63.8,
+      76.2,
+      83.0,
+      86.7
+    ],
+    "internal-dns:error_rate": [
+      0.9,
+      1.8,
+      3.6,
+      7.3,
+      14.9,
+      30.4
+    ],
+    "payment-api:cpu_percent": [
+      0.0,
+      38.9,
+      60.3,
+      72.0,
+      78.5,
+      82.0
+    ],
+    "payment-api:error_rate": [
+      0.2,
+      0.5,
+      1.3,
+      3.2,
+      7.7,
+      18.6,
+      45.1
+    ],
+    "email-service:cpu_percent": [
+      0.0,
+      43.8,
+      64.5,
+      74.3,
+      78.9
+    ],
+    "email-service:error_rate": [
+      0.2,
+      0.6,
+      1.6,
+      4.2,
+      11.3,
+      30.4,
+      81.3
+    ],
+    "session-store:cpu": [
+      24.2,
+      40.0,
+      23.9,
+      22.0,
+      18.1,
+      18.8
+    ],
+    "metrics-collector:cpu": [
+      40.3,
+      23.5,
+      34.3,
+      38.8,
+      31.6,
+      27.6
+    ]
+  },
+  "dependencies": {
+    "logging-pipeline": [
+      "logging-pipeline-db",
+      "logging-pipeline-store"
+    ],
+    "internal-dns": [
+      "logging-pipeline",
+      "internal-dns-db"
+    ],
+    "payment-api": [
+      "logging-pipeline",
+      "payment-api-db"
+    ],
+    "email-service": [
+      "logging-pipeline",
+      "email-service-db"
+    ],
+    "session-store": [
+      "session-store-db"
+    ],
+    "metrics-collector": [
+      "metrics-collector-db"
+    ],
+    "user-service": [
+      "user-service-db"
+    ]
+  },
+  "root_cause": {
+    "service": "logging-pipeline",
+    "description": "Load balancer misconfiguration on logging-pipeline routing all traffic to single unhealthy backend after 1.0.0 config change",
+    "keywords": [
+      "load balancer",
+      "routing",
+      "misconfiguration",
+      "config",
+      "backend",
+      "traffic"
+    ]
+  },
+  "valid_remediations": [
+    {
+      "action": "update_config",
+      "service": "logging-pipeline"
+    },
+    {
+      "action": "rollback_deploy",
+      "service": "logging-pipeline"
+    },
+    {
+      "action": "restart_service",
+      "service": "logging-pipeline"
+    }
+  ],
+  "expected_diagnostics": [
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "logging-pipeline"
+      }
+    },
+    {
+      "action_type": "check_metrics",
+      "params": {
+        "service": "logging-pipeline"
+      }
+    },
+    {
+      "action_type": "view_dependencies",
+      "params": {
+        "service_name": "internal-dns"
+      }
+    }
+  ],
+  "grading_rubric": {
+    "triage_weight": 0.09,
+    "diagnostic_weight": 0.26,
+    "root_cause_weight": 0.33,
+    "remediation_weight": 0.19,
+    "efficiency_weight": 0.09,
+    "documentation_weight": 0.04
+  }
+}
