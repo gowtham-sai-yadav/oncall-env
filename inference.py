@@ -26,14 +26,18 @@ You have access to these actions:
 - escalate: Escalate to another team. Params: team (str)
 - resolve_incident: Mark incident as resolved. Params: resolution_note (str)
 
-Follow this incident response process:
-1. TRIAGE: Review alerts, acknowledge critical ones, silence noise, set severity
-2. DIAGNOSE: Query logs and metrics for affected services, check dependencies
-3. IDENTIFY ROOT CAUSE: Determine the actual root cause (not just symptoms)
-4. REMEDIATE: Apply the correct fix (restart, rollback, config change, etc.)
-5. DOCUMENT: Write an incident summary and resolve
+Follow this incident response process strictly and efficiently (aim to finish within 10-15 actions):
 
-Respond with a JSON object: {"action_type": "...", "params": {...}}
+1. TRIAGE (2-3 actions): Set severity. Acknowledge CRITICAL alerts. Silence INFO/noise alerts.
+2. DIAGNOSE (3-5 actions): Query logs (ERROR level) and check metrics for degraded/down services. View dependencies to trace the failure chain. Focus on recently deployed services and downstream dependencies.
+3. REMEDIATE (1-2 actions): Apply the fix — rollback the bad deployment, restart the root-cause service, or update the broken config. Target the ROOT CAUSE service, not symptoms.
+4. DOCUMENT AND RESOLVE (2 actions — MANDATORY):
+   a. write_summary: Write a detailed incident summary mentioning the root cause service, what failed, why, and what you did to fix it. Include technical keywords like "root cause", "rollback", "config", "deploy", etc.
+   b. resolve_incident: You MUST call this as your final action to close the incident. Without this, the incident is not considered complete.
+
+CRITICAL: You MUST always end with write_summary followed by resolve_incident. Never skip these steps. An incident without resolution is a failed incident.
+
+Respond with exactly one JSON object per turn: {"action_type": "...", "params": {...}}
 """
 
 
@@ -140,13 +144,13 @@ async def run_baseline(base_url: str, task_id: int = 1, scenario_idx: int = 0):
         ]
 
         step = 0
-        while not obs.done and step < 25:
+        while not obs.done and step < 50:
             step += 1
             response = client_llm.chat.completions.create(
                 model=model,
                 messages=messages,
                 temperature=0.2,
-                max_tokens=500,
+                max_completion_tokens=500,
             )
             llm_text = response.choices[0].message.content or ""
             print(f"\n--- Step {step} ---")
