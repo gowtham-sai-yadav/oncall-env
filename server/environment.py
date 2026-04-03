@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import copy
+import random
 from datetime import datetime, timezone
 from typing import Any
 from uuid import uuid4
@@ -60,6 +61,11 @@ class OnCallEnvironment(Environment[OnCallAction, OnCallObservation, OnCallState
         self._alerts = copy.deepcopy(self._scenario["initial_alerts"])
         self._services = copy.deepcopy(self._scenario["services"])
         self._deployments = copy.deepcopy(self._scenario.get("recent_deployments", []))
+
+        # Shuffle lists so ordering doesn't leak the root cause
+        rng = random.Random(seed if seed is not None else scenario_idx)
+        rng.shuffle(self._alerts)
+        rng.shuffle(self._services)
         self._timeline = []
         self._severity = None
         self._summary = ""

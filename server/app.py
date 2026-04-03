@@ -86,7 +86,8 @@ async def run_baseline_endpoint(body: Dict[str, Any] = {}):
     """Run a heuristic baseline agent and return scores per task.
 
     This is a deterministic heuristic (no LLM needed) that demonstrates
-    basic incident response: acknowledge alerts, query logs, remediate, resolve.
+    basic incident response using ONLY observation data returned by
+    reset() and step(). It never accesses env internals like _scenario.
     """
     task_ids = body.get("task_ids", [1, 2, 3, 4])
     scenario_idx = body.get("scenario_idx", None)  # None = run all scenarios
@@ -98,46 +99,8 @@ async def run_baseline_endpoint(body: Dict[str, Any] = {}):
         task_scores = []
         for idx in indices:
             try:
-                env = OnCallEnvironment()
-                obs = env.reset(task_id=task_id, scenario_idx=idx)
-
-                # Heuristic: acknowledge all critical alerts
-                for alert in env._alerts:
-                    if alert.get("severity") == "critical":
-                        env.step(OnCallAction(
-                            action_type="acknowledge_alert",
-                            params={"alert_id": alert["alert_id"]},
-                        ))
-
-                # Set severity
-                env.step(OnCallAction(action_type="set_severity", params={"level": "SEV1"}))
-
-                # Query logs for each degraded/down service
-                for svc in env._scenario.get("services", []):
-                    if svc.get("status") in ("degraded", "down"):
-                        env.step(OnCallAction(
-                            action_type="query_logs",
-                            params={"service": svc["name"]},
-                        ))
-
-                # Attempt first valid remediation
-                for rem in env._scenario.get("valid_remediations", [])[:1]:
-                    env.step(OnCallAction(
-                        action_type=rem["action"],
-                        params={"service_name": rem["service"]},
-                    ))
-
-                # Write summary and resolve
-                root_cause = env._scenario.get("root_cause", {})
-                env.step(OnCallAction(
-                    action_type="write_summary",
-                    params={"text": f"Root cause: {root_cause.get('service', 'unknown')} - {root_cause.get('description', 'investigated and remediated')}"},
-                ))
-                obs = env.step(OnCallAction(
-                    action_type="resolve_incident",
-                    params={"resolution_note": "Resolved via heuristic baseline"},
-                ))
-                task_scores.append(obs.reward)
+                score = _run_baseline_episode(task_id, idx)
+                task_scores.append(score)
             except Exception as e:
                 task_scores.append({"error": str(e)})
 
@@ -152,6 +115,77 @@ async def run_baseline_endpoint(body: Dict[str, Any] = {}):
             }
 
     return {"scores": scores}
+
+
+def _run_baseline_episode(task_id: int, scenario_idx: int) -> float:
+    """Run a single baseline episode using ONLY observation-space data.
+
+    The baseline follows a simple heuristic:
+    1. Acknowledge critical alerts visible in obs.alerts
+    2. Set severity to SEV2 (reasonable guess, not always correct)
+    3. Query logs for the first degraded/down service found in obs.services
+    4. Attempt restart_service on the first degraded/down service
+    5. Write a generic summary and resolve
+    """
+    env = OnCallEnvironment()
+    obs = env.reset(task_id=task_id, scenario_idx=scenario_idx)
+
+    # --- Step 1: Acknowledge critical alerts from observation ---
+    for alert in (obs.alerts or []):
+        if alert.severity == "critical":
+            obs = env.step(OnCallAction(
+                action_type="acknowledge_alert",
+                params={"alert_id": alert.alert_id},
+            ))
+            if obs.done:
+                return obs.reward
+
+    # --- Step 2: Set severity (guess SEV2 -- not always right) ---
+    obs = env.step(OnCallAction(
+        action_type="set_severity",
+        params={"level": "SEV2"},
+    ))
+    if obs.done:
+        return obs.reward
+
+    # --- Step 3: Query logs for the first unhealthy service ---
+    unhealthy = [
+        s for s in (obs.services or [])
+        if s.status in ("degraded", "down")
+    ]
+    first_unhealthy_name = unhealthy[0].name if unhealthy else None
+
+    if first_unhealthy_name:
+        obs = env.step(OnCallAction(
+            action_type="query_logs",
+            params={"service": first_unhealthy_name},
+        ))
+        if obs.done:
+            return obs.reward
+
+    # --- Step 4: Attempt restart on first unhealthy service ---
+    if first_unhealthy_name:
+        obs = env.step(OnCallAction(
+            action_type="restart_service",
+            params={"service_name": first_unhealthy_name},
+        ))
+        if obs.done:
+            return obs.reward
+
+    # --- Step 5: Write generic summary and resolve ---
+    summary_svc = first_unhealthy_name or "unknown service"
+    obs = env.step(OnCallAction(
+        action_type="write_summary",
+        params={"text": f"Investigated incident. Service {summary_svc} appeared degraded. Attempted restart."},
+    ))
+    if obs.done:
+        return obs.reward
+
+    obs = env.step(OnCallAction(
+        action_type="resolve_incident",
+        params={"resolution_note": "Resolved via heuristic baseline"},
+    ))
+    return obs.reward
 
 
 def main():

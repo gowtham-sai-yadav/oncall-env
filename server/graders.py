@@ -215,14 +215,20 @@ def _grade_remediation(
 
 
 def _grade_efficiency(actions: list[dict]) -> float:
-    """Score efficiency: fewer unnecessary steps = higher score."""
+    """Score efficiency: reward thorough-but-focused investigation.
+
+    Too few actions (< 5) means the agent didn't investigate properly.
+    Too many actions (> 20) means the agent is flailing.
+    Sweet spot is 6-12 actions: triage + investigate + remediate + document.
+    """
     n = len(actions)
     if n == 0:
         return 0.0
-    # Ideal range: 3-10 actions. Penalize >15.
-    if n <= 10:
-        return 1.0
-    elif n <= 15:
+    if n < 5:
+        return 0.3  # too few -- likely skipped investigation
+    if n <= 12:
+        return 1.0  # sweet spot
+    elif n <= 16:
         return 0.7
     elif n <= 20:
         return 0.4
