@@ -153,7 +153,7 @@ class OnCallEnvironment(Environment[OnCallAction, OnCallObservation, OnCallState
             "description": "Incident Response Command Center -- simulates production on-call engineering with alert triage, root cause diagnosis, remediation, and documentation across 4 difficulty levels.",
             "version": "0.2.0",
             "tasks": 4,
-            "scenarios_per_task": 2,
+            "scenarios_per_task": 12,
             "action_types": 13,
             "grading_components": 6,
         }
