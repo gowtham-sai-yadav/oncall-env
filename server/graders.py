@@ -132,32 +132,47 @@ def _grade_diagnostic(scenario: dict, actions: list[dict]) -> float:
 
 
 def _grade_root_cause(scenario: dict, actions: list[dict], summary: str) -> float:
-    """Score whether agent identified the root cause."""
+    """Score whether agent identified the root cause.
+
+    Requires both evidence of investigation AND correct identification.
+    An agent that just names every service in the summary shouldn't score high.
+    """
     root_cause = scenario.get("root_cause", {})
     if not root_cause:
         return 0.5
 
     rc_service = root_cause.get("service", "").lower()
     rc_keywords = [kw.lower() for kw in root_cause.get("keywords", [])]
-    rc_description = root_cause.get("description", "").lower()
 
     score = 0.0
-
-    # Check if summary mentions root cause service
     summary_lower = summary.lower()
-    if rc_service and rc_service in summary_lower:
-        score += 0.4
 
-    # Check if summary contains root cause keywords
+    # Check if summary mentions root cause service (+0.3)
+    if rc_service and rc_service in summary_lower:
+        score += 0.3
+
+    # Check if summary contains root cause keywords (+0.3)
+    # Require matching at least half the keywords for full credit
     if rc_keywords:
         matched = sum(1 for kw in rc_keywords if kw in summary_lower)
-        score += 0.6 * (matched / len(rc_keywords))
+        keyword_ratio = matched / len(rc_keywords)
+        score += 0.3 * keyword_ratio
 
-    # Check if remediation targeted the right service
-    remediation_actions = [
-        a for a in actions
-        if a["action_type"] in ("restart_service", "scale_service", "rollback_deploy", "update_config")
-    ]
+    # Did agent actually investigate the root cause service? (+0.2)
+    # Without this, the agent might just guess from alert text
+    investigation_types = {"query_logs", "check_metrics", "view_dependencies"}
+    investigated_rc = any(
+        a["action_type"] in investigation_types
+        and (a["params"].get("service", "").lower() == rc_service
+             or a["params"].get("service_name", "").lower() == rc_service)
+        for a in actions
+    )
+    if investigated_rc:
+        score += 0.2
+
+    # Check if remediation targeted the right service (+0.2)
+    remediation_types = {"restart_service", "scale_service", "rollback_deploy", "update_config"}
+    remediation_actions = [a for a in actions if a["action_type"] in remediation_types]
     for ra in remediation_actions:
         target_svc = ra["params"].get("service_name", "").lower()
         if target_svc == rc_service:
@@ -170,43 +185,87 @@ def _grade_root_cause(scenario: dict, actions: list[dict], summary: str) -> floa
 def _grade_remediation(
     scenario: dict, actions: list[dict], services_state: list[dict], resolved: bool
 ) -> float:
-    """Score remediation quality."""
+    """Score remediation quality with blast-radius and EGAR penalties.
+
+    A surgical agent that investigates first and remediates precisely should
+    score much higher than one that shotguns rollbacks at every service.
+    """
     valid_remediations = scenario.get("valid_remediations", [])
+    remediation_types = {"restart_service", "scale_service", "rollback_deploy", "update_config"}
+    investigation_types = {"query_logs", "check_metrics", "view_dependencies"}
+
     if not valid_remediations:
         return 0.5 if resolved else 0.0
 
+    remediation_actions = [a for a in actions if a["action_type"] in remediation_types]
+
     score = 0.0
 
-    # Check if any valid remediation was executed
+    # Check if any valid remediation was executed (+0.4)
+    hit_valid = False
     for vr in valid_remediations:
         for action in actions:
             if action["action_type"] == vr.get("action") and action["params"].get("service_name") == vr.get("service"):
-                score += 0.6
+                hit_valid = True
+                score += 0.4
                 break
 
-    score = min(score, 0.6)
+    score = min(score, 0.4)
 
-    # Check if services are now healthy
+    # Check if services are now healthy (+0.15)
     all_healthy = all(s.get("status") == "healthy" for s in services_state)
     if all_healthy:
-        score += 0.2
+        score += 0.15
 
-    # Bonus for resolving
+    # Bonus for resolving (+0.15)
     if resolved:
-        score += 0.2
+        score += 0.15
+
+    # --- Blast radius penalty: penalize wrong remediations ---
+    # An agent that tries 5 remediations and gets 1 right should score worse
+    # than one that tries 1 and gets 1 right.
+    if remediation_actions:
+        valid_targets = {
+            (vr.get("action"), vr.get("service"))
+            for vr in valid_remediations
+        }
+        wrong_count = sum(
+            1 for ra in remediation_actions
+            if (ra["action_type"], ra["params"].get("service_name", "")) not in valid_targets
+        )
+        blast_ratio = wrong_count / len(remediation_actions)
+        # Penalty scales: 0 wrong = 0.0 penalty, all wrong = -0.3 penalty
+        score -= 0.3 * blast_ratio
+
+    # --- EGAR penalty: penalize remediating without investigating that service first ---
+    if remediation_actions:
+        gated = 0
+        for ra in remediation_actions:
+            target = ra["params"].get("service_name", "")
+            ra_step = ra.get("step", float("inf"))
+            investigated = any(
+                a["action_type"] in investigation_types
+                and (a["params"].get("service", "") == target or a["params"].get("service_name", "") == target)
+                and a.get("step", 0) < ra_step
+                for a in actions
+            )
+            if investigated:
+                gated += 1
+        egar = gated / len(remediation_actions)
+        # Bonus for investigating first: up to +0.3
+        score += 0.3 * egar
 
     # Penalize harmful actions (restarting healthy services)
     healthy_services_at_start = {
         s["name"] for s in scenario.get("services", []) if s.get("status") == "healthy"
     }
     for action in actions:
-        if action["action_type"] in ("restart_service", "rollback_deploy"):
+        if action["action_type"] in remediation_types:
             svc = action["params"].get("service_name", "")
             if svc in healthy_services_at_start:
                 score -= 0.1
 
     # Penalize premature resolution (resolving without any investigation)
-    investigation_types = {"query_logs", "check_metrics", "view_dependencies"}
     has_any_investigation = any(a["action_type"] in investigation_types for a in actions)
     if resolved and not has_any_investigation:
         score -= 0.3
