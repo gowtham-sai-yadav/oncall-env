@@ -19,6 +19,14 @@ app = create_app(
 )
 
 
+# ── Health check ─────────────────────────────────────────────────────────
+
+
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
+
+
 # ── Custom hackathon-required endpoints ──────────────────────────────────
 
 
