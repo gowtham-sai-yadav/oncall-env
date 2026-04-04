@@ -11,6 +11,18 @@ dependencies = [
     "uvicorn>=0.20.0",
 ]
 
+[project.optional-dependencies]
+train = [
+    "torch>=2.0",
+    "trl>=0.12.0",
+    "transformers>=4.40.0",
+    "accelerate>=0.30.0",
+    "datasets>=2.18.0",
+]
+inference = [
+    "openai>=1.0",
+]
+
 [project.scripts]
 server = "oncall_env.server.app:main"
 
