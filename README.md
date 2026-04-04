@@ -250,6 +250,33 @@ These enable GRPO training with dense per-step feedback via TRL's `GRPOTrainer`.
 | `/grader` | POST | Grade a completed episode |
 | `/baseline` | POST | Run heuristic baseline agent, return scores |
 
+## Training with GRPO (PyTorch + TRL)
+
+OnCallEnv includes a GRPO training script that teaches a small LLM to become a better on-call engineer through reinforcement learning.
+
+```bash
+# Install training dependencies
+pip install -e ".[train]"
+
+# Run training (uses env directly, no server needed)
+python train.py --model Qwen/Qwen2.5-0.5B-Instruct --episodes 200 --epochs 3
+
+# Quick test (15-20 min on CPU)
+python train.py --episodes 20 --epochs 1 --batch-size 2
+
+# Eval-only (verify pipeline works, ~5 min)
+python train.py --eval-only
+```
+
+**How it works:**
+1. Generates training prompts by resetting the env with random tasks/scenarios
+2. Model generates action completions for each prompt
+3. Actions are executed in the environment, scored by the 6-component grader
+4. GRPO uses reward comparisons across completions to update model weights
+5. Per-step reward signals (`metadata.reward_signals`) provide dense feedback
+
+Auto-detects CUDA GPU, Apple Silicon (MPS), or CPU.
+
 ## Architecture
 
 ```
@@ -258,6 +285,7 @@ oncall_env/
 ├── models.py                # Action, Observation, State (typed Pydantic models)
 ├── client.py                # EnvClient subclass (WebSocket)
 ├── inference.py             # LLM-based baseline agent (OpenAI-compatible)
+├── train.py                 # GRPO training script (PyTorch + TRL)
 ├── generate_scenarios.py    # Scenario generator (48 scenarios, 11 root cause types)
 ├── openenv.yaml             # OpenEnv manifest
 ├── pyproject.toml           # Dependencies
