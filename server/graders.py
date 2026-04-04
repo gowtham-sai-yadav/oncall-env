@@ -41,7 +41,7 @@ def grade_episode(
     root_cause = _grade_root_cause(scenario, actions_taken, summary)
     remediation = _grade_remediation(scenario, actions_taken, services_state, resolved)
     efficiency = _grade_efficiency(actions_taken)
-    documentation = _grade_documentation(summary)
+    documentation = _grade_documentation(summary, scenario)
 
     reward = (
         triage * weights["triage"]
@@ -134,8 +134,12 @@ def _grade_diagnostic(scenario: dict, actions: list[dict]) -> float:
 def _grade_root_cause(scenario: dict, actions: list[dict], summary: str) -> float:
     """Score whether agent identified the root cause.
 
-    Requires both evidence of investigation AND correct identification.
-    An agent that just names every service in the summary shouldn't score high.
+    Investigation-gated: naming the root cause without investigating it
+    yields at most 0.2. Agents must actually query_logs / check_metrics /
+    view_dependencies for the root-cause service to unlock full credit.
+
+    Shotgun penalty: mentioning >3 service names from the scenario in the
+    summary applies a 0.5x multiplier (prevents spamming every service name).
     """
     root_cause = scenario.get("root_cause", {})
     if not root_cause:
@@ -144,22 +148,9 @@ def _grade_root_cause(scenario: dict, actions: list[dict], summary: str) -> floa
     rc_service = root_cause.get("service", "").lower()
     rc_keywords = [kw.lower() for kw in root_cause.get("keywords", [])]
 
-    score = 0.0
     summary_lower = summary.lower()
 
-    # Check if summary mentions root cause service (+0.3)
-    if rc_service and rc_service in summary_lower:
-        score += 0.3
-
-    # Check if summary contains root cause keywords (+0.3)
-    # Require matching at least half the keywords for full credit
-    if rc_keywords:
-        matched = sum(1 for kw in rc_keywords if kw in summary_lower)
-        keyword_ratio = matched / len(rc_keywords)
-        score += 0.3 * keyword_ratio
-
-    # Did agent actually investigate the root cause service? (+0.2)
-    # Without this, the agent might just guess from alert text
+    # --- Did agent investigate the root cause service? ---
     investigation_types = {"query_logs", "check_metrics", "view_dependencies"}
     investigated_rc = any(
         a["action_type"] in investigation_types
@@ -167,17 +158,50 @@ def _grade_root_cause(scenario: dict, actions: list[dict], summary: str) -> floa
              or a["params"].get("service_name", "").lower() == rc_service)
         for a in actions
     )
-    if investigated_rc:
-        score += 0.2
 
-    # Check if remediation targeted the right service (+0.2)
-    remediation_types = {"restart_service", "scale_service", "rollback_deploy", "update_config"}
-    remediation_actions = [a for a in actions if a["action_type"] in remediation_types]
-    for ra in remediation_actions:
-        target_svc = ra["params"].get("service_name", "").lower()
-        if target_svc == rc_service:
+    score = 0.0
+
+    if not investigated_rc:
+        # --- NOT investigated: cap entire root_cause score at 0.2 ---
+        if rc_service and rc_service in summary_lower:
+            score = 0.2  # lucky guess credit
+        # Nothing else contributes -- early return after shotgun check
+    else:
+        # --- Investigated: full rubric unlocked ---
+
+        # Service in summary: +0.2
+        if rc_service and rc_service in summary_lower:
             score += 0.2
-            break
+
+        # Keywords in summary: +0.2, require >=50% match
+        if rc_keywords:
+            matched = sum(1 for kw in rc_keywords if kw in summary_lower)
+            keyword_ratio = matched / len(rc_keywords)
+            if keyword_ratio >= 0.5:
+                score += 0.2 * keyword_ratio
+            # Below 50% match: no keyword credit
+
+        # Investigation bonus: +0.3
+        score += 0.3
+
+        # Remediation targeted right service: +0.2
+        remediation_types = {"restart_service", "scale_service", "rollback_deploy", "update_config"}
+        remediation_actions = [a for a in actions if a["action_type"] in remediation_types]
+        for ra in remediation_actions:
+            target_svc = ra["params"].get("service_name", "").lower()
+            if target_svc == rc_service:
+                score += 0.2
+                break
+
+    # --- Shotgun penalty: mentioning >3 scenario service names ---
+    all_service_names = {
+        s.get("name", "").lower()
+        for s in scenario.get("services", [])
+        if s.get("name")
+    }
+    mentioned_count = sum(1 for sn in all_service_names if sn in summary_lower)
+    if mentioned_count > 3:
+        score *= 0.5
 
     return min(score, 1.0)
 
@@ -221,8 +245,8 @@ def _grade_remediation(
     if resolved:
         score += 0.15
 
-    # --- Blast radius penalty: penalize wrong remediations ---
-    # An agent that tries 5 remediations and gets 1 right should score worse
+    # --- Blast radius penalty: heavily penalize wrong remediations ---
+    # An agent that tries 5 remediations and gets 1 right should score much worse
     # than one that tries 1 and gets 1 right.
     if remediation_actions:
         valid_targets = {
@@ -233,8 +257,10 @@ def _grade_remediation(
             1 for ra in remediation_actions
             if (ra["action_type"], ra["params"].get("service_name", "")) not in valid_targets
         )
+        # Per-action penalty: each wrong remediation costs -0.08
+        score -= wrong_count * 0.08
+        # Ratio penalty: if majority of remediations are wrong, additional penalty
         blast_ratio = wrong_count / len(remediation_actions)
-        # Penalty scales: 0 wrong = 0.0 penalty, all wrong = -0.3 penalty
         score -= 0.3 * blast_ratio
 
     # --- EGAR penalty: penalize remediating without investigating that service first ---
@@ -274,47 +300,123 @@ def _grade_remediation(
 
 
 def _grade_efficiency(actions: list[dict]) -> float:
-    """Score efficiency: reward thorough-but-focused investigation.
+    """Score efficiency: investigation-aware step counting.
 
-    Too few actions (< 5) means the agent didn't investigate properly.
-    Too many actions (> 20) means the agent is flailing.
-    Sweet spot is 6-12 actions: triage + investigate + remediate + document.
+    Requirements to unlock higher scores:
+    - Must investigate at least 2 different services to score above 0.3
+    - Investigation-to-remediation ratio must be >= 1.5 to score above 0.5
+    - Sweet spot: 6-14 steps = 1.0
+    - Below 5: 0.2 (too few = didn't investigate)
+    - 15-18: 0.6
+    - 19+: 0.2
     """
     n = len(actions)
     if n == 0:
         return 0.0
-    if n < 5:
-        return 0.3  # too few -- likely skipped investigation
-    if n <= 12:
-        return 1.0  # sweet spot
+
+    investigation_types = {"query_logs", "check_metrics", "view_dependencies"}
+    remediation_types = {"restart_service", "scale_service", "rollback_deploy", "update_config"}
+
+    # Count distinct services investigated
+    investigated_services = set()
+    investigation_count = 0
+    for a in actions:
+        if a["action_type"] in investigation_types:
+            investigation_count += 1
+            svc = a["params"].get("service", "") or a["params"].get("service_name", "")
+            if svc:
+                investigated_services.add(svc.lower())
+
+    remediation_count = sum(1 for a in actions if a["action_type"] in remediation_types)
+
+    # --- Step-count base score (tighter curve) ---
+    if n < 6:
+        base_score = 0.15  # too few = definitely skipped investigation
+    elif n <= 12:
+        base_score = 1.0  # sweet spot: triage + investigate + remediate + document
     elif n <= 16:
-        return 0.7
+        base_score = 0.5  # slightly over
     elif n <= 20:
-        return 0.4
+        base_score = 0.3  # flailing
     else:
-        return 0.2
+        base_score = 0.1  # way too many steps
+
+    # --- Gate: must investigate >=3 services to score above 0.3 ---
+    if len(investigated_services) < 3:
+        base_score = min(base_score, 0.3)
+
+    # --- Gate: investigation-to-remediation ratio >= 2.0 to score above 0.5 ---
+    if remediation_count > 0:
+        ratio = investigation_count / remediation_count
+        if ratio < 2.0:
+            base_score = min(base_score, 0.5)
+
+    # --- Penalty: duplicate investigation (re-querying same service) ---
+    investigation_targets = [
+        a["params"].get("service", "") or a["params"].get("service_name", "")
+        for a in actions if a["action_type"] in investigation_types
+    ]
+    duplicates = len(investigation_targets) - len(set(investigation_targets))
+    if duplicates > 0:
+        base_score -= 0.05 * duplicates
+
+    return max(base_score, 0.0)
 
 
-def _grade_documentation(summary: str) -> float:
-    """Score incident summary completeness."""
+def _grade_documentation(summary: str, scenario: dict | None = None) -> float:
+    """Score incident summary completeness.
+
+    When a scenario is provided, scenario-specific keywords from
+    root_cause["keywords"] are worth much more than generic tech keywords.
+    """
     if not summary:
         return 0.0
 
     score = 0.0
     words = summary.split()
+    summary_lower = summary.lower()
+
+    # --- Word count: up to 0.4 ---
     # Minimal summary
     if len(words) >= 5:
-        score += 0.3
+        score += 0.15
     # Reasonable summary
     if len(words) >= 15:
-        score += 0.3
+        score += 0.15
     # Detailed summary
     if len(words) >= 30:
-        score += 0.2
-    # Contains technical keywords
-    tech_keywords = ["root cause", "service", "error", "fix", "deploy", "config", "restart", "rollback", "latency", "alert"]
-    matched = sum(1 for kw in tech_keywords if kw in summary.lower())
-    score += 0.2 * min(matched / 3, 1.0)
+        score += 0.1
+
+    # --- Keywords ---
+    if scenario:
+        # Generic tech keywords: worth 0.1 max (down from 0.2)
+        tech_keywords = [
+            "root cause", "service", "error", "fix", "deploy",
+            "config", "restart", "rollback", "latency", "alert",
+        ]
+        generic_matched = sum(1 for kw in tech_keywords if kw in summary_lower)
+        score += 0.1 * min(generic_matched / 3, 1.0)
+
+        # Scenario-specific keywords: worth 0.5
+        rc_keywords = [
+            kw.lower()
+            for kw in scenario.get("root_cause", {}).get("keywords", [])
+        ]
+        if rc_keywords:
+            specific_matched = sum(1 for kw in rc_keywords if kw in summary_lower)
+            specific_ratio = specific_matched / len(rc_keywords)
+            score += 0.5 * specific_ratio
+        else:
+            # No scenario keywords defined -- fall back to generous generic credit
+            score += 0.1 * min(generic_matched / 3, 1.0)
+    else:
+        # No scenario provided -- original generic keyword scoring (0.2 max)
+        tech_keywords = [
+            "root cause", "service", "error", "fix", "deploy",
+            "config", "restart", "rollback", "latency", "alert",
+        ]
+        matched = sum(1 for kw in tech_keywords if kw in summary_lower)
+        score += 0.2 * min(matched / 3, 1.0)
 
     return min(score, 1.0)
 

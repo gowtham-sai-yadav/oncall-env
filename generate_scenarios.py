@@ -74,6 +74,16 @@ SERVICE_VERSIONS = [
 DEPLOYERS = ["ci-bot", "ops-team", "infra-team", "platform-team", "dev-team",
              "ml-team", "search-team", "sre-bot", "release-manager"]
 
+
+def rand_ip(rng: random.Random) -> str:
+    """Generate a random internal 10.x.x.x IP address."""
+    return f"10.{rng.randint(0,255)}.{rng.randint(0,255)}.{rng.randint(1,254)}"
+
+
+def rand_port(rng: random.Random, base: int = 5432) -> int:
+    """Generate a random port near a base port."""
+    return base + rng.randint(0, 20)
+
 # ---------------------------------------------------------------------------
 # Difficulty Profiles
 # ---------------------------------------------------------------------------
@@ -127,16 +137,16 @@ INCIDENT_TEMPLATES = [
             {"severity": "warning", "target": "affected", "msg": "Increased 4xx responses from downstream dependency"},
         ],
         "log_patterns_root": [
-            {"level": "ERROR", "msg": "Connection pool exhausted - cannot acquire connection to {service}-db"},
-            {"level": "ERROR", "msg": "Timeout waiting for DB connection after 5000ms"},
-            {"level": "WARN", "msg": "Circuit breaker OPEN for {service}-db connections"},
-            {"level": "ERROR", "msg": "Failed to process request txn-{txn_id}: DB connection unavailable"},
-            {"level": "INFO", "msg": "Retrying DB connection pool initialization"},
+            {"level": "ERROR", "msg": "c.a.s.db.HikariPool [pool-3-thread-{thread_n}] - Connection is not available, request timed out after {timeout}ms. (total={pool_max}, active={pool_max}, idle=0, waiting={waiting})"},
+            {"level": "ERROR", "msg": "c.a.s.handler.RequestHandler [http-nio-8080-exec-{thread_n}] - java.net.SocketTimeoutException: connect timed out to {db_ip}:{db_port}"},
+            {"level": "WARN", "msg": "c.a.s.circuit.CircuitBreaker [cb-monitor-1] - Circuit breaker '{dep}' state: CLOSED -> OPEN (failures={failure_count}/{window})"},
+            {"level": "ERROR", "msg": "c.a.s.handler.RequestHandler [http-nio-8080-exec-{thread_n2}] - java.sql.SQLTransientConnectionException: HikariPool-1 - Connection is not available, request timed out after {timeout}ms"},
+            {"level": "INFO", "msg": "c.a.s.db.HikariPool [pool-3-housekeeper] - HikariPool-1 - Pool stats (total={pool_max}, active={pool_max}, idle=0, waiting={waiting})"},
         ],
         "log_patterns_affected": [
-            {"level": "ERROR", "msg": "{root_service} returned 503 for request req-{req_id}"},
-            {"level": "ERROR", "msg": "Failed to complete operation: upstream {root_service} unavailable"},
-            {"level": "WARN", "msg": "Fallback: queuing request for retry"},
+            {"level": "ERROR", "msg": "upstream connect error: connection refused to {root_ip}:{root_port}, reset reason: remote reset"},
+            {"level": "ERROR", "msg": "c.a.s.client.ServiceClient [http-{thread_n}] - HTTP 503 from {root_ip}:{root_port} (latency={aff_latency}ms)"},
+            {"level": "WARN", "msg": "c.a.s.circuit.CircuitBreaker [cb-{root_service}] - state: CLOSED -> OPEN after {failure_count} consecutive failures"},
         ],
         "metric_patterns": {
             "root": [("error_rate", "exponential_rise"), ("latency_p99", "exponential_rise"), ("db_connections", "saturating")],
@@ -159,14 +169,14 @@ INCIDENT_TEMPLATES = [
             {"severity": "warning", "target": "affected", "msg": "Stale data returned for user queries"},
         ],
         "log_patterns_root": [
-            {"level": "ERROR", "msg": "Replication lag at {repl_lag}s - exceeds SLO of 5s"},
-            {"level": "WARN", "msg": "Read replica {service}-replica-2 falling behind primary"},
-            {"level": "ERROR", "msg": "Schema migration v{version} causing replication bottleneck"},
-            {"level": "INFO", "msg": "Attempting to pause non-critical replication streams"},
+            {"level": "ERROR", "msg": "c.a.s.db.ReplicaMonitor [replica-health-1] - replica {replica_ip}:{db_port} lag: {repl_lag}s (threshold: 5s)"},
+            {"level": "WARN", "msg": "c.a.s.db.ReadRouter [read-pool-{thread_n}] - stale read detected: row version {row_ver_old} != primary version {row_ver_new}"},
+            {"level": "ERROR", "msg": "c.a.s.db.ReplicaMonitor [replica-health-1] - replica {replica_ip2}:{db_port} lag: {repl_lag2}s (threshold: 5s)"},
+            {"level": "INFO", "msg": "c.a.s.db.ReplicationManager [repl-mgr-1] - pausing non-critical replication streams to {replica_ip}:{db_port}"},
         ],
         "log_patterns_affected": [
-            {"level": "WARN", "msg": "Inconsistent read from {root_service}: got stale version"},
-            {"level": "ERROR", "msg": "Cache invalidation failed: stale data propagated from {root_service}"},
+            {"level": "WARN", "msg": "c.a.s.client.ServiceClient [http-{thread_n}] - HTTP 200 from {root_ip}:{root_port} but response body contains stale entity version {row_ver_old}"},
+            {"level": "ERROR", "msg": "c.a.s.cache.Invalidator [cache-inv-1] - cache entry stale: key={cache_key} local_ver={row_ver_old} remote_ver={row_ver_new}"},
         ],
         "metric_patterns": {
             "root": [("replication_lag_s", "exponential_rise"), ("error_rate", "step_function")],
@@ -189,14 +199,14 @@ INCIDENT_TEMPLATES = [
             {"severity": "warning", "target": "affected", "msg": "Upstream {root_service} response time degraded"},
         ],
         "log_patterns_root": [
-            {"level": "ERROR", "msg": "Deadlock detected: txn-{txn_id} waiting for lock held by txn-{txn_id2}"},
-            {"level": "ERROR", "msg": "Transaction aborted after deadlock timeout: 30s"},
-            {"level": "WARN", "msg": "Request queue depth: {queue_depth} - approaching limit"},
-            {"level": "ERROR", "msg": "Lock wait timeout exceeded for table {service}_records"},
+            {"level": "ERROR", "msg": "c.a.s.db.DeadlockDetector [monitor-1] - deadlock detected: tx-{txn_id} holds lock on {service}_records.row_id={row_id1}, waiting for {service}_index.row_id={row_id2}; tx-{txn_id2} holds {service}_index.row_id={row_id2}, waiting for {service}_records.row_id={row_id1}"},
+            {"level": "ERROR", "msg": "c.a.s.db.TransactionManager [tx-pool-{thread_n}] - Lock wait timeout after {timeout}ms on table '{service}_records' row_id={row_id1}"},
+            {"level": "WARN", "msg": "c.a.s.db.ConnectionPool [pool-monitor-1] - {waiting} threads waiting for connection, active={pool_max}/{pool_max}"},
+            {"level": "ERROR", "msg": "c.a.s.db.TransactionManager [tx-pool-{thread_n2}] - Lock wait timeout after {timeout}ms on table '{service}_index' row_id={row_id2}"},
         ],
         "log_patterns_affected": [
-            {"level": "ERROR", "msg": "Timeout calling {root_service}: exceeded 10s deadline"},
-            {"level": "WARN", "msg": "Circuit breaker half-open for {root_service}"},
+            {"level": "ERROR", "msg": "c.a.s.client.ServiceClient [http-{thread_n}] - HTTP 504 from {root_ip}:{root_port} (latency={aff_latency}ms)"},
+            {"level": "WARN", "msg": "c.a.s.circuit.CircuitBreaker [cb-{root_service}] - state: HALF_OPEN -> OPEN after probe failure (HTTP 504)"},
         ],
         "metric_patterns": {
             "root": [("deadlocks_per_min", "exponential_rise"), ("error_rate", "exponential_rise"), ("latency_p99", "exponential_rise")],
@@ -220,15 +230,15 @@ INCIDENT_TEMPLATES = [
             {"severity": "warning", "target": "affected", "msg": "Elevated error rate due to {root_service} instability"},
         ],
         "log_patterns_root": [
-            {"level": "WARN", "msg": "Heap usage at {mem_pct}% - garbage collection ineffective"},
-            {"level": "ERROR", "msg": "Out of memory: process killed by OOM killer (RSS: {rss_mb}MB)"},
-            {"level": "INFO", "msg": "Service restarting after OOM kill - attempt {restart_count}"},
-            {"level": "WARN", "msg": "Request cache size growing unbounded: {cache_size} entries"},
-            {"level": "ERROR", "msg": "Failed to allocate memory for request processing"},
+            {"level": "WARN", "msg": "GC overhead: pause={gc_pause}ms heap={heap_used}M/{heap_max}M eden=0B survivor={survivor}M old={old_gen}M"},
+            {"level": "ERROR", "msg": "kernel: [{kern_ts}] Out of memory: Killed process {pid} ({service}) total-vm:{vm_kb}kB anon-rss:{rss_kb}kB oom_score_adj:999"},
+            {"level": "WARN", "msg": "c.a.s.cache.Manager [cache-evictor-1] - heap pressure: {mem_pct}% used, eviction rate: {evict_rate}/s"},
+            {"level": "WARN", "msg": "c.a.s.gc.Monitor [gc-monitor-1] - Full GC #{gc_count}: {gc_pause}ms pause, freed {freed}M, heap {heap_used}M/{heap_max}M"},
+            {"level": "ERROR", "msg": "c.a.s.handler.RequestHandler [http-nio-8080-exec-{thread_n}] - java.lang.OutOfMemoryError: Java heap space"},
         ],
         "log_patterns_affected": [
-            {"level": "ERROR", "msg": "Connection refused from {root_service}: service restarting"},
-            {"level": "WARN", "msg": "Retrying request to {root_service} after connection failure"},
+            {"level": "ERROR", "msg": "upstream connect error: connection refused to {root_ip}:{root_port}, reset reason: connection failure"},
+            {"level": "WARN", "msg": "c.a.s.client.ServiceClient [http-{thread_n}] - HTTP 503 from {root_ip}:{root_port} (latency={aff_latency}ms), retrying in {backoff}ms"},
         ],
         "metric_patterns": {
             "root": [("memory_percent", "saturating"), ("error_rate", "step_function"), ("restarts", "step_function")],
@@ -251,14 +261,14 @@ INCIDENT_TEMPLATES = [
             {"severity": "warning", "target": "affected", "msg": "Timeout errors from {root_service} increasing"},
         ],
         "log_patterns_root": [
-            {"level": "WARN", "msg": "CPU usage at {cpu_pct}% - throttling requests"},
-            {"level": "ERROR", "msg": "Worker thread pool exhausted - all threads blocked"},
-            {"level": "ERROR", "msg": "Health check timeout after 5s - service appears hung"},
-            {"level": "WARN", "msg": "Error handler retry loop detected: {retry_count} retries in 10s"},
+            {"level": "WARN", "msg": "c.a.s.retry.ExponentialBackoff [retry-pool-{thread_n}] - attempt {retry_attempt}/{retry_max} for operation '{op_name}' (elapsed: {elapsed}ms)"},
+            {"level": "ERROR", "msg": "c.a.s.monitor.ThreadDump [watchdog-1] - thread 'http-nio-8080-exec-{thread_n2}' in RUNNABLE state for {stuck_secs}s, stack: c.a.s.handler.RequestHandler.processRetry(line:{line_num})"},
+            {"level": "ERROR", "msg": "c.a.s.monitor.ThreadDump [watchdog-1] - {stuck_threads}/{pool_max} threads in RUNNABLE state, CPU {cpu_pct}%"},
+            {"level": "WARN", "msg": "c.a.s.retry.ExponentialBackoff [retry-pool-{thread_n}] - attempt {retry_max}/{retry_max} for operation '{op_name}' (elapsed: {elapsed2}ms), max retries exhausted"},
         ],
         "log_patterns_affected": [
-            {"level": "ERROR", "msg": "{root_service} health check failed: timeout after 10s"},
-            {"level": "WARN", "msg": "Load balancer removed {root_service} from pool"},
+            {"level": "ERROR", "msg": "c.a.s.client.ServiceClient [http-{thread_n}] - HTTP 504 from {root_ip}:{root_port} (latency=10003ms)"},
+            {"level": "WARN", "msg": "c.a.s.lb.HealthChecker [hc-monitor-1] - backend {root_ip}:{root_port} health check failed: timeout after 5000ms"},
         ],
         "metric_patterns": {
             "root": [("cpu_percent", "saturating"), ("latency_p99", "exponential_rise")],
@@ -281,14 +291,14 @@ INCIDENT_TEMPLATES = [
             {"severity": "warning", "target": "affected", "msg": "Intermittent timeouts from {root_service}"},
         ],
         "log_patterns_root": [
-            {"level": "WARN", "msg": "GC pause duration: {gc_pause}ms (threshold: 500ms)"},
-            {"level": "ERROR", "msg": "Stop-the-world GC: {gc_pause}ms - request processing halted"},
-            {"level": "WARN", "msg": "Heap occupancy at {mem_pct}% - frequent full GC cycles"},
-            {"level": "INFO", "msg": "GC tuning: concurrent mark phase taking {gc_pause}ms"},
+            {"level": "WARN", "msg": "GC overhead: pause={gc_pause}ms heap={heap_used}M/{heap_max}M eden=0B survivor={survivor}M old={old_gen}M"},
+            {"level": "ERROR", "msg": "c.a.s.gc.Monitor [gc-monitor-1] - Full GC #{gc_count}: {gc_pause}ms pause, freed {freed}M, heap {heap_used}M/{heap_max}M"},
+            {"level": "WARN", "msg": "c.a.s.gc.Monitor [gc-monitor-1] - GC overhead {gc_overhead}% in last 60s, effective throughput {gc_throughput}%"},
+            {"level": "INFO", "msg": "c.a.s.gc.Monitor [gc-monitor-1] - CMS concurrent-mark: {gc_pause}ms, heap {mem_pct}% occupied"},
         ],
         "log_patterns_affected": [
-            {"level": "WARN", "msg": "Intermittent timeout from {root_service}: latency spike detected"},
-            {"level": "ERROR", "msg": "Request to {root_service} timed out during GC pause"},
+            {"level": "WARN", "msg": "c.a.s.client.ServiceClient [http-{thread_n}] - HTTP 200 from {root_ip}:{root_port} (latency={aff_latency}ms) SLOW"},
+            {"level": "ERROR", "msg": "c.a.s.client.ServiceClient [http-{thread_n}] - HTTP 504 from {root_ip}:{root_port} (latency=30001ms)"},
         ],
         "metric_patterns": {
             "root": [("gc_pause_ms", "exponential_rise"), ("latency_p99", "exponential_rise"), ("memory_percent", "saturating")],
@@ -312,15 +322,15 @@ INCIDENT_TEMPLATES = [
             {"severity": "warning", "target": "root", "msg": "DNS resolution latency increased to {latency}ms"},
         ],
         "log_patterns_root": [
-            {"level": "ERROR", "msg": "SERVFAIL for {affected_svc}.internal: zone file contains invalid A record"},
-            {"level": "ERROR", "msg": "NXDOMAIN for {affected_db}.internal: record missing from {version} zone file"},
-            {"level": "ERROR", "msg": "SERVFAIL rate increasing: {error_rate}% of queries failing"},
-            {"level": "FATAL", "msg": "Multiple critical DNS records missing/corrupted after {version} zone migration"},
+            {"level": "ERROR", "msg": "c.a.s.dns.Resolver [dns-cache-1] - lookup '{affected_svc}.internal' on {dns_ip}:53: SERVFAIL (rcode=2)"},
+            {"level": "ERROR", "msg": "c.a.s.dns.Resolver [dns-cache-1] - lookup '{affected_db}.internal' on {dns_ip}:53: NXDOMAIN (rcode=3)"},
+            {"level": "ERROR", "msg": "c.a.s.dns.Resolver [dns-cache-1] - {error_count} SERVFAIL responses in last 60s from {dns_ip}:53"},
+            {"level": "FATAL", "msg": "c.a.s.dns.ZoneLoader [zone-sync-1] - zone file checksum mismatch after {version} sync: expected {checksum_exp}, got {checksum_got}"},
         ],
         "log_patterns_affected": [
-            {"level": "ERROR", "msg": "Cannot resolve {dep}.internal - DNS lookup failed"},
-            {"level": "FATAL", "msg": "Database connection pool empty: all connections failed DNS resolution"},
-            {"level": "FATAL", "msg": "Service degraded: critical dependency unreachable via DNS"},
+            {"level": "ERROR", "msg": "c.a.s.net.ConnectionFactory [conn-pool-{thread_n}] - java.net.UnknownHostException: {dep}.internal: Name or service not known"},
+            {"level": "FATAL", "msg": "c.a.s.db.HikariPool [pool-3-housekeeper] - HikariPool-1 - Failed to validate connection: java.net.UnknownHostException: {service}-db.internal"},
+            {"level": "FATAL", "msg": "c.a.s.net.ConnectionFactory [conn-pool-{thread_n}] - java.net.UnknownHostException: {root_service}.internal: Name or service not known"},
         ],
         "metric_patterns": {
             "root": [("query_failure_rate", "exponential_rise"), ("resolution_latency_ms", "exponential_rise")],
@@ -343,14 +353,14 @@ INCIDENT_TEMPLATES = [
             {"severity": "warning", "target": "root", "msg": "Certificate validity: EXPIRED since {expiry_time}"},
         ],
         "log_patterns_root": [
-            {"level": "ERROR", "msg": "TLS handshake failed: certificate expired at {expiry_time}"},
-            {"level": "ERROR", "msg": "x509: certificate has expired or is not yet valid"},
-            {"level": "WARN", "msg": "Auto-renewal of TLS cert failed: ACME challenge timeout"},
-            {"level": "ERROR", "msg": "All incoming HTTPS connections rejected: invalid certificate"},
+            {"level": "ERROR", "msg": "c.a.s.tls.CertValidator [tls-handshake-{thread_n}] - peer certificate rejected: notAfter={expiry_time} (expired {expired_hours} hours ago)"},
+            {"level": "ERROR", "msg": "c.a.s.tls.CertValidator [tls-handshake-{thread_n2}] - CERTIFICATE_VERIFY_FAILED: unable to get local issuer certificate (depth=1, CN=*.{service}.internal)"},
+            {"level": "WARN", "msg": "c.a.s.tls.AutoRenew [cert-renew-1] - ACME challenge failed: timeout connecting to ca.internal:443 after 30000ms"},
+            {"level": "ERROR", "msg": "c.a.s.tls.CertValidator [tls-handshake-{thread_n}] - javax.net.ssl.SSLHandshakeException: PKIX path validation failed: java.security.cert.CertPathValidatorException: validity check failed"},
         ],
         "log_patterns_affected": [
-            {"level": "ERROR", "msg": "TLS handshake failed connecting to {root_service}: certificate expired"},
-            {"level": "WARN", "msg": "Falling back to cached data - {root_service} unreachable"},
+            {"level": "ERROR", "msg": "c.a.s.client.ServiceClient [http-{thread_n}] - javax.net.ssl.SSLHandshakeException connecting to {root_ip}:{root_port}: peer not authenticated"},
+            {"level": "WARN", "msg": "c.a.s.client.ServiceClient [http-{thread_n}] - TLS handshake failed to {root_ip}:{root_port}, falling back to cached response (age={cache_age}s)"},
         ],
         "metric_patterns": {
             "root": [("tls_errors", "step_function"), ("error_rate", "step_function")],
@@ -373,14 +383,14 @@ INCIDENT_TEMPLATES = [
             {"severity": "warning", "target": "root", "msg": "Health check configuration mismatch detected"},
         ],
         "log_patterns_root": [
-            {"level": "ERROR", "msg": "Backend pool misconfigured: only 1 of {backend_count} backends active"},
-            {"level": "WARN", "msg": "Health check endpoint changed in {version} but LB config not updated"},
-            {"level": "ERROR", "msg": "All traffic routed to {affected_svc}: other backends marked unhealthy"},
-            {"level": "WARN", "msg": "Backend {affected_svc} reporting 503: overloaded from traffic spike"},
+            {"level": "ERROR", "msg": "c.a.s.lb.HealthChecker [hc-monitor-1] - backend {backend_ip1}:{root_port} health check failed: HTTP {hc_code} (expected 200)"},
+            {"level": "WARN", "msg": "c.a.s.lb.HealthChecker [hc-monitor-1] - backend {backend_ip2}:{root_port} health check failed: HTTP {hc_code} (expected 200)"},
+            {"level": "ERROR", "msg": "c.a.s.lb.Router [routing-{thread_n}] - all backends unhealthy for pool '{service}-pool', routing to last-known-good {backend_ip3}:{root_port}"},
+            {"level": "WARN", "msg": "c.a.s.lb.ConfigSync [config-watch-1] - pool '{service}-pool' config version {version}: health_check_path=/healthz, but backends serve /health"},
         ],
         "log_patterns_affected": [
-            {"level": "ERROR", "msg": "Request rate 10x normal - possible routing issue"},
-            {"level": "WARN", "msg": "Thread pool exhausted from unexpected traffic volume"},
+            {"level": "ERROR", "msg": "c.a.s.handler.RequestHandler [http-nio-8080-exec-{thread_n}] - request queue depth {queue_depth}: accepting requests but response time degraded ({aff_latency}ms)"},
+            {"level": "WARN", "msg": "c.a.s.handler.RequestHandler [http-nio-8080-exec-{thread_n2}] - thread pool {pool_max}/{pool_max} active, {waiting} requests queued"},
         ],
         "metric_patterns": {
             "root": [("backend_health_pct", "step_function"), ("error_rate", "step_function")],
@@ -404,14 +414,14 @@ INCIDENT_TEMPLATES = [
             {"severity": "warning", "target": "affected", "msg": "Upstream dependency {root_service} returning errors"},
         ],
         "log_patterns_root": [
-            {"level": "ERROR", "msg": "Database connection failed: invalid connection string in config v{version}"},
-            {"level": "ERROR", "msg": "Config validation skipped in deployment pipeline"},
-            {"level": "FATAL", "msg": "Cannot initialize connection pool: malformed DSN"},
-            {"level": "WARN", "msg": "Rolling back to cached config from previous version"},
+            {"level": "ERROR", "msg": "c.a.s.config.Loader [config-watch-1] - loaded key='db.connection.url' value='jdbc:postgresql://{bad_db_ip}:{db_port}/{service}_db?ssl=true' source=configmap/{service}-{version}"},
+            {"level": "ERROR", "msg": "c.a.s.db.HikariPool [pool-3-thread-{thread_n}] - Failed to obtain JDBC Connection: java.net.ConnectException: Connection refused (Connection refused) to {bad_db_ip}:{db_port}"},
+            {"level": "FATAL", "msg": "c.a.s.db.HikariPool [pool-3-thread-{thread_n}] - HikariPool-1 - Exception during pool initialization: java.net.ConnectException: Connection refused"},
+            {"level": "WARN", "msg": "c.a.s.config.Validator [startup-1] - WARN: unrecognized config key 'db.connection.pool.maxSize' in namespace '{service}', using default"},
         ],
         "log_patterns_affected": [
-            {"level": "ERROR", "msg": "{root_service} returning 500 for all requests"},
-            {"level": "WARN", "msg": "Dependency {root_service} health check failing"},
+            {"level": "ERROR", "msg": "c.a.s.client.ServiceClient [http-{thread_n}] - HTTP 500 from {root_ip}:{root_port} (latency={aff_latency}ms)"},
+            {"level": "WARN", "msg": "c.a.s.lb.HealthChecker [hc-monitor-1] - backend {root_ip}:{root_port} health check failed: HTTP 500 (expected 200)"},
         ],
         "metric_patterns": {
             "root": [("error_rate", "step_function"), ("db_connections", "step_function")],
@@ -434,14 +444,14 @@ INCIDENT_TEMPLATES = [
             {"severity": "warning", "target": "affected", "msg": "Increased error responses from {root_service}"},
         ],
         "log_patterns_root": [
-            {"level": "ERROR", "msg": "Failed to deserialize response from upstream: unexpected field format"},
-            {"level": "ERROR", "msg": "API version mismatch: expected v3 response, got v2 schema"},
-            {"level": "WARN", "msg": "Contract test failures detected post-deployment of {version}"},
-            {"level": "ERROR", "msg": "Null pointer: response missing required field 'metadata.trace_id'"},
+            {"level": "ERROR", "msg": "c.a.s.client.ApiVersionNegotiator [api-{thread_n}] - server responded with API version {api_ver_actual}, client expected {api_ver_expected}"},
+            {"level": "ERROR", "msg": "c.a.s.proto.SchemaRegistry [schema-{thread_n}] - incompatible schema: field 'metadata.trace_id' type changed from STRING to INT64"},
+            {"level": "WARN", "msg": "c.a.s.proto.SchemaRegistry [schema-{thread_n}] - schema version {schema_ver_old} != {schema_ver_new}, {schema_diff_count} breaking changes detected"},
+            {"level": "ERROR", "msg": "c.a.s.handler.RequestHandler [http-nio-8080-exec-{thread_n2}] - java.lang.NullPointerException: Cannot invoke method on null reference at c.a.s.model.Response.getTraceId(Response.java:{line_num})"},
         ],
         "log_patterns_affected": [
-            {"level": "WARN", "msg": "{root_service} returning malformed responses"},
-            {"level": "ERROR", "msg": "Failed to process response from {root_service}: schema mismatch"},
+            {"level": "WARN", "msg": "c.a.s.client.ServiceClient [http-{thread_n}] - HTTP 200 from {root_ip}:{root_port} but response deserialization failed: com.fasterxml.jackson.databind.exc.MismatchedInputException"},
+            {"level": "ERROR", "msg": "c.a.s.client.ServiceClient [http-{thread_n}] - HTTP 200 from {root_ip}:{root_port} response body invalid: expected field 'data.items' as ARRAY, got OBJECT"},
         ],
         "metric_patterns": {
             "root": [("error_rate", "step_function"), ("deserialization_errors", "step_function")],
@@ -465,14 +475,14 @@ INCIDENT_TEMPLATES = [
             {"severity": "warning", "target": "affected", "msg": "Feature degraded: {root_service} dependency rate-limited"},
         ],
         "log_patterns_root": [
-            {"level": "ERROR", "msg": "External API returned 429: rate limit exceeded (limit: {rate_limit}/min)"},
-            {"level": "WARN", "msg": "Retry storm detected: {retry_count} retries in last minute"},
-            {"level": "ERROR", "msg": "Exponential backoff disabled in {version}: retrying immediately on 429"},
-            {"level": "WARN", "msg": "Circuit breaker opening for external API after {failure_count} failures"},
+            {"level": "ERROR", "msg": "c.a.s.client.ServiceClient [http-{thread_n}] - HTTP 429 from {ext_api_ip}:{ext_api_port} (latency={aff_latency}ms), Retry-After: {retry_after}s"},
+            {"level": "WARN", "msg": "c.a.s.retry.ExponentialBackoff [retry-pool-{thread_n}] - attempt {retry_attempt}/{retry_max} for operation 'externalApi.call' (elapsed: {elapsed}ms)"},
+            {"level": "ERROR", "msg": "c.a.s.retry.ExponentialBackoff [retry-pool-{thread_n2}] - backoff disabled in config v{version}: retrying immediately (delay=0ms)"},
+            {"level": "WARN", "msg": "c.a.s.circuit.CircuitBreaker [cb-external-api] - state: CLOSED -> OPEN (failures={failure_count}/{window})"},
         ],
         "log_patterns_affected": [
-            {"level": "WARN", "msg": "Feature unavailable: {root_service} cannot reach external API"},
-            {"level": "ERROR", "msg": "Fallback response returned: external dependency {root_service} degraded"},
+            {"level": "WARN", "msg": "c.a.s.client.ServiceClient [http-{thread_n}] - HTTP 503 from {root_ip}:{root_port} (latency={aff_latency}ms)"},
+            {"level": "ERROR", "msg": "c.a.s.circuit.CircuitBreaker [cb-{root_service}] - state: CLOSED -> OPEN after {failure_count} consecutive failures"},
         ],
         "metric_patterns": {
             "root": [("external_api_429s", "exponential_rise"), ("error_rate", "exponential_rise")],
@@ -495,14 +505,14 @@ INCIDENT_TEMPLATES = [
             {"severity": "warning", "target": "affected", "msg": "Static asset loading failures reported"},
         ],
         "log_patterns_root": [
-            {"level": "ERROR", "msg": "Origin server returning 502 for all cache miss requests"},
-            {"level": "WARN", "msg": "CDN health check failing: origin /healthz returning 500"},
-            {"level": "ERROR", "msg": "Cache TTL expired - serving stale content as fallback"},
-            {"level": "WARN", "msg": "Origin {version} health endpoint path changed from /healthz to /health"},
+            {"level": "ERROR", "msg": "c.a.s.cdn.OriginFetcher [origin-pool-{thread_n}] - HTTP 502 from origin {origin_ip}:{root_port} for path '/api/v1/assets/{asset_id}'"},
+            {"level": "WARN", "msg": "c.a.s.lb.HealthChecker [hc-monitor-1] - backend {origin_ip}:{root_port} health check failed: HTTP 500 (expected 200)"},
+            {"level": "ERROR", "msg": "c.a.s.cdn.CacheManager [cache-ttl-1] - cache MISS for key={asset_id}, origin unreachable, serving stale (age={cache_age}s, max-age=300)"},
+            {"level": "WARN", "msg": "c.a.s.cdn.OriginFetcher [origin-pool-{thread_n}] - origin health endpoint GET {origin_ip}:{root_port}/healthz returned 404 (expected 200)"},
         ],
         "log_patterns_affected": [
-            {"level": "WARN", "msg": "Static assets failing to load from CDN"},
-            {"level": "ERROR", "msg": "API responses missing: CDN origin {root_service} degraded"},
+            {"level": "WARN", "msg": "c.a.s.client.ServiceClient [http-{thread_n}] - HTTP 502 from {root_ip}:{root_port} (latency={aff_latency}ms)"},
+            {"level": "ERROR", "msg": "c.a.s.client.ServiceClient [http-{thread_n}] - HTTP 504 from {root_ip}:{root_port} (latency=30002ms), upstream origin timeout"},
         ],
         "metric_patterns": {
             "root": [("cache_miss_rate", "exponential_rise"), ("origin_error_rate", "step_function")],
@@ -525,14 +535,14 @@ INCIDENT_TEMPLATES = [
             {"severity": "warning", "target": "affected", "msg": "Order completion rate dropping - payment failures"},
         ],
         "log_patterns_root": [
-            {"level": "ERROR", "msg": "Payment gateway timeout after 30s - transaction {txn_id} failed"},
-            {"level": "WARN", "msg": "Payment gateway health check degraded: 60% success rate"},
-            {"level": "ERROR", "msg": "Retry amplification: {retry_count} retries for single payment"},
-            {"level": "WARN", "msg": "Thread pool saturated from pending payment gateway calls"},
+            {"level": "ERROR", "msg": "c.a.s.client.ServiceClient [http-{thread_n}] - HTTP 504 from {gw_ip}:{gw_port} (latency=30001ms), transaction {txn_id}"},
+            {"level": "WARN", "msg": "c.a.s.lb.HealthChecker [hc-monitor-1] - backend {gw_ip}:{gw_port} health check degraded: {hc_success}% success rate (threshold: 95%)"},
+            {"level": "ERROR", "msg": "c.a.s.retry.ExponentialBackoff [retry-pool-{thread_n}] - attempt {retry_attempt}/{retry_max} for operation 'payment.charge' (elapsed: {elapsed}ms)"},
+            {"level": "WARN", "msg": "c.a.s.handler.RequestHandler [http-nio-8080-exec-{thread_n2}] - thread pool {pool_max}/{pool_max} active, {waiting} requests queued (pending gateway calls)"},
         ],
         "log_patterns_affected": [
-            {"level": "ERROR", "msg": "Cannot complete order: payment via {root_service} timed out"},
-            {"level": "WARN", "msg": "Cart abandonment rate increasing - payment flow unavailable"},
+            {"level": "ERROR", "msg": "c.a.s.client.ServiceClient [http-{thread_n}] - HTTP 504 from {root_ip}:{root_port} (latency=30003ms)"},
+            {"level": "WARN", "msg": "c.a.s.circuit.CircuitBreaker [cb-{root_service}] - state: CLOSED -> OPEN after {failure_count} consecutive failures"},
         ],
         "metric_patterns": {
             "root": [("error_rate", "exponential_rise"), ("latency_p99", "exponential_rise"), ("gateway_timeout_pct", "exponential_rise")],
@@ -556,14 +566,14 @@ INCIDENT_TEMPLATES = [
             {"severity": "warning", "target": "affected", "msg": "User-facing data inconsistencies reported"},
         ],
         "log_patterns_root": [
-            {"level": "ERROR", "msg": "Cache entry validation failed: serialization mismatch in {version}"},
-            {"level": "ERROR", "msg": "Corrupted cache entry for key user:{user_id}: invalid JSON"},
-            {"level": "WARN", "msg": "Cache hit serving stale data: TTL not respected after {version} update"},
-            {"level": "WARN", "msg": "Cache warm-up populating entries with incorrect format"},
+            {"level": "ERROR", "msg": "c.a.s.cache.Validator [cache-validator-1] - entry key=user:{user_id} checksum mismatch: stored={checksum_exp} computed={checksum_got} (serializer v{version})"},
+            {"level": "ERROR", "msg": "c.a.s.cache.Validator [cache-validator-1] - com.fasterxml.jackson.core.JsonParseException: Unexpected character at position {line_num} for key=user:{user_id2}"},
+            {"level": "WARN", "msg": "c.a.s.cache.Manager [cache-evictor-1] - TTL bypass detected: key=session:{user_id} age={cache_age}s exceeds max-age=300s, still served"},
+            {"level": "WARN", "msg": "c.a.s.cache.Warmer [cache-warm-1] - populated {cache_warm_count} entries using serializer v{version} (expected v{schema_ver_old})"},
         ],
         "log_patterns_affected": [
-            {"level": "ERROR", "msg": "Received malformed data from {root_service} cache"},
-            {"level": "WARN", "msg": "Data validation failed: response from {root_service} does not match schema"},
+            {"level": "ERROR", "msg": "c.a.s.client.ServiceClient [http-{thread_n}] - HTTP 200 from {root_ip}:{root_port} but response body failed validation: com.fasterxml.jackson.databind.exc.MismatchedInputException"},
+            {"level": "WARN", "msg": "c.a.s.client.ServiceClient [http-{thread_n}] - HTTP 200 from {root_ip}:{root_port} response field 'user.email' type STRING expected, got NULL"},
         ],
         "metric_patterns": {
             "root": [("cache_error_rate", "step_function"), ("data_integrity_errors", "exponential_rise")],
@@ -586,14 +596,14 @@ INCIDENT_TEMPLATES = [
             {"severity": "warning", "target": "affected", "msg": "Async operations delayed - queue backpressure detected"},
         ],
         "log_patterns_root": [
-            {"level": "ERROR", "msg": "Queue depth exceeding limit: {queue_depth} pending messages"},
-            {"level": "WARN", "msg": "Consumer group {service}-consumers: all partitions lagging"},
-            {"level": "ERROR", "msg": "Message processing failure rate at {error_rate}%: {version} deserialization bug"},
-            {"level": "WARN", "msg": "Dead letter queue filling up: {dlq_count} messages in last 5 minutes"},
+            {"level": "ERROR", "msg": "c.a.s.queue.Consumer [consumer-{thread_n}] - partition {partition} offset lag: {queue_depth} messages behind head (broker {broker_ip}:{broker_port})"},
+            {"level": "WARN", "msg": "c.a.s.queue.ConsumerGroup [group-coordinator-1] - consumer group '{service}-consumers' rebalancing: {partition_count} partitions, {consumer_count} consumers, all lagging"},
+            {"level": "ERROR", "msg": "c.a.s.queue.Consumer [consumer-{thread_n2}] - com.fasterxml.jackson.databind.exc.InvalidFormatException: Cannot deserialize value of type 'long' from String at offset {queue_depth} (serializer v{version})"},
+            {"level": "WARN", "msg": "c.a.s.queue.DLQ [dlq-writer-1] - dead letter queue '{service}-dlq' depth: {dlq_count} messages in last 300s (broker {broker_ip}:{broker_port})"},
         ],
         "log_patterns_affected": [
-            {"level": "WARN", "msg": "Async notification delayed: queue backpressure from {root_service}"},
-            {"level": "ERROR", "msg": "Event processing timeout: {root_service} consumer lag at {lag}s"},
+            {"level": "WARN", "msg": "c.a.s.queue.Consumer [consumer-{thread_n}] - event from topic '{root_service}-events' delayed: consumer lag {lag}s at partition {partition} (broker {broker_ip}:{broker_port})"},
+            {"level": "ERROR", "msg": "c.a.s.handler.EventHandler [event-pool-{thread_n}] - timeout processing event from '{root_service}-events': {lag}s behind real-time"},
         ],
         "metric_patterns": {
             "root": [("queue_depth", "exponential_rise"), ("consumer_lag_s", "exponential_rise"), ("error_rate", "exponential_rise")],
@@ -617,14 +627,14 @@ INCIDENT_TEMPLATES = [
             {"severity": "warning", "target": "affected", "msg": "Upstream {root_service} authentication failing"},
         ],
         "log_patterns_root": [
-            {"level": "ERROR", "msg": "Authentication failed: credentials expired after rotation at {rotation_time}"},
-            {"level": "ERROR", "msg": "Database connection rejected: password authentication failed"},
-            {"level": "WARN", "msg": "Secret manager returned new credentials but {service} cache not refreshed"},
-            {"level": "ERROR", "msg": "All connection attempts failing: 401 Unauthorized"},
+            {"level": "ERROR", "msg": "c.a.s.db.HikariPool [pool-3-thread-{thread_n}] - Failed to validate connection: org.postgresql.util.PSQLException: FATAL: password authentication failed for user \"{service}_svc\" at {db_ip}:{db_port}"},
+            {"level": "ERROR", "msg": "c.a.s.auth.CredentialManager [cred-refresh-1] - credential rotation completed at {rotation_time} but cached credential hash {checksum_exp} != vault hash {checksum_got}"},
+            {"level": "WARN", "msg": "c.a.s.auth.CredentialManager [cred-refresh-1] - vault secret version {schema_ver_new} loaded, service still using version {schema_ver_old}"},
+            {"level": "ERROR", "msg": "c.a.s.client.ServiceClient [http-{thread_n}] - HTTP 401 from {db_ip}:{db_port} (latency={aff_latency}ms), WWW-Authenticate: Bearer error=\"invalid_token\""},
         ],
         "log_patterns_affected": [
-            {"level": "ERROR", "msg": "{root_service} returning 401 for all requests"},
-            {"level": "WARN", "msg": "Service degraded: authentication dependency {root_service} failing"},
+            {"level": "ERROR", "msg": "c.a.s.client.ServiceClient [http-{thread_n}] - HTTP 401 from {root_ip}:{root_port} (latency={aff_latency}ms)"},
+            {"level": "WARN", "msg": "c.a.s.circuit.CircuitBreaker [cb-{root_service}] - state: CLOSED -> OPEN after {failure_count} consecutive failures (all HTTP 401)"},
         ],
         "metric_patterns": {
             "root": [("auth_failures", "step_function"), ("error_rate", "step_function")],
@@ -647,14 +657,14 @@ INCIDENT_TEMPLATES = [
             {"severity": "warning", "target": "affected", "msg": "Users reporting access denied errors"},
         ],
         "log_patterns_root": [
-            {"level": "ERROR", "msg": "WAF rule {rule_id} blocking request: false positive on content-type header"},
-            {"level": "WARN", "msg": "Rule {version} matching legitimate API requests: {block_rate}% block rate"},
-            {"level": "ERROR", "msg": "User-agent pattern match too broad: blocking Chrome/Safari browsers"},
-            {"level": "WARN", "msg": "WAF audit log shows {block_count} blocks in last 5 minutes"},
+            {"level": "ERROR", "msg": "c.a.s.waf.RuleEngine [waf-worker-{thread_n}] - rule {rule_id} BLOCK: src={client_ip} uri='/api/v1/checkout' match='content-type: application/json; charset=utf-8' (pattern: /json.*charset/i)"},
+            {"level": "WARN", "msg": "c.a.s.waf.RuleEngine [waf-worker-{thread_n2}] - rule {rule_id} match rate {block_rate}% in last 60s (ruleset v{version})"},
+            {"level": "ERROR", "msg": "c.a.s.waf.RuleEngine [waf-worker-{thread_n}] - rule {rule_id} BLOCK: src={client_ip2} uri='/api/v1/search' user-agent='Mozilla/5.0 (compatible; Chrome/{chrome_ver})' match='Mozilla.*Chrome' (pattern: /Mozilla.*Chrome/i)"},
+            {"level": "WARN", "msg": "c.a.s.waf.AuditLog [waf-audit-1] - {block_count} requests blocked in last 300s by rule {rule_id} (top src: {client_ip} x{block_src_count})"},
         ],
         "log_patterns_affected": [
-            {"level": "ERROR", "msg": "Requests to {root_service} being blocked by WAF"},
-            {"level": "WARN", "msg": "API calls failing with 403: WAF rule match on {root_service}"},
+            {"level": "ERROR", "msg": "c.a.s.client.ServiceClient [http-{thread_n}] - HTTP 403 from {root_ip}:{root_port} (latency={aff_latency}ms), body: '{{\"error\":\"blocked_by_waf\",\"rule\":\"{rule_id}\"}}'"},
+            {"level": "WARN", "msg": "c.a.s.client.ServiceClient [http-{thread_n}] - HTTP 403 from {root_ip}:{root_port}: {failure_count} consecutive 403 responses"},
         ],
         "metric_patterns": {
             "root": [("waf_blocks", "step_function"), ("error_rate_403", "step_function")],
@@ -686,12 +696,12 @@ RED_HERRING_ALERTS = [
 ]
 
 RED_HERRING_LOGS = [
-    {"level": "INFO", "msg": "Healthy - serving requests normally"},
-    {"level": "INFO", "msg": "Cache hit ratio: {hit_ratio}%"},
-    {"level": "INFO", "msg": "Batch job completed: processed {batch_count} records"},
-    {"level": "INFO", "msg": "Scheduled reindex 40% complete - elevated latency expected"},
-    {"level": "INFO", "msg": "Model serving normally - no dependency issues"},
-    {"level": "WARN", "msg": "Slow query detected (non-critical): SELECT took 2.1s"},
+    {"level": "INFO", "msg": "c.a.s.health.Monitor [health-check-1] - status=UP, checks=[db:UP, cache:UP, queue:UP]"},
+    {"level": "INFO", "msg": "c.a.s.cache.Stats [cache-stats-1] - hit_ratio={hit_ratio}% entries=24531 evictions=12/s"},
+    {"level": "INFO", "msg": "c.a.s.batch.Executor [batch-pool-3] - job 'daily-reconcile' completed: {batch_count} records processed in 142s"},
+    {"level": "INFO", "msg": "c.a.s.search.Indexer [reindex-pool-1] - reindex progress: 40% (12403/31008 docs), est. remaining: 340s"},
+    {"level": "INFO", "msg": "c.a.s.ml.ModelServer [model-serve-1] - inference latency p99=23ms, model=v4.2, batch_size=32"},
+    {"level": "WARN", "msg": "c.a.s.db.SlowQueryLog [query-monitor-1] - slow query: 2103ms SELECT * FROM audit_log WHERE created_at > '2026-03-25' (non-critical)"},
 ]
 
 RED_HERRING_DEPLOYMENTS = [
@@ -1014,30 +1024,117 @@ def build_scenario(template: dict, difficulty: str, seed: int, scenario_num: int
     logs = {}
     num_logs = rng.randint(*profile["logs_per_service"])
 
+    # Generate stable IPs for this scenario using the seeded rng
+    root_ip = rand_ip(rng)
+    root_port = rand_port(rng, 8080)
+    db_ip = rand_ip(rng)
+    db_port = rand_port(rng, 5432)
+    replica_ip = rand_ip(rng)
+    replica_ip2 = rand_ip(rng)
+    dns_ip = rand_ip(rng)
+    broker_ip = rand_ip(rng)
+    broker_port = rand_port(rng, 9092)
+    gw_ip = rand_ip(rng)
+    gw_port = rand_port(rng, 443)
+    origin_ip = rand_ip(rng)
+    ext_api_ip = rand_ip(rng)
+    ext_api_port = rand_port(rng, 443)
+    bad_db_ip = rand_ip(rng)
+    backend_ip1 = rand_ip(rng)
+    backend_ip2 = rand_ip(rng)
+    backend_ip3 = rand_ip(rng)
+    client_ip = rand_ip(rng)
+    client_ip2 = rand_ip(rng)
+
     # Root cause logs
     root_logs = []
     root_ts = make_timestamps(base_hour, base_min, num_logs)
     for i, lp in enumerate(template["log_patterns_root"][:num_logs]):
-        msg = lp["msg"].format(
+        # Shared format variables for Option C style logs
+        heap_max = rng.randint(4096, 16384)
+        heap_used = rng.randint(int(heap_max * 0.8), heap_max)
+        pool_max = rng.randint(20, 100)
+        fmt_vars = dict(
             service=root_name, version=root_version,
+            # Thread/pool identifiers
+            thread_n=rng.randint(1, 48), thread_n2=rng.randint(1, 48),
+            pool_max=pool_max, waiting=rng.randint(10, 200),
+            # Database / connection
+            db_ip=db_ip, db_port=db_port, bad_db_ip=bad_db_ip,
+            timeout=rng.choice([5000, 10000, 15000, 30000]),
             txn_id=rng.randint(10000, 99999), txn_id2=rng.randint(10000, 99999),
-            req_id=rng.randint(10000, 99999), mem_pct=rng.randint(85, 98),
-            rss_mb=rng.randint(2000, 8000), restart_count=rng.randint(1, 5),
-            cache_size=rng.randint(100000, 999999), cpu_pct=rng.randint(90, 100),
-            retry_count=rng.randint(100, 5000), gc_pause=rng.randint(500, 5000),
-            error_rate=round(rng.uniform(10, 80), 1), repl_lag=rng.randint(30, 120),
+            row_id1=rng.randint(100000, 999999), row_id2=rng.randint(100000, 999999),
+            # Replication
+            replica_ip=replica_ip, replica_ip2=replica_ip2,
+            repl_lag=rng.randint(30, 120), repl_lag2=rng.randint(30, 120),
+            row_ver_old=rng.randint(1000, 9999), row_ver_new=rng.randint(10000, 19999),
+            cache_key=f"user:{rng.randint(1000, 99999)}",
+            # Memory / GC
+            mem_pct=rng.randint(85, 98), heap_used=heap_used, heap_max=heap_max,
+            survivor=rng.randint(10, 200), old_gen=rng.randint(2000, heap_used),
+            gc_pause=rng.randint(500, 5000), gc_count=rng.randint(10, 200),
+            freed=rng.randint(10, 500), gc_overhead=rng.randint(40, 95),
+            gc_throughput=rng.randint(5, 60), evict_rate=rng.randint(100, 5000),
+            kern_ts=f"{rng.uniform(1000, 9999):.6f}",
+            pid=rng.randint(1000, 65000), vm_kb=rng.randint(2000000, 16000000),
+            rss_kb=rng.randint(1000000, 8000000),
+            # CPU spin
+            cpu_pct=rng.randint(90, 100), retry_attempt=rng.randint(3, 20),
+            retry_max=rng.choice([5, 10, 20]), op_name=rng.choice(["db.query", "cache.get", "api.call", "payment.charge"]),
+            elapsed=rng.randint(5000, 60000), elapsed2=rng.randint(60000, 300000),
+            stuck_secs=rng.randint(30, 600), line_num=rng.randint(100, 999),
+            stuck_threads=rng.randint(10, pool_max),
+            # DNS
+            dns_ip=dns_ip, error_count=rng.randint(100, 5000),
+            checksum_exp=f"sha256:{rng.randint(10000000, 99999999):08x}",
+            checksum_got=f"sha256:{rng.randint(10000000, 99999999):08x}",
+            # Network / IPs
+            root_ip=root_ip, root_port=root_port,
+            broker_ip=broker_ip, broker_port=broker_port,
+            gw_ip=gw_ip, gw_port=gw_port, origin_ip=origin_ip,
+            ext_api_ip=ext_api_ip, ext_api_port=ext_api_port,
+            backend_ip1=backend_ip1, backend_ip2=backend_ip2, backend_ip3=backend_ip3,
+            client_ip=client_ip, client_ip2=client_ip2,
+            # LB / CDN
+            hc_code=rng.choice([404, 500, 502, 503]),
+            hc_success=rng.randint(40, 70),
+            asset_id=f"asset-{rng.randint(10000, 99999)}", cache_age=rng.randint(300, 86400),
+            # Queue
             queue_depth=rng.randint(10000, 100000), lag=rng.randint(60, 600),
-            dlq_count=rng.randint(100, 5000), user_id=rng.randint(1000, 99999),
+            dlq_count=rng.randint(100, 5000), partition=rng.randint(0, 15),
+            partition_count=rng.randint(8, 32), consumer_count=rng.randint(2, 8),
+            # Rate limiting
+            retry_after=rng.randint(30, 300), rate_limit=rng.randint(100, 1000),
+            retry_count=rng.randint(100, 5000), backoff=rng.choice([1000, 2000, 5000]),
+            # Auth / creds
             rotation_time=f"2026-03-26T{max(base_hour-1,0):02d}:00:00Z",
             expiry_time=f"2026-03-26T{max(base_hour-2,0):02d}:00:00Z",
+            expired_hours=rng.randint(1, 48),
+            # WAF
             rule_id=f"WAF-{rng.randint(1000,9999)}", block_rate=rng.randint(30, 80),
-            block_count=rng.randint(500, 5000), rate_limit=rng.randint(100, 1000),
-            failure_count=rng.randint(50, 500), backend_count=rng.randint(3, 8),
+            block_count=rng.randint(500, 5000), block_src_count=rng.randint(50, 500),
+            chrome_ver=f"{rng.randint(90, 130)}.0.{rng.randint(1000, 9999)}.{rng.randint(10, 99)}",
+            # Version mismatch
+            api_ver_actual=f"v{rng.randint(1, 3)}", api_ver_expected=f"v{rng.randint(3, 5)}",
+            schema_ver_old=f"{rng.randint(1, 5)}.{rng.randint(0, 9)}.{rng.randint(0, 9)}",
+            schema_ver_new=f"{rng.randint(5, 9)}.{rng.randint(0, 9)}.{rng.randint(0, 9)}",
+            schema_diff_count=rng.randint(2, 12),
+            # Cache
+            user_id=rng.randint(1000, 99999), user_id2=rng.randint(1000, 99999),
+            cache_warm_count=rng.randint(10000, 100000),
+            # General / shared
+            error_rate=round(rng.uniform(10, 80), 1),
+            failure_count=rng.randint(50, 500), window=rng.choice([10, 20, 50, 100]),
             affected_svc=affected[0]["name"] if affected else root_name,
             affected_db=f"{affected[0]['name']}-db" if affected else f"{root_name}-db",
-            dep=f"{root_name}-db", root_service=root_name, batch_count=rng.randint(1000, 50000),
-            hit_ratio=rng.randint(30, 60),
+            dep=f"{root_name}-db", root_service=root_name,
+            # Legacy compat
+            backend_count=rng.randint(3, 8), batch_count=rng.randint(1000, 50000),
+            hit_ratio=rng.randint(30, 60), rss_mb=rng.randint(2000, 8000),
+            restart_count=rng.randint(1, 5), cache_size=rng.randint(100000, 999999),
+            req_id=rng.randint(10000, 99999),
         )
+        msg = lp["msg"].format(**fmt_vars)
         ts = root_ts[i] if i < len(root_ts) else root_ts[-1]
         root_logs.append({
             "timestamp": ts,
@@ -1054,10 +1151,29 @@ def build_scenario(template: dict, difficulty: str, seed: int, scenario_num: int
         aff_ts = make_timestamps(base_hour, base_min + 1, num_aff_logs)
         for i in range(num_aff_logs):
             lp = template["log_patterns_affected"][i % len(template["log_patterns_affected"])]
-            msg = lp["msg"].format(
-                root_service=root_name, req_id=rng.randint(10000, 99999),
+            aff_pool_max = rng.randint(20, 100)
+            aff_fmt_vars = dict(
+                root_service=root_name, service=svc["name"],
+                req_id=rng.randint(10000, 99999),
                 dep=f"{svc['name']}-db.internal",
+                root_ip=root_ip, root_port=root_port,
+                thread_n=rng.randint(1, 48), thread_n2=rng.randint(1, 48),
+                aff_latency=rng.randint(1000, 30000),
+                failure_count=rng.randint(10, 200),
+                rule_id=f"WAF-{rng.randint(1000,9999)}",
+                row_ver_old=rng.randint(1000, 9999),
+                row_ver_new=rng.randint(10000, 19999),
+                cache_key=f"user:{rng.randint(1000, 99999)}",
+                cache_age=rng.randint(300, 86400),
+                backoff=rng.choice([1000, 2000, 5000]),
+                lag=rng.randint(60, 600),
+                partition=rng.randint(0, 15),
+                broker_ip=broker_ip, broker_port=broker_port,
+                queue_depth=rng.randint(10000, 100000),
+                pool_max=aff_pool_max, waiting=rng.randint(10, 200),
+                version=root_version,
             )
+            msg = lp["msg"].format(**aff_fmt_vars)
             svc_logs.append({
                 "timestamp": aff_ts[i] if i < len(aff_ts) else aff_ts[-1],
                 "service": svc["name"],
@@ -1283,16 +1399,16 @@ def main():
 
         # Remove old generated scenario files (preserve hand-crafted scenario_001 and scenario_002)
         for old in out_dir.glob("scenario_*.json"):
-            # Keep original scenario_001.json (tests depend on its hardcoded alert IDs/services)
-            if old.name == "scenario_001.json":
+            # Keep original scenario_001 and scenario_002 (hand-crafted Option C style)
+            if old.name in ("scenario_001.json", "scenario_002.json"):
                 continue
             old.unlink()
 
-        print(f"\n--- Generating {args.count} {difficulty} scenarios (002-{args.count+1:03d}) ---")
+        print(f"\n--- Generating {args.count - 1} {difficulty} scenarios (003-{args.count+1:03d}) ---")
 
-        # Keep scenario_001 as-is, generate scenario_002 through scenario_{count+1}
-        for i in range(args.count):
-            file_num = i + 2  # start at 002
+        # Keep scenario_001 and scenario_002 as-is, generate scenario_003 through scenario_{count+1}
+        for i in range(args.count - 1):
+            file_num = i + 3  # start at 003
             # Round-robin template assignment ensures diversity
             template = INCIDENT_TEMPLATES[i % num_templates]
             seed = args.seed * 1000 + DIFFICULTIES.index(difficulty) * 100 + i

@@ -1,258 +1,254 @@
 {
   "incident_id": "INC-20260326-005",
   "difficulty": "easy",
-  "description": "SEV3 incident: Memory Leak (OOM) affecting inventory-service. Cascading impact on auth-service.",
+  "description": "SEV3 incident: Deadlock Storm affecting order-service. Cascading impact on search-service.",
   "expected_severity": "SEV3",
   "initial_alerts": [
     {
       "alert_id": "alert-501",
       "severity": "critical",
-      "service": "inventory-service",
-      "message": "Memory usage at 90% - OOM kill imminent",
-      "timestamp": "2026-03-26T14:06:05Z",
+      "service": "order-service",
+      "message": "Transaction deadlocks spiking - 164/min detected",
+      "timestamp": "2026-03-26T15:22:05Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-502",
       "severity": "critical",
-      "service": "inventory-service",
-      "message": "Service restarts detected - 13 OOM kills in last 10 minutes",
-      "timestamp": "2026-03-26T14:07:10Z",
+      "service": "order-service",
+      "message": "Request queue depth exceeding 500 - requests backing up",
+      "timestamp": "2026-03-26T15:23:10Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-503",
       "severity": "warning",
-      "service": "auth-service",
-      "message": "Elevated error rate due to inventory-service instability",
-      "timestamp": "2026-03-26T14:08:15Z",
+      "service": "search-service",
+      "message": "Upstream order-service response time degraded",
+      "timestamp": "2026-03-26T15:24:15Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-504",
       "severity": "critical",
-      "service": "auth-service",
-      "message": "auth-service error rate spiking - requests failing",
-      "timestamp": "2026-03-26T14:06:13Z",
+      "service": "search-service",
+      "message": "search-service error rate spiking - requests failing",
+      "timestamp": "2026-03-26T15:22:54Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-505",
       "severity": "info",
-      "service": "config-server",
-      "message": "Scheduled maintenance window starting in 2 hours",
-      "timestamp": "2026-03-26T14:01:03Z",
+      "service": "notification-service",
+      "message": "New dashboard version deployed - no action required",
+      "timestamp": "2026-03-26T15:20:40Z",
       "acknowledged": false,
       "silenced": false
     }
   ],
   "services": [
     {
-      "name": "inventory-service",
-      "status": "down",
-      "latency_ms": 0,
-      "error_rate": 99.7,
-      "cpu_percent": 71,
-      "memory_percent": 88,
-      "version": "1.2.3"
+      "name": "order-service",
+      "status": "degraded",
+      "latency_ms": 2931,
+      "error_rate": 38.3,
+      "cpu_percent": 40,
+      "memory_percent": 67,
+      "version": "5.0.3"
     },
     {
-      "name": "auth-service",
-      "status": "down",
-      "latency_ms": 0,
-      "error_rate": 70.4,
-      "cpu_percent": 70,
-      "memory_percent": 61,
-      "version": "1.0.0"
+      "name": "search-service",
+      "status": "degraded",
+      "latency_ms": 3725,
+      "error_rate": 33.2,
+      "cpu_percent": 72,
+      "memory_percent": 65,
+      "version": "4.2.0"
+    },
+    {
+      "name": "notification-service",
+      "status": "healthy",
+      "latency_ms": 165,
+      "error_rate": 0.3,
+      "cpu_percent": 37,
+      "memory_percent": 45,
+      "version": "2.3.0"
     },
     {
       "name": "config-server",
       "status": "healthy",
-      "latency_ms": 179,
-      "error_rate": 0.7,
-      "cpu_percent": 15,
-      "memory_percent": 44,
-      "version": "2.3.0"
-    },
-    {
-      "name": "cdn-proxy",
-      "status": "healthy",
-      "latency_ms": 32,
-      "error_rate": 0.6,
-      "cpu_percent": 48,
-      "memory_percent": 53,
-      "version": "3.2.0"
+      "latency_ms": 171,
+      "error_rate": 0.1,
+      "cpu_percent": 8,
+      "memory_percent": 47,
+      "version": "4.2.0"
     }
   ],
   "recent_deployments": [
     {
-      "service": "inventory-service",
-      "version": "1.2.3",
-      "timestamp": "2026-03-26T13:42:00Z",
-      "deployer": "sre-bot"
+      "service": "order-service",
+      "version": "5.0.3",
+      "timestamp": "2026-03-26T14:13:00Z",
+      "deployer": "infra-team"
     }
   ],
   "logs": {
-    "inventory-service": [
+    "order-service": [
       {
-        "timestamp": "2026-03-26T14:05:00Z",
-        "service": "inventory-service",
-        "level": "WARN",
-        "message": "Heap usage at 85% - garbage collection ineffective"
-      },
-      {
-        "timestamp": "2026-03-26T14:07:00Z",
-        "service": "inventory-service",
+        "timestamp": "2026-03-26T15:21:00Z",
+        "service": "order-service",
         "level": "ERROR",
-        "message": "Out of memory: process killed by OOM killer (RSS: 4523MB)"
+        "message": "c.a.s.db.DeadlockDetector [monitor-1] - deadlock detected: tx-54548 holds lock on order-service_records.row_id=401941, waiting for order-service_index.row_id=864787; tx-24758 holds order-service_index.row_id=864787, waiting for order-service_records.row_id=401941"
       },
       {
-        "timestamp": "2026-03-26T14:09:00Z",
-        "service": "inventory-service",
-        "level": "INFO",
-        "message": "Service restarting after OOM kill - attempt 2"
-      },
-      {
-        "timestamp": "2026-03-26T14:11:00Z",
-        "service": "inventory-service",
-        "level": "WARN",
-        "message": "Request cache size growing unbounded: 697993 entries"
-      },
-      {
-        "timestamp": "2026-03-26T14:13:00Z",
-        "service": "inventory-service",
+        "timestamp": "2026-03-26T15:23:00Z",
+        "service": "order-service",
         "level": "ERROR",
-        "message": "Failed to allocate memory for request processing"
+        "message": "c.a.s.db.TransactionManager [tx-pool-37] - Lock wait timeout after 30000ms on table 'order-service_records' row_id=564302"
+      },
+      {
+        "timestamp": "2026-03-26T15:25:00Z",
+        "service": "order-service",
+        "level": "WARN",
+        "message": "c.a.s.db.ConnectionPool [pool-monitor-1] - 48 threads waiting for connection, active=32/32"
+      },
+      {
+        "timestamp": "2026-03-26T15:27:00Z",
+        "service": "order-service",
+        "level": "ERROR",
+        "message": "c.a.s.db.TransactionManager [tx-pool-14] - Lock wait timeout after 5000ms on table 'order-service_index' row_id=942160"
       }
     ],
-    "auth-service": [
+    "search-service": [
       {
-        "timestamp": "2026-03-26T14:06:00Z",
-        "service": "auth-service",
+        "timestamp": "2026-03-26T15:22:00Z",
+        "service": "search-service",
         "level": "ERROR",
-        "message": "Connection refused from inventory-service: service restarting"
+        "message": "c.a.s.client.ServiceClient [http-10] - HTTP 504 from 10.14.110.35:8090 (latency=18358ms)"
       },
       {
-        "timestamp": "2026-03-26T14:11:00Z",
-        "service": "auth-service",
+        "timestamp": "2026-03-26T15:27:00Z",
+        "service": "search-service",
         "level": "WARN",
-        "message": "Retrying request to inventory-service after connection failure"
+        "message": "c.a.s.circuit.CircuitBreaker [cb-order-service] - state: HALF_OPEN -> OPEN after probe failure (HTTP 504)"
       }
     ]
   },
   "metrics": {
-    "inventory-service:memory_percent": [
-      0.0,
-      47.1,
-      69.3,
-      79.8,
-      84.7
+    "order-service:deadlocks_per_min": [
+      1.6,
+      3.4,
+      7.2,
+      15.3,
+      32.7,
+      69.5
     ],
-    "inventory-service:error_rate": [
-      1.5,
-      1.5,
-      1.5,
-      46.1,
-      46.1,
-      46.1
+    "order-service:error_rate": [
+      0.8,
+      1.8,
+      3.8,
+      8.4,
+      18.5,
+      40.5
     ],
-    "inventory-service:restarts": [
+    "order-service:latency_p99": [
+      1.7,
+      2.8,
+      4.7,
+      7.8,
+      12.9,
+      21.4,
+      35.4,
+      58.7
+    ],
+    "search-service:error_rate": [
       0.9,
       0.9,
       0.9,
-      79.8,
-      79.8,
-      79.8,
-      79.8
+      85.7,
+      85.7,
+      85.7,
+      85.7
     ],
-    "auth-service:error_rate": [
-      0.4,
-      0.4,
-      0.4,
-      76.1,
-      76.1,
-      76.1
+    "notification-service:cpu": [
+      32.4,
+      29.3,
+      19.2,
+      23.0,
+      12.2,
+      17.4
     ],
     "config-server:cpu": [
+      36.9,
+      33.5,
       36.0,
-      50.2,
-      36.2,
-      40.4,
-      49.0,
-      42.4
-    ],
-    "cdn-proxy:cpu": [
-      41.3,
-      40.4,
-      43.2,
-      43.4,
-      42.8,
-      38.7
+      37.6,
+      40.8,
+      40.1
     ]
   },
   "dependencies": {
-    "inventory-service": [
-      "inventory-service-db",
-      "inventory-service-store"
+    "order-service": [
+      "order-service-db",
+      "order-service-store"
     ],
-    "auth-service": [
-      "inventory-service",
-      "auth-service-db"
+    "search-service": [
+      "order-service",
+      "search-service-db"
+    ],
+    "notification-service": [
+      "notification-service-db"
     ],
     "config-server": [
       "config-server-db"
-    ],
-    "cdn-proxy": [
-      "cdn-proxy-db"
     ]
   },
   "root_cause": {
-    "service": "inventory-service",
-    "description": "Memory leak in inventory-service 1.2.3 causing OOM kills - unbounded cache growth in request handler",
+    "service": "order-service",
+    "description": "Deadlock storm in order-service database caused by concurrent transaction ordering bug in 5.0.3",
     "keywords": [
-      "memory",
-      "leak",
-      "OOM",
-      "out of memory",
-      "heap",
-      "cache",
-      "growth"
+      "deadlock",
+      "transaction",
+      "lock",
+      "contention",
+      "database",
+      "concurrent"
     ]
   },
   "valid_remediations": [
     {
       "action": "restart_service",
-      "service": "inventory-service"
+      "service": "order-service"
     },
     {
       "action": "rollback_deploy",
-      "service": "inventory-service"
+      "service": "order-service"
     }
   ],
   "expected_diagnostics": [
     {
       "action_type": "query_logs",
       "params": {
-        "service": "inventory-service"
+        "service": "order-service"
       }
     },
     {
       "action_type": "check_metrics",
       "params": {
-        "service": "inventory-service"
+        "service": "order-service"
       }
     }
   ],
   "grading_rubric": {
-    "triage_weight": 0.32,
-    "diagnostic_weight": 0.18,
-    "root_cause_weight": 0.18,
-    "remediation_weight": 0.14,
+    "triage_weight": 0.29,
+    "diagnostic_weight": 0.21,
+    "root_cause_weight": 0.16,
+    "remediation_weight": 0.15,
     "efficiency_weight": 0.09,
-    "documentation_weight": 0.09
+    "documentation_weight": 0.1
   }
 }

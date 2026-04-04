@@ -1,400 +1,366 @@
 {
   "incident_id": "INC-20260326-310",
   "difficulty": "expert",
-  "description": "SEV1 incident: Load Balancer Misconfiguration affecting logging-pipeline. Cascading impact on billing-service, analytics-service. Multiple concurrent events make diagnosis challenging. Red herrings present - focus on evidence-based investigation.",
+  "description": "SEV1 incident: TLS Certificate Expiry affecting cdn-proxy. Cascading impact on notification-service, order-service. Multiple concurrent events make diagnosis challenging. Red herrings present - focus on evidence-based investigation.",
   "expected_severity": "SEV1",
   "initial_alerts": [
     {
       "alert_id": "alert-31001",
       "severity": "critical",
-      "service": "logging-pipeline",
-      "message": "Uneven traffic distribution - single backend receiving 100% traffic",
-      "timestamp": "2026-03-26T16:31:05Z",
+      "service": "cdn-proxy",
+      "message": "TLS certificate expired - all HTTPS connections failing",
+      "timestamp": "2026-03-26T11:30:05Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-31002",
       "severity": "critical",
-      "service": "billing-service",
-      "message": "Service overloaded - receiving all routed traffic",
-      "timestamp": "2026-03-26T16:32:10Z",
+      "service": "notification-service",
+      "message": "Connection refused: TLS handshake failure with cdn-proxy",
+      "timestamp": "2026-03-26T11:31:10Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-31003",
       "severity": "warning",
-      "service": "logging-pipeline",
-      "message": "Health check configuration mismatch detected",
-      "timestamp": "2026-03-26T16:33:15Z",
+      "service": "cdn-proxy",
+      "message": "Certificate validity: EXPIRED since 2026-03-26T09:00:00Z",
+      "timestamp": "2026-03-26T11:32:15Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-31004",
       "severity": "critical",
-      "service": "billing-service",
-      "message": "billing-service error rate spiking - requests failing",
-      "timestamp": "2026-03-26T16:31:27Z",
+      "service": "notification-service",
+      "message": "notification-service error rate spiking - requests failing",
+      "timestamp": "2026-03-26T11:30:07Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-31005",
       "severity": "critical",
-      "service": "analytics-service",
-      "message": "analytics-service error rate spiking - requests failing",
-      "timestamp": "2026-03-26T16:31:47Z",
+      "service": "order-service",
+      "message": "order-service error rate spiking - requests failing",
+      "timestamp": "2026-03-26T11:30:29Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-31006",
-      "severity": "info",
+      "severity": "warning",
       "service": "message-queue",
-      "message": "New dashboard version deployed - no action required",
-      "timestamp": "2026-03-26T16:24:20Z",
+      "message": "Disk usage at 72% on data volume",
+      "timestamp": "2026-03-26T11:19:23Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-31007",
-      "severity": "warning",
-      "service": "message-queue",
-      "message": "Log volume increased 20% - review retention policy",
-      "timestamp": "2026-03-26T16:22:45Z",
+      "severity": "info",
+      "service": "logging-pipeline",
+      "message": "Feature flag 'new-checkout-flow' enabled for 5% of users",
+      "timestamp": "2026-03-26T11:26:39Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-31008",
-      "severity": "warning",
-      "service": "config-server",
-      "message": "Log volume increased 20% - review retention policy",
-      "timestamp": "2026-03-26T16:29:02Z",
-      "acknowledged": false,
-      "silenced": false
-    },
-    {
-      "alert_id": "alert-31009",
-      "severity": "warning",
-      "service": "config-server",
-      "message": "Log volume increased 20% - review retention policy",
-      "timestamp": "2026-03-26T16:25:43Z",
+      "severity": "info",
+      "service": "analytics-service",
+      "message": "Model v4.2 deployment started - canary rollout in progress",
+      "timestamp": "2026-03-26T11:21:54Z",
       "acknowledged": false,
       "silenced": false
     }
   ],
   "services": [
     {
-      "name": "logging-pipeline",
+      "name": "cdn-proxy",
       "status": "degraded",
-      "latency_ms": 4324,
-      "error_rate": 39.1,
-      "cpu_percent": 66,
-      "memory_percent": 43,
-      "version": "1.0.0"
+      "latency_ms": 4987,
+      "error_rate": 60.0,
+      "cpu_percent": 59,
+      "memory_percent": 66,
+      "version": "4.2.0"
     },
     {
-      "name": "billing-service",
+      "name": "notification-service",
       "status": "degraded",
-      "latency_ms": 2886,
-      "error_rate": 13.9,
-      "cpu_percent": 70,
-      "memory_percent": 49,
+      "latency_ms": 2471,
+      "error_rate": 55.1,
+      "cpu_percent": 44,
+      "memory_percent": 47,
       "version": "1.5.0"
     },
     {
-      "name": "analytics-service",
+      "name": "order-service",
       "status": "degraded",
-      "latency_ms": 4373,
-      "error_rate": 52.9,
+      "latency_ms": 3150,
+      "error_rate": 44.5,
       "cpu_percent": 68,
-      "memory_percent": 36,
-      "version": "4.2.0"
+      "memory_percent": 37,
+      "version": "2.1.1"
     },
     {
-      "name": "metrics-collector",
+      "name": "analytics-service",
       "status": "healthy",
-      "latency_ms": 84,
-      "error_rate": 0.3,
-      "cpu_percent": 40,
-      "memory_percent": 32,
-      "version": "4.2.0"
+      "latency_ms": 98,
+      "error_rate": 0.7,
+      "cpu_percent": 24,
+      "memory_percent": 53,
+      "version": "1.1.0"
+    },
+    {
+      "name": "api-gateway",
+      "status": "healthy",
+      "latency_ms": 20,
+      "error_rate": 0.8,
+      "cpu_percent": 19,
+      "memory_percent": 20,
+      "version": "1.1.0"
+    },
+    {
+      "name": "logging-pipeline",
+      "status": "healthy",
+      "latency_ms": 52,
+      "error_rate": 0.2,
+      "cpu_percent": 31,
+      "memory_percent": 30,
+      "version": "2.1.1"
     },
     {
       "name": "message-queue",
       "status": "healthy",
-      "latency_ms": 111,
-      "error_rate": 0.3,
-      "cpu_percent": 30,
-      "memory_percent": 37,
-      "version": "4.2.0"
-    },
-    {
-      "name": "config-server",
-      "status": "healthy",
-      "latency_ms": 132,
-      "error_rate": 0.1,
-      "cpu_percent": 23,
-      "memory_percent": 49,
-      "version": "4.0.1"
+      "latency_ms": 22,
+      "error_rate": 0.6,
+      "cpu_percent": 18,
+      "memory_percent": 42,
+      "version": "5.0.3"
     }
   ],
   "recent_deployments": [
     {
-      "service": "logging-pipeline",
-      "version": "1.0.0",
-      "timestamp": "2026-03-26T15:28:00Z",
+      "service": "cdn-proxy",
+      "version": "4.2.0",
+      "timestamp": "2026-03-26T10:28:00Z",
       "deployer": "ci-bot"
     },
     {
-      "service": "message-queue",
-      "version": "4.2.0",
-      "timestamp": "2026-03-26T14:34:00Z",
-      "deployer": "ml-team"
+      "service": "analytics-service",
+      "version": "1.1.0",
+      "timestamp": "2026-03-26T08:28:00Z",
+      "deployer": "dev-team"
     },
     {
-      "service": "metrics-collector",
-      "version": "4.2.0",
-      "timestamp": "2026-03-26T14:02:00Z",
-      "deployer": "ops-team"
-    },
-    {
-      "service": "config-server",
-      "version": "4.0.1",
-      "timestamp": "2026-03-26T14:35:00Z",
-      "deployer": "ops-team"
+      "service": "logging-pipeline",
+      "version": "2.1.1",
+      "timestamp": "2026-03-26T08:17:00Z",
+      "deployer": "dev-team"
     }
   ],
   "logs": {
+    "cdn-proxy": [
+      {
+        "timestamp": "2026-03-26T11:29:00Z",
+        "service": "cdn-proxy",
+        "level": "ERROR",
+        "message": "c.a.s.tls.CertValidator [tls-handshake-42] - peer certificate rejected: notAfter=2026-03-26T09:00:00Z (expired 36 hours ago)"
+      },
+      {
+        "timestamp": "2026-03-26T11:30:25Z",
+        "service": "cdn-proxy",
+        "level": "ERROR",
+        "message": "c.a.s.tls.CertValidator [tls-handshake-11] - CERTIFICATE_VERIFY_FAILED: unable to get local issuer certificate (depth=1, CN=*.cdn-proxy.internal)"
+      },
+      {
+        "timestamp": "2026-03-26T11:31:50Z",
+        "service": "cdn-proxy",
+        "level": "WARN",
+        "message": "c.a.s.tls.AutoRenew [cert-renew-1] - ACME challenge failed: timeout connecting to ca.internal:443 after 30000ms"
+      },
+      {
+        "timestamp": "2026-03-26T11:33:15Z",
+        "service": "cdn-proxy",
+        "level": "ERROR",
+        "message": "c.a.s.tls.CertValidator [tls-handshake-13] - javax.net.ssl.SSLHandshakeException: PKIX path validation failed: java.security.cert.CertPathValidatorException: validity check failed"
+      }
+    ],
+    "notification-service": [
+      {
+        "timestamp": "2026-03-26T11:30:00Z",
+        "service": "notification-service",
+        "level": "ERROR",
+        "message": "c.a.s.client.ServiceClient [http-3] - javax.net.ssl.SSLHandshakeException connecting to 10.100.166.68:8082: peer not authenticated"
+      },
+      {
+        "timestamp": "2026-03-26T11:35:00Z",
+        "service": "notification-service",
+        "level": "WARN",
+        "message": "c.a.s.client.ServiceClient [http-8] - TLS handshake failed to 10.100.166.68:8082, falling back to cached response (age=56277s)"
+      }
+    ],
+    "order-service": [
+      {
+        "timestamp": "2026-03-26T11:30:00Z",
+        "service": "order-service",
+        "level": "ERROR",
+        "message": "c.a.s.client.ServiceClient [http-21] - javax.net.ssl.SSLHandshakeException connecting to 10.100.166.68:8082: peer not authenticated"
+      },
+      {
+        "timestamp": "2026-03-26T11:35:00Z",
+        "service": "order-service",
+        "level": "WARN",
+        "message": "c.a.s.client.ServiceClient [http-41] - TLS handshake failed to 10.100.166.68:8082, falling back to cached response (age=16789s)"
+      }
+    ],
     "logging-pipeline": [
       {
-        "timestamp": "2026-03-26T16:30:00Z",
-        "service": "logging-pipeline",
-        "level": "ERROR",
-        "message": "Backend pool misconfigured: only 1 of 5 backends active"
-      },
-      {
-        "timestamp": "2026-03-26T16:31:40Z",
+        "timestamp": "2026-03-26T11:29:00Z",
         "service": "logging-pipeline",
         "level": "WARN",
-        "message": "Health check endpoint changed in 1.0.0 but LB config not updated"
-      },
-      {
-        "timestamp": "2026-03-26T16:33:20Z",
-        "service": "logging-pipeline",
-        "level": "ERROR",
-        "message": "All traffic routed to billing-service: other backends marked unhealthy"
-      },
-      {
-        "timestamp": "2026-03-26T16:35:00Z",
-        "service": "logging-pipeline",
-        "level": "WARN",
-        "message": "Backend billing-service reporting 503: overloaded from traffic spike"
+        "message": "c.a.s.db.SlowQueryLog [query-monitor-1] - slow query: 2103ms SELECT * FROM audit_log WHERE created_at > '2026-03-25' (non-critical)"
       }
     ],
-    "billing-service": [
+    "api-gateway": [
       {
-        "timestamp": "2026-03-26T16:31:00Z",
-        "service": "billing-service",
-        "level": "ERROR",
-        "message": "Request rate 10x normal - possible routing issue"
-      },
-      {
-        "timestamp": "2026-03-26T16:36:00Z",
-        "service": "billing-service",
-        "level": "WARN",
-        "message": "Thread pool exhausted from unexpected traffic volume"
-      }
-    ],
-    "analytics-service": [
-      {
-        "timestamp": "2026-03-26T16:31:00Z",
-        "service": "analytics-service",
-        "level": "ERROR",
-        "message": "Request rate 10x normal - possible routing issue"
-      },
-      {
-        "timestamp": "2026-03-26T16:36:00Z",
-        "service": "analytics-service",
-        "level": "WARN",
-        "message": "Thread pool exhausted from unexpected traffic volume"
-      }
-    ],
-    "message-queue": [
-      {
-        "timestamp": "2026-03-26T16:30:00Z",
-        "service": "message-queue",
+        "timestamp": "2026-03-26T11:29:00Z",
+        "service": "api-gateway",
         "level": "INFO",
-        "message": "Cache hit ratio: 94%"
-      }
-    ],
-    "metrics-collector": [
-      {
-        "timestamp": "2026-03-26T16:30:00Z",
-        "service": "metrics-collector",
-        "level": "INFO",
-        "message": "Model serving normally - no dependency issues"
-      }
-    ],
-    "config-server": [
-      {
-        "timestamp": "2026-03-26T16:30:00Z",
-        "service": "config-server",
-        "level": "INFO",
-        "message": "Scheduled reindex 40% complete - elevated latency expected"
+        "message": "c.a.s.health.Monitor [health-check-1] - status=UP, checks=[db:UP, cache:UP, queue:UP]"
       }
     ]
   },
   "metrics": {
-    "logging-pipeline:backend_health_pct": [
-      1.2,
-      1.2,
-      1.2,
-      95.4,
-      95.4,
-      95.4
+    "cdn-proxy:tls_errors": [
+      1.3,
+      1.3,
+      99.6,
+      99.6,
+      99.6
     ],
-    "logging-pipeline:error_rate": [
-      0.2,
-      0.2,
-      0.2,
-      84.0,
-      84.0,
-      84.0,
-      84.0
+    "cdn-proxy:error_rate": [
+      1.3,
+      1.3,
+      1.3,
+      67.4,
+      67.4,
+      67.4
     ],
-    "billing-service:cpu_percent": [
-      0.0,
-      33.2,
-      54.9,
-      69.0,
-      78.1,
-      84.1,
-      88.0,
-      90.6
+    "notification-service:error_rate": [
+      0.5,
+      0.5,
+      0.5,
+      42.5,
+      42.5,
+      42.5
     ],
-    "billing-service:error_rate": [
-      0.3,
-      0.8,
-      2.1,
-      5.3,
-      13.3,
-      33.2,
-      83.2
+    "order-service:error_rate": [
+      0.9,
+      0.9,
+      0.9,
+      0.9,
+      95.3,
+      95.3,
+      95.3,
+      95.3
     ],
-    "analytics-service:cpu_percent": [
-      0.0,
-      33.9,
-      54.4,
-      66.9,
-      74.4,
-      79.0,
-      81.8
+    "analytics-service:cpu": [
+      31.2,
+      29.1,
+      34.5,
+      30.5,
+      21.7,
+      25.0
     ],
-    "analytics-service:error_rate": [
-      1.6,
-      2.9,
-      5.3,
-      9.7,
-      17.6,
-      32.1,
-      58.3
-    ],
-    "metrics-collector:cpu": [
-      40.1,
-      36.8,
-      37.0,
-      35.8,
-      45.1,
-      44.8
-    ],
-    "message-queue:cpu": [
-      44.0,
-      45.6,
-      42.4,
-      43.0,
-      50.2,
-      52.0
+    "api-gateway:cpu": [
+      45.0,
+      54.1,
+      44.5,
+      49.5,
+      60.3,
+      51.9
     ]
   },
   "dependencies": {
-    "logging-pipeline": [
-      "logging-pipeline-db",
-      "logging-pipeline-store"
+    "cdn-proxy": [
+      "cdn-proxy-db",
+      "cdn-proxy-store"
     ],
-    "billing-service": [
-      "logging-pipeline",
-      "billing-service-db"
+    "notification-service": [
+      "cdn-proxy",
+      "notification-service-db"
+    ],
+    "order-service": [
+      "cdn-proxy",
+      "order-service-db"
     ],
     "analytics-service": [
-      "logging-pipeline",
+      "cdn-proxy",
       "analytics-service-db"
     ],
-    "metrics-collector": [
-      "metrics-collector-db"
+    "api-gateway": [
+      "api-gateway-db"
+    ],
+    "logging-pipeline": [
+      "logging-pipeline-db"
     ],
     "message-queue": [
       "message-queue-db"
-    ],
-    "config-server": [
-      "config-server-db"
     ]
   },
   "root_cause": {
-    "service": "logging-pipeline",
-    "description": "Load balancer misconfiguration on logging-pipeline routing all traffic to single unhealthy backend after 1.0.0 config change",
+    "service": "cdn-proxy",
+    "description": "TLS certificate expired on cdn-proxy causing all HTTPS connections to fail",
     "keywords": [
-      "load balancer",
-      "routing",
-      "misconfiguration",
-      "config",
-      "backend",
-      "traffic"
+      "tls",
+      "certificate",
+      "expired",
+      "ssl",
+      "https",
+      "cert",
+      "x509"
     ]
   },
   "valid_remediations": [
     {
-      "action": "update_config",
-      "service": "logging-pipeline"
-    },
-    {
-      "action": "rollback_deploy",
-      "service": "logging-pipeline"
-    },
-    {
       "action": "restart_service",
-      "service": "logging-pipeline"
+      "service": "cdn-proxy"
+    },
+    {
+      "action": "update_config",
+      "service": "cdn-proxy"
     }
   ],
   "expected_diagnostics": [
     {
       "action_type": "query_logs",
       "params": {
-        "service": "logging-pipeline"
+        "service": "cdn-proxy"
       }
     },
     {
       "action_type": "check_metrics",
       "params": {
-        "service": "logging-pipeline"
+        "service": "cdn-proxy"
       }
     },
     {
-      "action_type": "view_dependencies",
+      "action_type": "query_logs",
       "params": {
-        "service_name": "billing-service"
+        "service": "notification-service"
       }
     }
   ],
   "grading_rubric": {
-    "triage_weight": 0.07,
-    "diagnostic_weight": 0.21,
-    "root_cause_weight": 0.34,
-    "remediation_weight": 0.16,
-    "efficiency_weight": 0.12,
-    "documentation_weight": 0.1
+    "triage_weight": 0.05,
+    "diagnostic_weight": 0.19,
+    "root_cause_weight": 0.36,
+    "remediation_weight": 0.21,
+    "efficiency_weight": 0.08,
+    "documentation_weight": 0.11
   }
 }

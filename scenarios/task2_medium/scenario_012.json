@@ -1,24 +1,24 @@
 {
   "incident_id": "INC-20260326-112",
   "difficulty": "medium",
-  "description": "SEV2 incident: Dependency Version Mismatch affecting billing-service. Cascading impact on message-queue.",
+  "description": "SEV2 incident: Bad Config Rollout affecting user-service. Cascading impact on message-queue, cache-layer.",
   "expected_severity": "SEV2",
   "initial_alerts": [
     {
       "alert_id": "alert-11201",
       "severity": "critical",
-      "service": "billing-service",
-      "message": "Deserialization errors spiking - 69.4% request failure",
-      "timestamp": "2026-03-26T12:25:05Z",
+      "service": "user-service",
+      "message": "Error rate at 22.6% after config deployment",
+      "timestamp": "2026-03-26T17:09:05Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-11202",
       "severity": "warning",
-      "service": "billing-service",
-      "message": "API contract violation detected in responses from upstream",
-      "timestamp": "2026-03-26T12:26:10Z",
+      "service": "user-service",
+      "message": "Config refresh failed - serving with invalid config",
+      "timestamp": "2026-03-26T17:10:10Z",
       "acknowledged": false,
       "silenced": false
     },
@@ -26,8 +26,8 @@
       "alert_id": "alert-11203",
       "severity": "warning",
       "service": "message-queue",
-      "message": "Increased error responses from billing-service",
-      "timestamp": "2026-03-26T12:27:15Z",
+      "message": "Upstream dependency user-service returning errors",
+      "timestamp": "2026-03-26T17:11:15Z",
       "acknowledged": false,
       "silenced": false
     },
@@ -36,241 +36,284 @@
       "severity": "critical",
       "service": "message-queue",
       "message": "message-queue error rate spiking - requests failing",
-      "timestamp": "2026-03-26T12:25:26Z",
+      "timestamp": "2026-03-26T17:09:05Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-11205",
-      "severity": "info",
-      "service": "internal-dns",
-      "message": "Elasticsearch reindex started - expected temporary latency increase",
-      "timestamp": "2026-03-26T12:17:48Z",
+      "severity": "critical",
+      "service": "cache-layer",
+      "message": "cache-layer error rate spiking - requests failing",
+      "timestamp": "2026-03-26T17:09:45Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-11206",
       "severity": "info",
-      "service": "internal-dns",
-      "message": "Feature flag 'new-checkout-flow' enabled for 5% of users",
-      "timestamp": "2026-03-26T12:16:32Z",
+      "service": "session-store",
+      "message": "New dashboard version deployed - no action required",
+      "timestamp": "2026-03-26T17:59:08Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-11207",
       "severity": "info",
-      "service": "auth-service",
-      "message": "Feature flag 'new-checkout-flow' enabled for 5% of users",
-      "timestamp": "2026-03-26T12:17:38Z",
+      "service": "logging-pipeline",
+      "message": "Automated backup completed successfully",
+      "timestamp": "2026-03-26T17:01:22Z",
       "acknowledged": false,
       "silenced": false
     }
   ],
   "services": [
     {
-      "name": "billing-service",
-      "status": "down",
-      "latency_ms": 0,
-      "error_rate": 86.8,
-      "cpu_percent": 64,
-      "memory_percent": 45,
+      "name": "user-service",
+      "status": "degraded",
+      "latency_ms": 6749,
+      "error_rate": 40.8,
+      "cpu_percent": 40,
+      "memory_percent": 79,
       "version": "2.4.1"
     },
     {
       "name": "message-queue",
       "status": "degraded",
-      "latency_ms": 1757,
-      "error_rate": 41.4,
-      "cpu_percent": 24,
-      "memory_percent": 54,
-      "version": "3.2.0"
-    },
-    {
-      "name": "auth-service",
-      "status": "healthy",
-      "latency_ms": 176,
-      "error_rate": 0.5,
-      "cpu_percent": 47,
-      "memory_percent": 53,
-      "version": "3.2.0"
-    },
-    {
-      "name": "internal-dns",
-      "status": "healthy",
-      "latency_ms": 141,
-      "error_rate": 1.0,
-      "cpu_percent": 31,
-      "memory_percent": 37,
-      "version": "4.1.0"
-    },
-    {
-      "name": "email-service",
-      "status": "healthy",
-      "latency_ms": 37,
-      "error_rate": 0.7,
-      "cpu_percent": 19,
-      "memory_percent": 48,
+      "latency_ms": 1619,
+      "error_rate": 31.6,
+      "cpu_percent": 27,
+      "memory_percent": 45,
       "version": "2.0.0"
+    },
+    {
+      "name": "cache-layer",
+      "status": "degraded",
+      "latency_ms": 2244,
+      "error_rate": 65.9,
+      "cpu_percent": 55,
+      "memory_percent": 65,
+      "version": "1.1.0"
+    },
+    {
+      "name": "session-store",
+      "status": "healthy",
+      "latency_ms": 95,
+      "error_rate": 0.7,
+      "cpu_percent": 44,
+      "memory_percent": 41,
+      "version": "2.1.1"
+    },
+    {
+      "name": "logging-pipeline",
+      "status": "healthy",
+      "latency_ms": 189,
+      "error_rate": 0.9,
+      "cpu_percent": 22,
+      "memory_percent": 52,
+      "version": "2.4.1"
     }
   ],
   "recent_deployments": [
     {
-      "service": "billing-service",
+      "service": "user-service",
       "version": "2.4.1",
-      "timestamp": "2026-03-26T11:15:00Z",
-      "deployer": "search-team"
+      "timestamp": "2026-03-26T16:23:00Z",
+      "deployer": "dev-team"
+    },
+    {
+      "service": "session-store",
+      "version": "2.1.1",
+      "timestamp": "2026-03-26T16:08:00Z",
+      "deployer": "ops-team"
     }
   ],
   "logs": {
-    "billing-service": [
+    "user-service": [
       {
-        "timestamp": "2026-03-26T12:24:00Z",
-        "service": "billing-service",
+        "timestamp": "2026-03-26T17:08:00Z",
+        "service": "user-service",
         "level": "ERROR",
-        "message": "Failed to deserialize response from upstream: unexpected field format"
+        "message": "c.a.s.config.Loader [config-watch-1] - loaded key='db.connection.url' value='jdbc:postgresql://10.44.127.185:5440/user-service_db?ssl=true' source=configmap/user-service-2.4.1"
       },
       {
-        "timestamp": "2026-03-26T12:26:30Z",
-        "service": "billing-service",
+        "timestamp": "2026-03-26T17:10:30Z",
+        "service": "user-service",
         "level": "ERROR",
-        "message": "API version mismatch: expected v3 response, got v2 schema"
+        "message": "c.a.s.db.HikariPool [pool-3-thread-16] - Failed to obtain JDBC Connection: java.net.ConnectException: Connection refused (Connection refused) to 10.44.127.185:5440"
       },
       {
-        "timestamp": "2026-03-26T12:29:00Z",
-        "service": "billing-service",
+        "timestamp": "2026-03-26T17:13:00Z",
+        "service": "user-service",
+        "level": "FATAL",
+        "message": "c.a.s.db.HikariPool [pool-3-thread-24] - HikariPool-1 - Exception during pool initialization: java.net.ConnectException: Connection refused"
+      },
+      {
+        "timestamp": "2026-03-26T17:15:30Z",
+        "service": "user-service",
         "level": "WARN",
-        "message": "Contract test failures detected post-deployment of 2.4.1"
-      },
-      {
-        "timestamp": "2026-03-26T12:31:30Z",
-        "service": "billing-service",
-        "level": "ERROR",
-        "message": "Null pointer: response missing required field 'metadata.trace_id'"
+        "message": "c.a.s.config.Validator [startup-1] - WARN: unrecognized config key 'db.connection.pool.maxSize' in namespace 'user-service', using default"
       }
     ],
     "message-queue": [
       {
-        "timestamp": "2026-03-26T12:25:00Z",
-        "service": "message-queue",
-        "level": "WARN",
-        "message": "billing-service returning malformed responses"
-      },
-      {
-        "timestamp": "2026-03-26T12:30:00Z",
+        "timestamp": "2026-03-26T17:09:00Z",
         "service": "message-queue",
         "level": "ERROR",
-        "message": "Failed to process response from billing-service: schema mismatch"
+        "message": "c.a.s.client.ServiceClient [http-29] - HTTP 500 from 10.50.182.145:8097 (latency=10546ms)"
+      },
+      {
+        "timestamp": "2026-03-26T17:14:00Z",
+        "service": "message-queue",
+        "level": "WARN",
+        "message": "c.a.s.lb.HealthChecker [hc-monitor-1] - backend 10.50.182.145:8097 health check failed: HTTP 500 (expected 200)"
+      }
+    ],
+    "cache-layer": [
+      {
+        "timestamp": "2026-03-26T17:09:00Z",
+        "service": "cache-layer",
+        "level": "ERROR",
+        "message": "c.a.s.client.ServiceClient [http-41] - HTTP 500 from 10.50.182.145:8097 (latency=22922ms)"
+      },
+      {
+        "timestamp": "2026-03-26T17:14:00Z",
+        "service": "cache-layer",
+        "level": "WARN",
+        "message": "c.a.s.lb.HealthChecker [hc-monitor-1] - backend 10.50.182.145:8097 health check failed: HTTP 500 (expected 200)"
+      }
+    ],
+    "session-store": [
+      {
+        "timestamp": "2026-03-26T17:08:00Z",
+        "service": "session-store",
+        "level": "INFO",
+        "message": "c.a.s.batch.Executor [batch-pool-3] - job 'daily-reconcile' completed: 45580 records processed in 142s"
       }
     ]
   },
   "metrics": {
-    "billing-service:error_rate": [
-      1.6,
-      1.6,
-      42.0,
-      42.0,
-      42.0
+    "user-service:error_rate": [
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      51.3,
+      51.3,
+      51.3,
+      51.3
     ],
-    "billing-service:deserialization_errors": [
-      0.4,
-      0.4,
-      0.4,
-      0.4,
-      51.6,
-      51.6,
-      51.6,
-      51.6
+    "user-service:db_connections": [
+      2.0,
+      2.0,
+      2.0,
+      57.6,
+      57.6,
+      57.6
     ],
     "message-queue:error_rate": [
-      0.4,
-      0.4,
-      0.4,
-      52.3,
-      52.3,
-      52.3
+      1.9,
+      1.9,
+      1.9,
+      46.5,
+      46.5,
+      46.5,
+      46.5
     ],
-    "auth-service:cpu": [
-      35.2,
-      26.7,
+    "cache-layer:error_rate": [
+      0.1,
+      0.1,
+      0.1,
+      54.6,
+      54.6,
+      54.6
+    ],
+    "session-store:cpu": [
+      35.3,
+      33.5,
+      43.7,
       35.0,
-      31.7,
-      37.9,
-      33.2
+      42.0,
+      46.8
     ],
-    "internal-dns:cpu": [
-      42.3,
-      44.3,
-      42.5,
-      36.4,
-      40.4,
-      40.0
+    "logging-pipeline:cpu": [
+      21.7,
+      15.3,
+      18.6,
+      27.2,
+      28.4,
+      13.7
     ]
   },
   "dependencies": {
-    "billing-service": [
-      "billing-service-db",
-      "billing-service-store"
+    "user-service": [
+      "user-service-db",
+      "user-service-store"
     ],
     "message-queue": [
-      "billing-service",
+      "user-service",
       "message-queue-db"
     ],
-    "auth-service": [
-      "billing-service",
-      "auth-service-db"
+    "cache-layer": [
+      "user-service",
+      "cache-layer-db"
     ],
-    "internal-dns": [
-      "internal-dns-db"
+    "session-store": [
+      "session-store-db"
     ],
-    "email-service": [
-      "email-service-db"
+    "logging-pipeline": [
+      "logging-pipeline-db"
     ]
   },
   "root_cause": {
-    "service": "billing-service",
-    "description": "Dependency version mismatch: billing-service 2.4.1 expects API v3 but upstream provides v2, causing deserialization failures",
+    "service": "user-service",
+    "description": "Bad configuration rollout to user-service in 2.4.1 - invalid database connection string causing all queries to fail",
     "keywords": [
-      "version",
-      "mismatch",
-      "api",
-      "incompatible",
-      "deserialization",
-      "contract",
-      "breaking change"
+      "config",
+      "configuration",
+      "rollout",
+      "invalid",
+      "connection string",
+      "misconfigured"
     ]
   },
   "valid_remediations": [
     {
       "action": "rollback_deploy",
-      "service": "billing-service"
+      "service": "user-service"
     },
     {
-      "action": "restart_service",
-      "service": "billing-service"
+      "action": "update_config",
+      "service": "user-service"
     }
   ],
   "expected_diagnostics": [
     {
       "action_type": "query_logs",
       "params": {
-        "service": "billing-service"
+        "service": "user-service"
       }
     },
     {
       "action_type": "check_metrics",
       "params": {
-        "service": "billing-service"
+        "service": "user-service"
+      }
+    },
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "message-queue"
       }
     }
   ],
   "grading_rubric": {
-    "triage_weight": 0.2,
-    "diagnostic_weight": 0.22,
-    "root_cause_weight": 0.23,
-    "remediation_weight": 0.21,
-    "efficiency_weight": 0.11,
-    "documentation_weight": 0.03
+    "triage_weight": 0.21,
+    "diagnostic_weight": 0.26,
+    "root_cause_weight": 0.2,
+    "remediation_weight": 0.19,
+    "efficiency_weight": 0.1,
+    "documentation_weight": 0.04
   }
 }

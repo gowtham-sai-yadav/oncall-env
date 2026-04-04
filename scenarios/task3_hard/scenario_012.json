@@ -1,370 +1,327 @@
 {
   "incident_id": "INC-20260326-212",
   "difficulty": "hard",
-  "description": "SEV1 incident: Dependency Version Mismatch affecting auth-service. Cascading impact on notification-service, cache-layer. Multiple concurrent events make diagnosis challenging.",
+  "description": "SEV1 incident: Bad Config Rollout affecting payment-api. Cascading impact on order-service, config-server. Multiple concurrent events make diagnosis challenging.",
   "expected_severity": "SEV1",
   "initial_alerts": [
     {
       "alert_id": "alert-21201",
       "severity": "critical",
-      "service": "auth-service",
-      "message": "Deserialization errors spiking - 58.2% request failure",
-      "timestamp": "2026-03-26T22:17:05Z",
+      "service": "payment-api",
+      "message": "Error rate at 68.1% after config deployment",
+      "timestamp": "2026-03-26T10:22:05Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-21202",
       "severity": "warning",
-      "service": "auth-service",
-      "message": "API contract violation detected in responses from upstream",
-      "timestamp": "2026-03-26T22:18:10Z",
+      "service": "payment-api",
+      "message": "Config refresh failed - serving with invalid config",
+      "timestamp": "2026-03-26T10:23:10Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-21203",
       "severity": "warning",
-      "service": "notification-service",
-      "message": "Increased error responses from auth-service",
-      "timestamp": "2026-03-26T22:19:15Z",
+      "service": "order-service",
+      "message": "Upstream dependency payment-api returning errors",
+      "timestamp": "2026-03-26T10:24:15Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-21204",
       "severity": "critical",
-      "service": "notification-service",
-      "message": "notification-service error rate spiking - requests failing",
-      "timestamp": "2026-03-26T22:17:16Z",
+      "service": "order-service",
+      "message": "order-service error rate spiking - requests failing",
+      "timestamp": "2026-03-26T10:22:56Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-21205",
       "severity": "critical",
-      "service": "cache-layer",
-      "message": "cache-layer error rate spiking - requests failing",
-      "timestamp": "2026-03-26T22:17:09Z",
+      "service": "config-server",
+      "message": "config-server error rate spiking - requests failing",
+      "timestamp": "2026-03-26T10:22:58Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-21206",
-      "severity": "info",
-      "service": "cdn-proxy",
-      "message": "New dashboard version deployed - no action required",
-      "timestamp": "2026-03-26T22:14:49Z",
+      "severity": "warning",
+      "service": "api-gateway",
+      "message": "Log volume increased 20% - review retention policy",
+      "timestamp": "2026-03-26T10:11:04Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-21207",
       "severity": "info",
-      "service": "search-service",
-      "message": "SSL certificate renewal scheduled for next week",
-      "timestamp": "2026-03-26T22:15:20Z",
-      "acknowledged": false,
-      "silenced": false
-    },
-    {
-      "alert_id": "alert-21208",
-      "severity": "info",
-      "service": "message-queue",
-      "message": "Canary deployment proceeding as expected",
-      "timestamp": "2026-03-26T22:08:36Z",
-      "acknowledged": false,
-      "silenced": false
-    },
-    {
-      "alert_id": "alert-21209",
-      "severity": "warning",
-      "service": "cdn-proxy",
-      "message": "CPU usage at 67% - approaching threshold",
-      "timestamp": "2026-03-26T22:12:51Z",
+      "service": "api-gateway",
+      "message": "New dashboard version deployed - no action required",
+      "timestamp": "2026-03-26T10:18:14Z",
       "acknowledged": false,
       "silenced": false
     }
   ],
   "services": [
     {
-      "name": "auth-service",
+      "name": "payment-api",
       "status": "degraded",
-      "latency_ms": 4756,
-      "error_rate": 32.6,
-      "cpu_percent": 49,
-      "memory_percent": 85,
+      "latency_ms": 1027,
+      "error_rate": 26.8,
+      "cpu_percent": 43,
+      "memory_percent": 93,
       "version": "3.1.2"
     },
     {
-      "name": "notification-service",
+      "name": "order-service",
       "status": "degraded",
-      "latency_ms": 593,
-      "error_rate": 66.6,
-      "cpu_percent": 34,
-      "memory_percent": 46,
-      "version": "1.5.0"
+      "latency_ms": 3180,
+      "error_rate": 32.9,
+      "cpu_percent": 43,
+      "memory_percent": 31,
+      "version": "2.1.1"
     },
     {
-      "name": "cache-layer",
+      "name": "config-server",
       "status": "degraded",
-      "latency_ms": 3882,
-      "error_rate": 48.6,
-      "cpu_percent": 27,
-      "memory_percent": 56,
-      "version": "3.1.2"
-    },
-    {
-      "name": "cdn-proxy",
-      "status": "healthy",
-      "latency_ms": 91,
-      "error_rate": 0.6,
-      "cpu_percent": 17,
-      "memory_percent": 19,
-      "version": "3.2.0"
+      "latency_ms": 2457,
+      "error_rate": 65.6,
+      "cpu_percent": 21,
+      "memory_percent": 33,
+      "version": "4.1.0"
     },
     {
       "name": "message-queue",
       "status": "healthy",
-      "latency_ms": 139,
-      "error_rate": 0.3,
-      "cpu_percent": 9,
-      "memory_percent": 43,
-      "version": "1.2.3"
+      "latency_ms": 47,
+      "error_rate": 0.7,
+      "cpu_percent": 16,
+      "memory_percent": 23,
+      "version": "3.0.0"
     },
     {
-      "name": "search-service",
+      "name": "auth-service",
       "status": "healthy",
-      "latency_ms": 80,
-      "error_rate": 0.9,
-      "cpu_percent": 40,
-      "memory_percent": 23,
-      "version": "4.2.0"
+      "latency_ms": 76,
+      "error_rate": 0.6,
+      "cpu_percent": 15,
+      "memory_percent": 18,
+      "version": "4.1.0"
+    },
+    {
+      "name": "api-gateway",
+      "status": "healthy",
+      "latency_ms": 94,
+      "error_rate": 0.5,
+      "cpu_percent": 11,
+      "memory_percent": 50,
+      "version": "2.0.0"
     }
   ],
   "recent_deployments": [
     {
-      "service": "auth-service",
+      "service": "payment-api",
       "version": "3.1.2",
-      "timestamp": "2026-03-26T21:11:00Z",
-      "deployer": "dev-team"
+      "timestamp": "2026-03-26T09:45:00Z",
+      "deployer": "platform-team"
     },
     {
-      "service": "search-service",
-      "version": "4.2.0",
-      "timestamp": "2026-03-26T20:26:00Z",
-      "deployer": "search-team"
-    },
-    {
-      "service": "cdn-proxy",
-      "version": "3.2.0",
-      "timestamp": "2026-03-26T20:27:00Z",
+      "service": "auth-service",
+      "version": "4.1.0",
+      "timestamp": "2026-03-26T09:54:00Z",
       "deployer": "ops-team"
     }
   ],
   "logs": {
-    "auth-service": [
+    "payment-api": [
       {
-        "timestamp": "2026-03-26T22:16:00Z",
-        "service": "auth-service",
+        "timestamp": "2026-03-26T10:21:00Z",
+        "service": "payment-api",
         "level": "ERROR",
-        "message": "Failed to deserialize response from upstream: unexpected field format"
+        "message": "c.a.s.config.Loader [config-watch-1] - loaded key='db.connection.url' value='jdbc:postgresql://10.101.75.34:5447/payment-api_db?ssl=true' source=configmap/payment-api-3.1.2"
       },
       {
-        "timestamp": "2026-03-26T22:17:15Z",
-        "service": "auth-service",
+        "timestamp": "2026-03-26T10:22:40Z",
+        "service": "payment-api",
         "level": "ERROR",
-        "message": "API version mismatch: expected v3 response, got v2 schema"
+        "message": "c.a.s.db.HikariPool [pool-3-thread-44] - Failed to obtain JDBC Connection: java.net.ConnectException: Connection refused (Connection refused) to 10.101.75.34:5447"
       },
       {
-        "timestamp": "2026-03-26T22:18:30Z",
-        "service": "auth-service",
+        "timestamp": "2026-03-26T10:24:20Z",
+        "service": "payment-api",
+        "level": "FATAL",
+        "message": "c.a.s.db.HikariPool [pool-3-thread-26] - HikariPool-1 - Exception during pool initialization: java.net.ConnectException: Connection refused"
+      },
+      {
+        "timestamp": "2026-03-26T10:26:00Z",
+        "service": "payment-api",
         "level": "WARN",
-        "message": "Contract test failures detected post-deployment of 3.1.2"
-      },
-      {
-        "timestamp": "2026-03-26T22:19:45Z",
-        "service": "auth-service",
-        "level": "ERROR",
-        "message": "Null pointer: response missing required field 'metadata.trace_id'"
+        "message": "c.a.s.config.Validator [startup-1] - WARN: unrecognized config key 'db.connection.pool.maxSize' in namespace 'payment-api', using default"
       }
     ],
-    "notification-service": [
+    "order-service": [
       {
-        "timestamp": "2026-03-26T22:17:00Z",
-        "service": "notification-service",
-        "level": "WARN",
-        "message": "auth-service returning malformed responses"
+        "timestamp": "2026-03-26T10:22:00Z",
+        "service": "order-service",
+        "level": "ERROR",
+        "message": "c.a.s.client.ServiceClient [http-39] - HTTP 500 from 10.14.247.65:8100 (latency=23197ms)"
       },
       {
-        "timestamp": "2026-03-26T22:22:00Z",
-        "service": "notification-service",
-        "level": "ERROR",
-        "message": "Failed to process response from auth-service: schema mismatch"
+        "timestamp": "2026-03-26T10:27:00Z",
+        "service": "order-service",
+        "level": "WARN",
+        "message": "c.a.s.lb.HealthChecker [hc-monitor-1] - backend 10.14.247.65:8100 health check failed: HTTP 500 (expected 200)"
       }
     ],
-    "cache-layer": [
+    "config-server": [
       {
-        "timestamp": "2026-03-26T22:17:00Z",
-        "service": "cache-layer",
-        "level": "WARN",
-        "message": "auth-service returning malformed responses"
+        "timestamp": "2026-03-26T10:22:00Z",
+        "service": "config-server",
+        "level": "ERROR",
+        "message": "c.a.s.client.ServiceClient [http-4] - HTTP 500 from 10.14.247.65:8100 (latency=25406ms)"
       },
       {
-        "timestamp": "2026-03-26T22:22:00Z",
-        "service": "cache-layer",
-        "level": "ERROR",
-        "message": "Failed to process response from auth-service: schema mismatch"
+        "timestamp": "2026-03-26T10:27:00Z",
+        "service": "config-server",
+        "level": "WARN",
+        "message": "c.a.s.lb.HealthChecker [hc-monitor-1] - backend 10.14.247.65:8100 health check failed: HTTP 500 (expected 200)"
       }
     ],
     "message-queue": [
       {
-        "timestamp": "2026-03-26T22:16:00Z",
+        "timestamp": "2026-03-26T10:21:00Z",
         "service": "message-queue",
         "level": "INFO",
-        "message": "Scheduled reindex 40% complete - elevated latency expected"
-      }
-    ],
-    "cdn-proxy": [
-      {
-        "timestamp": "2026-03-26T22:16:00Z",
-        "service": "cdn-proxy",
-        "level": "INFO",
-        "message": "Scheduled reindex 40% complete - elevated latency expected"
+        "message": "c.a.s.health.Monitor [health-check-1] - status=UP, checks=[db:UP, cache:UP, queue:UP]"
       }
     ]
   },
   "metrics": {
-    "auth-service:error_rate": [
-      0.1,
-      0.1,
-      0.1,
-      65.1,
-      65.1,
-      65.1,
-      65.1
+    "payment-api:error_rate": [
+      0.7,
+      0.7,
+      0.7,
+      89.0,
+      89.0,
+      89.0
     ],
-    "auth-service:deserialization_errors": [
-      1.2,
-      1.2,
-      1.2,
-      1.2,
-      98.8,
-      98.8,
-      98.8,
-      98.8
-    ],
-    "notification-service:error_rate": [
-      1.5,
-      1.5,
-      1.5,
-      61.8,
-      61.8,
-      61.8,
-      61.8
-    ],
-    "cache-layer:error_rate": [
+    "payment-api:db_connections": [
       0.8,
       0.8,
-      85.3,
-      85.3,
-      85.3
+      0.8,
+      50.0,
+      50.0,
+      50.0,
+      50.0
     ],
-    "cdn-proxy:cpu": [
-      40.1,
-      39.4,
-      32.9,
-      28.4,
-      35.8,
-      31.2
+    "order-service:error_rate": [
+      1.7,
+      1.7,
+      63.6,
+      63.6,
+      63.6
+    ],
+    "config-server:error_rate": [
+      0.9,
+      0.9,
+      81.8,
+      81.8,
+      81.8
     ],
     "message-queue:cpu": [
-      28.7,
-      43.3,
-      21.6,
-      24.0,
-      35.2,
+      33.0,
+      38.4,
+      30.7,
+      23.6,
+      34.3,
+      39.3
+    ],
+    "auth-service:cpu": [
+      37.1,
+      38.2,
+      39.8,
+      27.6,
+      32.0,
       27.4
     ]
   },
   "dependencies": {
-    "auth-service": [
-      "auth-service-db",
-      "auth-service-store"
+    "payment-api": [
+      "payment-api-db",
+      "payment-api-store"
     ],
-    "notification-service": [
-      "auth-service",
-      "notification-service-db"
+    "order-service": [
+      "payment-api",
+      "order-service-db"
     ],
-    "cache-layer": [
-      "auth-service",
-      "cache-layer-db"
-    ],
-    "cdn-proxy": [
-      "cdn-proxy-db"
+    "config-server": [
+      "payment-api",
+      "config-server-db"
     ],
     "message-queue": [
       "message-queue-db"
     ],
-    "search-service": [
-      "search-service-db"
+    "auth-service": [
+      "auth-service-db"
+    ],
+    "api-gateway": [
+      "api-gateway-db"
     ]
   },
   "root_cause": {
-    "service": "auth-service",
-    "description": "Dependency version mismatch: auth-service 3.1.2 expects API v3 but upstream provides v2, causing deserialization failures",
+    "service": "payment-api",
+    "description": "Bad configuration rollout to payment-api in 3.1.2 - invalid database connection string causing all queries to fail",
     "keywords": [
-      "version",
-      "mismatch",
-      "api",
-      "incompatible",
-      "deserialization",
-      "contract",
-      "breaking change"
+      "config",
+      "configuration",
+      "rollout",
+      "invalid",
+      "connection string",
+      "misconfigured"
     ]
   },
   "valid_remediations": [
     {
       "action": "rollback_deploy",
-      "service": "auth-service"
+      "service": "payment-api"
     },
     {
-      "action": "restart_service",
-      "service": "auth-service"
+      "action": "update_config",
+      "service": "payment-api"
     }
   ],
   "expected_diagnostics": [
     {
       "action_type": "query_logs",
       "params": {
-        "service": "auth-service"
+        "service": "payment-api"
       }
     },
     {
       "action_type": "check_metrics",
       "params": {
-        "service": "auth-service"
+        "service": "payment-api"
       }
     },
     {
       "action_type": "query_logs",
       "params": {
-        "service": "notification-service"
-      }
-    },
-    {
-      "action_type": "query_logs",
-      "params": {
-        "service": "cache-layer"
+        "service": "order-service"
       }
     }
   ],
   "grading_rubric": {
-    "triage_weight": 0.08,
-    "diagnostic_weight": 0.26,
-    "root_cause_weight": 0.31,
+    "triage_weight": 0.11,
+    "diagnostic_weight": 0.24,
+    "root_cause_weight": 0.28,
     "remediation_weight": 0.21,
-    "efficiency_weight": 0.1,
+    "efficiency_weight": 0.12,
     "documentation_weight": 0.04
   }
 }

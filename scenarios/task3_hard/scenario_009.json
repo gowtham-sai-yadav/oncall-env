@@ -1,345 +1,403 @@
 {
   "incident_id": "INC-20260326-209",
   "difficulty": "hard",
-  "description": "SEV1 incident: TLS Certificate Expiry affecting inventory-service. Cascading impact on logging-pipeline, payment-api. Multiple concurrent events make diagnosis challenging.",
+  "description": "SEV1 incident: DNS Resolution Failure affecting cdn-proxy. Cascading impact on internal-dns, cache-layer, service-mesh. Multiple concurrent events make diagnosis challenging.",
   "expected_severity": "SEV1",
   "initial_alerts": [
     {
       "alert_id": "alert-20901",
       "severity": "critical",
-      "service": "inventory-service",
-      "message": "TLS certificate expired - all HTTPS connections failing",
-      "timestamp": "2026-03-26T17:23:05Z",
+      "service": "cdn-proxy",
+      "message": "DNS query failure rate at 66.3% - resolution failing",
+      "timestamp": "2026-03-26T19:29:05Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-20902",
       "severity": "critical",
-      "service": "logging-pipeline",
-      "message": "Connection refused: TLS handshake failure with inventory-service",
-      "timestamp": "2026-03-26T17:24:10Z",
+      "service": "internal-dns",
+      "message": "Service connectivity lost - DNS resolution failed",
+      "timestamp": "2026-03-26T19:30:10Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-20903",
       "severity": "warning",
-      "service": "inventory-service",
-      "message": "Certificate validity: EXPIRED since 2026-03-26T15:00:00Z",
-      "timestamp": "2026-03-26T17:25:15Z",
+      "service": "cdn-proxy",
+      "message": "DNS resolution latency increased to 4773ms",
+      "timestamp": "2026-03-26T19:31:15Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-20904",
       "severity": "critical",
-      "service": "logging-pipeline",
-      "message": "logging-pipeline error rate spiking - requests failing",
-      "timestamp": "2026-03-26T17:23:37Z",
+      "service": "internal-dns",
+      "message": "internal-dns error rate spiking - requests failing",
+      "timestamp": "2026-03-26T19:29:15Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-20905",
       "severity": "critical",
-      "service": "payment-api",
-      "message": "payment-api error rate spiking - requests failing",
-      "timestamp": "2026-03-26T17:23:07Z",
+      "service": "cache-layer",
+      "message": "cache-layer error rate spiking - requests failing",
+      "timestamp": "2026-03-26T19:29:53Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-20906",
-      "severity": "info",
-      "service": "internal-dns",
-      "message": "Feature flag 'new-checkout-flow' enabled for 5% of users",
-      "timestamp": "2026-03-26T17:12:23Z",
+      "severity": "critical",
+      "service": "service-mesh",
+      "message": "service-mesh error rate spiking - requests failing",
+      "timestamp": "2026-03-26T19:29:48Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-20907",
       "severity": "info",
-      "service": "config-server",
-      "message": "Model v4.2 deployment started - canary rollout in progress",
-      "timestamp": "2026-03-26T17:21:48Z",
+      "service": "order-service",
+      "message": "New dashboard version deployed - no action required",
+      "timestamp": "2026-03-26T19:26:19Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-20908",
+      "severity": "warning",
+      "service": "user-service",
+      "message": "Log volume increased 20% - review retention policy",
+      "timestamp": "2026-03-26T19:26:30Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-20909",
+      "severity": "warning",
+      "service": "user-service",
+      "message": "Memory usage at 68% - within normal range but trending up",
+      "timestamp": "2026-03-26T19:19:02Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-20910",
+      "severity": "warning",
+      "service": "user-service",
+      "message": "Disk usage at 72% on data volume",
+      "timestamp": "2026-03-26T19:22:39Z",
       "acknowledged": false,
       "silenced": false
     }
   ],
   "services": [
     {
-      "name": "inventory-service",
+      "name": "cdn-proxy",
       "status": "degraded",
-      "latency_ms": 2025,
-      "error_rate": 28.9,
-      "cpu_percent": 94,
-      "memory_percent": 70,
-      "version": "4.2.0"
-    },
-    {
-      "name": "logging-pipeline",
-      "status": "degraded",
-      "latency_ms": 1840,
-      "error_rate": 58.3,
-      "cpu_percent": 31,
-      "memory_percent": 47,
-      "version": "2.1.1"
-    },
-    {
-      "name": "payment-api",
-      "status": "degraded",
-      "latency_ms": 2498,
-      "error_rate": 40.5,
-      "cpu_percent": 31,
-      "memory_percent": 59,
-      "version": "1.2.3"
+      "latency_ms": 4117,
+      "error_rate": 54.4,
+      "cpu_percent": 95,
+      "memory_percent": 83,
+      "version": "2.3.0"
     },
     {
       "name": "internal-dns",
-      "status": "healthy",
-      "latency_ms": 41,
-      "error_rate": 0.1,
-      "cpu_percent": 31,
-      "memory_percent": 42,
-      "version": "1.1.0"
+      "status": "degraded",
+      "latency_ms": 4140,
+      "error_rate": 24.6,
+      "cpu_percent": 22,
+      "memory_percent": 46,
+      "version": "4.0.1"
     },
     {
       "name": "cache-layer",
-      "status": "healthy",
-      "latency_ms": 110,
-      "error_rate": 0.6,
-      "cpu_percent": 15,
+      "status": "degraded",
+      "latency_ms": 4960,
+      "error_rate": 34.1,
+      "cpu_percent": 28,
+      "memory_percent": 32,
+      "version": "3.2.0"
+    },
+    {
+      "name": "service-mesh",
+      "status": "down",
+      "latency_ms": 0,
+      "error_rate": 71.4,
+      "cpu_percent": 65,
       "memory_percent": 50,
       "version": "3.2.0"
     },
     {
-      "name": "config-server",
+      "name": "order-service",
       "status": "healthy",
-      "latency_ms": 54,
-      "error_rate": 0.1,
-      "cpu_percent": 12,
-      "memory_percent": 50,
-      "version": "2.1.1"
+      "latency_ms": 137,
+      "error_rate": 0.4,
+      "cpu_percent": 15,
+      "memory_percent": 22,
+      "version": "1.5.0"
+    },
+    {
+      "name": "user-service",
+      "status": "healthy",
+      "latency_ms": 171,
+      "error_rate": 0.9,
+      "cpu_percent": 34,
+      "memory_percent": 25,
+      "version": "3.1.2"
+    },
+    {
+      "name": "email-service",
+      "status": "healthy",
+      "latency_ms": 120,
+      "error_rate": 0.5,
+      "cpu_percent": 14,
+      "memory_percent": 53,
+      "version": "4.2.0"
     }
   ],
   "recent_deployments": [
     {
-      "service": "inventory-service",
+      "service": "cdn-proxy",
+      "version": "2.3.0",
+      "timestamp": "2026-03-26T18:50:00Z",
+      "deployer": "ci-bot"
+    },
+    {
+      "service": "email-service",
       "version": "4.2.0",
-      "timestamp": "2026-03-26T16:37:00Z",
-      "deployer": "ops-team"
-    },
-    {
-      "service": "cache-layer",
-      "version": "3.2.0",
-      "timestamp": "2026-03-26T16:40:00Z",
+      "timestamp": "2026-03-26T16:36:00Z",
       "deployer": "ml-team"
-    },
-    {
-      "service": "internal-dns",
-      "version": "1.1.0",
-      "timestamp": "2026-03-26T16:41:00Z",
-      "deployer": "search-team"
     }
   ],
   "logs": {
-    "inventory-service": [
+    "cdn-proxy": [
       {
-        "timestamp": "2026-03-26T17:22:00Z",
-        "service": "inventory-service",
+        "timestamp": "2026-03-26T19:28:00Z",
+        "service": "cdn-proxy",
         "level": "ERROR",
-        "message": "TLS handshake failed: certificate expired at 2026-03-26T15:00:00Z"
+        "message": "c.a.s.dns.Resolver [dns-cache-1] - lookup 'internal-dns.internal' on 10.254.164.59:53: SERVFAIL (rcode=2)"
       },
       {
-        "timestamp": "2026-03-26T17:23:25Z",
-        "service": "inventory-service",
+        "timestamp": "2026-03-26T19:29:15Z",
+        "service": "cdn-proxy",
         "level": "ERROR",
-        "message": "x509: certificate has expired or is not yet valid"
+        "message": "c.a.s.dns.Resolver [dns-cache-1] - lookup 'internal-dns-db.internal' on 10.254.164.59:53: NXDOMAIN (rcode=3)"
       },
       {
-        "timestamp": "2026-03-26T17:24:50Z",
-        "service": "inventory-service",
-        "level": "WARN",
-        "message": "Auto-renewal of TLS cert failed: ACME challenge timeout"
+        "timestamp": "2026-03-26T19:30:30Z",
+        "service": "cdn-proxy",
+        "level": "ERROR",
+        "message": "c.a.s.dns.Resolver [dns-cache-1] - 4131 SERVFAIL responses in last 60s from 10.254.164.59:53"
       },
       {
-        "timestamp": "2026-03-26T17:26:15Z",
-        "service": "inventory-service",
-        "level": "ERROR",
-        "message": "All incoming HTTPS connections rejected: invalid certificate"
-      }
-    ],
-    "logging-pipeline": [
-      {
-        "timestamp": "2026-03-26T17:23:00Z",
-        "service": "logging-pipeline",
-        "level": "ERROR",
-        "message": "TLS handshake failed connecting to inventory-service: certificate expired"
-      },
-      {
-        "timestamp": "2026-03-26T17:28:00Z",
-        "service": "logging-pipeline",
-        "level": "WARN",
-        "message": "Falling back to cached data - inventory-service unreachable"
-      }
-    ],
-    "payment-api": [
-      {
-        "timestamp": "2026-03-26T17:23:00Z",
-        "service": "payment-api",
-        "level": "ERROR",
-        "message": "TLS handshake failed connecting to inventory-service: certificate expired"
-      },
-      {
-        "timestamp": "2026-03-26T17:28:00Z",
-        "service": "payment-api",
-        "level": "WARN",
-        "message": "Falling back to cached data - inventory-service unreachable"
+        "timestamp": "2026-03-26T19:31:45Z",
+        "service": "cdn-proxy",
+        "level": "FATAL",
+        "message": "c.a.s.dns.ZoneLoader [zone-sync-1] - zone file checksum mismatch after 2.3.0 sync: expected sha256:00d101ef, got sha256:03916230"
       }
     ],
     "internal-dns": [
       {
-        "timestamp": "2026-03-26T17:22:00Z",
+        "timestamp": "2026-03-26T19:29:00Z",
         "service": "internal-dns",
-        "level": "WARN",
-        "message": "Slow query detected (non-critical): SELECT took 2.1s"
+        "level": "ERROR",
+        "message": "c.a.s.net.ConnectionFactory [conn-pool-37] - java.net.UnknownHostException: internal-dns-db.internal.internal: Name or service not known"
+      },
+      {
+        "timestamp": "2026-03-26T19:32:20Z",
+        "service": "internal-dns",
+        "level": "FATAL",
+        "message": "c.a.s.db.HikariPool [pool-3-housekeeper] - HikariPool-1 - Failed to validate connection: java.net.UnknownHostException: internal-dns-db.internal"
+      },
+      {
+        "timestamp": "2026-03-26T19:35:40Z",
+        "service": "internal-dns",
+        "level": "FATAL",
+        "message": "c.a.s.net.ConnectionFactory [conn-pool-25] - java.net.UnknownHostException: cdn-proxy.internal: Name or service not known"
       }
     ],
-    "config-server": [
+    "cache-layer": [
       {
-        "timestamp": "2026-03-26T17:22:00Z",
-        "service": "config-server",
-        "level": "INFO",
-        "message": "Cache hit ratio: 85%"
+        "timestamp": "2026-03-26T19:29:00Z",
+        "service": "cache-layer",
+        "level": "ERROR",
+        "message": "c.a.s.net.ConnectionFactory [conn-pool-12] - java.net.UnknownHostException: cache-layer-db.internal.internal: Name or service not known"
+      },
+      {
+        "timestamp": "2026-03-26T19:34:00Z",
+        "service": "cache-layer",
+        "level": "FATAL",
+        "message": "c.a.s.db.HikariPool [pool-3-housekeeper] - HikariPool-1 - Failed to validate connection: java.net.UnknownHostException: cache-layer-db.internal"
+      }
+    ],
+    "service-mesh": [
+      {
+        "timestamp": "2026-03-26T19:29:00Z",
+        "service": "service-mesh",
+        "level": "ERROR",
+        "message": "c.a.s.net.ConnectionFactory [conn-pool-30] - java.net.UnknownHostException: service-mesh-db.internal.internal: Name or service not known"
+      },
+      {
+        "timestamp": "2026-03-26T19:32:20Z",
+        "service": "service-mesh",
+        "level": "FATAL",
+        "message": "c.a.s.db.HikariPool [pool-3-housekeeper] - HikariPool-1 - Failed to validate connection: java.net.UnknownHostException: service-mesh-db.internal"
+      },
+      {
+        "timestamp": "2026-03-26T19:35:40Z",
+        "service": "service-mesh",
+        "level": "FATAL",
+        "message": "c.a.s.net.ConnectionFactory [conn-pool-4] - java.net.UnknownHostException: cdn-proxy.internal: Name or service not known"
+      }
+    ],
+    "email-service": [
+      {
+        "timestamp": "2026-03-26T19:28:00Z",
+        "service": "email-service",
+        "level": "WARN",
+        "message": "c.a.s.db.SlowQueryLog [query-monitor-1] - slow query: 2103ms SELECT * FROM audit_log WHERE created_at > '2026-03-25' (non-critical)"
       }
     ]
   },
   "metrics": {
-    "inventory-service:tls_errors": [
+    "cdn-proxy:query_failure_rate": [
+      0.7,
+      2.1,
+      5.9,
+      16.9,
+      48.0
+    ],
+    "cdn-proxy:resolution_latency_ms": [
+      0.7,
       1.4,
-      1.4,
-      1.4,
-      54.4,
-      54.4,
-      54.4,
-      54.4
+      2.9,
+      5.7,
+      11.4,
+      22.8,
+      45.6,
+      91.0
     ],
-    "inventory-service:error_rate": [
-      1.1,
-      1.1,
-      1.1,
-      57.9,
-      57.9,
-      57.9,
-      57.9
+    "internal-dns:error_rate": [
+      1.5,
+      1.5,
+      49.6,
+      49.6,
+      49.6
     ],
-    "logging-pipeline:error_rate": [
-      1.1,
-      1.1,
-      1.1,
-      59.8,
-      59.8,
-      59.8
+    "cache-layer:error_rate": [
+      1.9,
+      1.9,
+      1.9,
+      99.4,
+      99.4,
+      99.4
     ],
-    "payment-api:error_rate": [
-      1.1,
-      1.1,
-      1.1,
-      89.1,
-      89.1,
-      89.1
+    "service-mesh:error_rate": [
+      1.0,
+      1.0,
+      1.0,
+      81.5,
+      81.5,
+      81.5
     ],
-    "internal-dns:cpu": [
-      44.6,
-      48.4,
-      48.5,
-      43.6,
-      47.2,
-      53.4
+    "order-service:cpu": [
+      36.2,
+      40.4,
+      45.6,
+      47.4,
+      41.8,
+      47.5
     ],
-    "cache-layer:cpu": [
-      41.5,
-      41.4,
-      54.8,
-      42.0,
-      44.9,
-      44.9
+    "user-service:cpu": [
+      45.9,
+      45.9,
+      45.8,
+      47.9,
+      58.1,
+      42.6
     ]
   },
   "dependencies": {
-    "inventory-service": [
-      "inventory-service-db",
-      "inventory-service-store"
-    ],
-    "logging-pipeline": [
-      "inventory-service",
-      "logging-pipeline-db"
-    ],
-    "payment-api": [
-      "inventory-service",
-      "payment-api-db"
-    ],
+    "cdn-proxy": [],
     "internal-dns": [
-      "internal-dns-db"
+      "internal-dns-db.internal",
+      "cdn-proxy"
     ],
     "cache-layer": [
-      "cache-layer-db"
+      "cache-layer-db.internal",
+      "cdn-proxy"
     ],
-    "config-server": [
-      "config-server-db"
+    "service-mesh": [
+      "service-mesh-db.internal",
+      "cdn-proxy"
+    ],
+    "order-service": [
+      "order-service-db.internal",
+      "cdn-proxy"
+    ],
+    "user-service": [
+      "user-service-db.internal",
+      "cdn-proxy"
+    ],
+    "email-service": [
+      "email-service-db.internal",
+      "cdn-proxy"
     ]
   },
   "root_cause": {
-    "service": "inventory-service",
-    "description": "TLS certificate expired on inventory-service causing all HTTPS connections to fail",
+    "service": "cdn-proxy",
+    "description": "DNS resolution failure on cdn-proxy after 2.3.0 deployment corrupted zone file records",
     "keywords": [
-      "tls",
-      "certificate",
-      "expired",
-      "ssl",
-      "https",
-      "cert",
-      "x509"
+      "dns",
+      "resolution",
+      "zone",
+      "corrupted",
+      "SERVFAIL",
+      "NXDOMAIN",
+      "zone file"
     ]
   },
   "valid_remediations": [
     {
-      "action": "restart_service",
-      "service": "inventory-service"
+      "action": "rollback_deploy",
+      "service": "cdn-proxy"
     },
     {
-      "action": "update_config",
-      "service": "inventory-service"
+      "action": "restart_service",
+      "service": "cdn-proxy"
     }
   ],
   "expected_diagnostics": [
     {
       "action_type": "query_logs",
       "params": {
-        "service": "inventory-service"
+        "service": "cdn-proxy"
       }
     },
     {
       "action_type": "check_metrics",
       "params": {
-        "service": "inventory-service"
+        "service": "cdn-proxy"
       }
     },
     {
-      "action_type": "query_logs",
+      "action_type": "view_dependencies",
       "params": {
-        "service": "logging-pipeline"
+        "service_name": "internal-dns"
       }
     }
   ],
   "grading_rubric": {
-    "triage_weight": 0.1,
-    "diagnostic_weight": 0.25,
-    "root_cause_weight": 0.29,
-    "remediation_weight": 0.21,
-    "efficiency_weight": 0.1,
-    "documentation_weight": 0.05
+    "triage_weight": 0.11,
+    "diagnostic_weight": 0.24,
+    "root_cause_weight": 0.3,
+    "remediation_weight": 0.2,
+    "efficiency_weight": 0.11,
+    "documentation_weight": 0.04
   }
 }

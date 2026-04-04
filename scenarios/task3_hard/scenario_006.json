@@ -1,371 +1,341 @@
 {
   "incident_id": "INC-20260326-206",
   "difficulty": "hard",
-  "description": "SEV1 incident: CPU Spin Loop affecting order-service. Cascading impact on internal-dns, email-service. Multiple concurrent events make diagnosis challenging.",
+  "description": "SEV1 incident: Memory Leak (OOM) affecting notification-service. Cascading impact on user-service, service-mesh. Multiple concurrent events make diagnosis challenging.",
   "expected_severity": "SEV1",
   "initial_alerts": [
     {
       "alert_id": "alert-20601",
       "severity": "critical",
-      "service": "order-service",
-      "message": "CPU usage at 90% - all cores saturated",
-      "timestamp": "2026-03-26T09:11:05Z",
+      "service": "notification-service",
+      "message": "Memory usage at 86% - OOM kill imminent",
+      "timestamp": "2026-03-26T16:26:05Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-20602",
       "severity": "critical",
-      "service": "order-service",
-      "message": "Service unresponsive - health check failures",
-      "timestamp": "2026-03-26T09:12:10Z",
+      "service": "notification-service",
+      "message": "Service restarts detected - 11 OOM kills in last 10 minutes",
+      "timestamp": "2026-03-26T16:27:10Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-20603",
       "severity": "warning",
-      "service": "internal-dns",
-      "message": "Timeout errors from order-service increasing",
-      "timestamp": "2026-03-26T09:13:15Z",
+      "service": "user-service",
+      "message": "Elevated error rate due to notification-service instability",
+      "timestamp": "2026-03-26T16:28:15Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-20604",
       "severity": "critical",
-      "service": "internal-dns",
-      "message": "internal-dns error rate spiking - requests failing",
-      "timestamp": "2026-03-26T09:11:33Z",
+      "service": "user-service",
+      "message": "user-service error rate spiking - requests failing",
+      "timestamp": "2026-03-26T16:26:39Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-20605",
       "severity": "critical",
-      "service": "email-service",
-      "message": "email-service error rate spiking - requests failing",
-      "timestamp": "2026-03-26T09:11:03Z",
+      "service": "service-mesh",
+      "message": "service-mesh error rate spiking - requests failing",
+      "timestamp": "2026-03-26T16:26:15Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-20606",
       "severity": "info",
-      "service": "payment-api",
-      "message": "Feature flag 'new-checkout-flow' enabled for 5% of users",
-      "timestamp": "2026-03-26T09:08:18Z",
+      "service": "cache-layer",
+      "message": "Automated backup completed successfully",
+      "timestamp": "2026-03-26T16:23:13Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-20607",
       "severity": "info",
-      "service": "payment-api",
-      "message": "New dashboard version deployed - no action required",
-      "timestamp": "2026-03-26T09:00:54Z",
-      "acknowledged": false,
-      "silenced": false
-    },
-    {
-      "alert_id": "alert-20608",
-      "severity": "warning",
-      "service": "logging-pipeline",
-      "message": "CPU usage at 63% - approaching threshold",
-      "timestamp": "2026-03-26T09:03:41Z",
-      "acknowledged": false,
-      "silenced": false
-    },
-    {
-      "alert_id": "alert-20609",
-      "severity": "info",
-      "service": "cdn-proxy",
-      "message": "Model v4.2 deployment started - canary rollout in progress",
-      "timestamp": "2026-03-26T09:06:41Z",
+      "service": "cache-layer",
+      "message": "Automated backup completed successfully",
+      "timestamp": "2026-03-26T16:17:05Z",
       "acknowledged": false,
       "silenced": false
     }
   ],
   "services": [
     {
-      "name": "order-service",
+      "name": "notification-service",
       "status": "degraded",
-      "latency_ms": 4412,
-      "error_rate": 46.4,
-      "cpu_percent": 65,
-      "memory_percent": 54,
-      "version": "3.2.0"
+      "latency_ms": 5617,
+      "error_rate": 25.9,
+      "cpu_percent": 92,
+      "memory_percent": 84,
+      "version": "1.5.0"
     },
     {
-      "name": "internal-dns",
-      "status": "degraded",
-      "latency_ms": 4604,
-      "error_rate": 60.5,
+      "name": "user-service",
+      "status": "down",
+      "latency_ms": 0,
+      "error_rate": 72.3,
       "cpu_percent": 64,
-      "memory_percent": 49,
-      "version": "5.0.3"
-    },
-    {
-      "name": "email-service",
-      "status": "degraded",
-      "latency_ms": 2628,
-      "error_rate": 44.2,
-      "cpu_percent": 54,
-      "memory_percent": 42,
-      "version": "4.1.0"
-    },
-    {
-      "name": "logging-pipeline",
-      "status": "healthy",
-      "latency_ms": 98,
-      "error_rate": 0.7,
-      "cpu_percent": 42,
-      "memory_percent": 18,
-      "version": "4.2.0"
-    },
-    {
-      "name": "cdn-proxy",
-      "status": "healthy",
-      "latency_ms": 63,
-      "error_rate": 1.0,
-      "cpu_percent": 27,
-      "memory_percent": 50,
+      "memory_percent": 37,
       "version": "3.1.2"
+    },
+    {
+      "name": "service-mesh",
+      "status": "degraded",
+      "latency_ms": 1764,
+      "error_rate": 67.0,
+      "cpu_percent": 35,
+      "memory_percent": 64,
+      "version": "1.1.0"
     },
     {
       "name": "payment-api",
       "status": "healthy",
-      "latency_ms": 194,
-      "error_rate": 0.8,
-      "cpu_percent": 10,
-      "memory_percent": 49,
+      "latency_ms": 199,
+      "error_rate": 0.3,
+      "cpu_percent": 34,
+      "memory_percent": 17,
+      "version": "2.1.1"
+    },
+    {
+      "name": "auth-service",
+      "status": "healthy",
+      "latency_ms": 26,
+      "error_rate": 0.7,
+      "cpu_percent": 30,
+      "memory_percent": 40,
+      "version": "2.0.0"
+    },
+    {
+      "name": "cache-layer",
+      "status": "healthy",
+      "latency_ms": 123,
+      "error_rate": 0.9,
+      "cpu_percent": 7,
+      "memory_percent": 48,
       "version": "4.0.1"
     }
   ],
   "recent_deployments": [
     {
-      "service": "order-service",
-      "version": "3.2.0",
-      "timestamp": "2026-03-26T08:50:00Z",
-      "deployer": "dev-team"
+      "service": "notification-service",
+      "version": "1.5.0",
+      "timestamp": "2026-03-26T15:32:00Z",
+      "deployer": "sre-bot"
     },
     {
-      "service": "payment-api",
-      "version": "4.0.1",
-      "timestamp": "2026-03-26T08:38:00Z",
-      "deployer": "dev-team"
-    },
-    {
-      "service": "logging-pipeline",
-      "version": "4.2.0",
-      "timestamp": "2026-03-26T07:54:00Z",
+      "service": "auth-service",
+      "version": "2.0.0",
+      "timestamp": "2026-03-26T13:40:00Z",
       "deployer": "dev-team"
     }
   ],
   "logs": {
-    "order-service": [
+    "notification-service": [
       {
-        "timestamp": "2026-03-26T09:10:00Z",
-        "service": "order-service",
+        "timestamp": "2026-03-26T16:25:00Z",
+        "service": "notification-service",
         "level": "WARN",
-        "message": "CPU usage at 97% - throttling requests"
+        "message": "GC overhead: pause=4708ms heap=10193M/10200M eden=0B survivor=113M old=8236M"
       },
       {
-        "timestamp": "2026-03-26T09:11:40Z",
-        "service": "order-service",
+        "timestamp": "2026-03-26T16:26:40Z",
+        "service": "notification-service",
         "level": "ERROR",
-        "message": "Worker thread pool exhausted - all threads blocked"
+        "message": "kernel: [3651.005799] Out of memory: Killed process 26241 (notification-service) total-vm:7974028kB anon-rss:1737254kB oom_score_adj:999"
       },
       {
-        "timestamp": "2026-03-26T09:13:20Z",
-        "service": "order-service",
-        "level": "ERROR",
-        "message": "Health check timeout after 5s - service appears hung"
-      },
-      {
-        "timestamp": "2026-03-26T09:15:00Z",
-        "service": "order-service",
+        "timestamp": "2026-03-26T16:28:20Z",
+        "service": "notification-service",
         "level": "WARN",
-        "message": "Error handler retry loop detected: 4873 retries in 10s"
+        "message": "c.a.s.cache.Manager [cache-evictor-1] - heap pressure: 89% used, eviction rate: 3501/s"
+      },
+      {
+        "timestamp": "2026-03-26T16:30:00Z",
+        "service": "notification-service",
+        "level": "WARN",
+        "message": "c.a.s.gc.Monitor [gc-monitor-1] - Full GC #181: 1622ms pause, freed 242M, heap 14205M/15295M"
+      },
+      {
+        "timestamp": "2026-03-26T16:31:40Z",
+        "service": "notification-service",
+        "level": "ERROR",
+        "message": "c.a.s.handler.RequestHandler [http-nio-8080-exec-8] - java.lang.OutOfMemoryError: Java heap space"
       }
     ],
-    "internal-dns": [
+    "user-service": [
       {
-        "timestamp": "2026-03-26T09:11:00Z",
-        "service": "internal-dns",
+        "timestamp": "2026-03-26T16:26:00Z",
+        "service": "user-service",
         "level": "ERROR",
-        "message": "order-service health check failed: timeout after 10s"
+        "message": "upstream connect error: connection refused to 10.97.237.195:8100, reset reason: connection failure"
       },
       {
-        "timestamp": "2026-03-26T09:16:00Z",
-        "service": "internal-dns",
+        "timestamp": "2026-03-26T16:31:00Z",
+        "service": "user-service",
         "level": "WARN",
-        "message": "Load balancer removed order-service from pool"
+        "message": "c.a.s.client.ServiceClient [http-43] - HTTP 503 from 10.97.237.195:8100 (latency=22423ms), retrying in 2000ms"
       }
     ],
-    "email-service": [
+    "service-mesh": [
       {
-        "timestamp": "2026-03-26T09:11:00Z",
-        "service": "email-service",
+        "timestamp": "2026-03-26T16:26:00Z",
+        "service": "service-mesh",
         "level": "ERROR",
-        "message": "order-service health check failed: timeout after 10s"
+        "message": "upstream connect error: connection refused to 10.97.237.195:8100, reset reason: connection failure"
       },
       {
-        "timestamp": "2026-03-26T09:16:00Z",
-        "service": "email-service",
+        "timestamp": "2026-03-26T16:31:00Z",
+        "service": "service-mesh",
         "level": "WARN",
-        "message": "Load balancer removed order-service from pool"
+        "message": "c.a.s.client.ServiceClient [http-10] - HTTP 503 from 10.97.237.195:8100 (latency=20865ms), retrying in 2000ms"
       }
     ],
-    "payment-api": [
+    "cache-layer": [
       {
-        "timestamp": "2026-03-26T09:10:00Z",
-        "service": "payment-api",
+        "timestamp": "2026-03-26T16:25:00Z",
+        "service": "cache-layer",
         "level": "INFO",
-        "message": "Scheduled reindex 40% complete - elevated latency expected"
-      }
-    ],
-    "logging-pipeline": [
-      {
-        "timestamp": "2026-03-26T09:10:00Z",
-        "service": "logging-pipeline",
-        "level": "WARN",
-        "message": "Slow query detected (non-critical): SELECT took 2.1s"
+        "message": "c.a.s.search.Indexer [reindex-pool-1] - reindex progress: 40% (12403/31008 docs), est. remaining: 340s"
       }
     ]
   },
   "metrics": {
-    "order-service:cpu_percent": [
+    "notification-service:memory_percent": [
       0.0,
-      33.8,
-      55.9,
-      70.2,
-      79.6,
-      85.7,
-      89.6,
-      92.2
+      51.3,
+      75.6,
+      87.0,
+      92.4
     ],
-    "order-service:latency_p99": [
-      2.0,
-      4.0,
-      8.3,
-      16.9,
-      34.7,
-      71.1
+    "notification-service:error_rate": [
+      0.7,
+      0.7,
+      0.7,
+      57.4,
+      57.4,
+      57.4
     ],
-    "internal-dns:error_rate": [
-      1.6,
-      1.6,
-      1.6,
-      98.3,
-      98.3,
-      98.3
+    "notification-service:restarts": [
+      1.9,
+      1.9,
+      1.9,
+      76.5,
+      76.5,
+      76.5
     ],
-    "email-service:error_rate": [
-      0.8,
-      0.8,
-      0.8,
-      0.8,
-      78.6,
-      78.6,
-      78.6,
-      78.6
+    "user-service:error_rate": [
+      0.5,
+      0.5,
+      46.4,
+      46.4,
+      46.4
     ],
-    "logging-pipeline:cpu": [
-      40.5,
-      36.1,
-      40.6,
-      39.8,
-      33.9,
-      34.4
+    "service-mesh:error_rate": [
+      0.9,
+      0.9,
+      0.9,
+      43.1,
+      43.1,
+      43.1
     ],
-    "cdn-proxy:cpu": [
-      39.1,
-      38.9,
-      34.8,
-      29.8,
-      33.2,
-      27.1
+    "payment-api:cpu": [
+      43.6,
+      48.7,
+      43.1,
+      36.8,
+      44.4,
+      44.2
+    ],
+    "auth-service:cpu": [
+      24.3,
+      30.1,
+      21.4,
+      26.6,
+      19.3,
+      24.3
     ]
   },
   "dependencies": {
-    "order-service": [
-      "order-service-db",
-      "order-service-store"
+    "notification-service": [
+      "notification-service-db",
+      "notification-service-store"
     ],
-    "internal-dns": [
-      "order-service",
-      "internal-dns-db"
+    "user-service": [
+      "notification-service",
+      "user-service-db"
     ],
-    "email-service": [
-      "order-service",
-      "email-service-db"
-    ],
-    "logging-pipeline": [
-      "logging-pipeline-db"
-    ],
-    "cdn-proxy": [
-      "cdn-proxy-db"
+    "service-mesh": [
+      "notification-service",
+      "service-mesh-db"
     ],
     "payment-api": [
       "payment-api-db"
+    ],
+    "auth-service": [
+      "auth-service-db"
+    ],
+    "cache-layer": [
+      "cache-layer-db"
     ]
   },
   "root_cause": {
-    "service": "order-service",
-    "description": "CPU spin loop in order-service 3.2.0 caused by infinite retry loop in error handler",
+    "service": "notification-service",
+    "description": "Memory leak in notification-service 1.5.0 causing OOM kills - unbounded cache growth in request handler",
     "keywords": [
-      "cpu",
-      "spin",
-      "loop",
-      "100%",
-      "retry",
-      "infinite",
-      "hang"
+      "memory",
+      "leak",
+      "OOM",
+      "out of memory",
+      "heap",
+      "cache",
+      "growth"
     ]
   },
   "valid_remediations": [
     {
       "action": "restart_service",
-      "service": "order-service"
+      "service": "notification-service"
     },
     {
       "action": "rollback_deploy",
-      "service": "order-service"
+      "service": "notification-service"
     }
   ],
   "expected_diagnostics": [
     {
       "action_type": "query_logs",
       "params": {
-        "service": "order-service"
+        "service": "notification-service"
       }
     },
     {
       "action_type": "check_metrics",
       "params": {
-        "service": "order-service"
+        "service": "notification-service"
       }
     },
     {
       "action_type": "query_logs",
       "params": {
-        "service": "internal-dns"
-      }
-    },
-    {
-      "action_type": "query_logs",
-      "params": {
-        "service": "email-service"
+        "service": "user-service"
       }
     }
   ],
   "grading_rubric": {
     "triage_weight": 0.11,
-    "diagnostic_weight": 0.27,
-    "root_cause_weight": 0.27,
-    "remediation_weight": 0.18,
-    "efficiency_weight": 0.11,
-    "documentation_weight": 0.06
+    "diagnostic_weight": 0.25,
+    "root_cause_weight": 0.3,
+    "remediation_weight": 0.2,
+    "efficiency_weight": 0.1,
+    "documentation_weight": 0.04
   }
 }

@@ -1,285 +1,326 @@
 {
   "incident_id": "INC-20260326-109",
   "difficulty": "medium",
-  "description": "SEV2 incident: TLS Certificate Expiry affecting internal-dns. Cascading impact on cdn-proxy.",
+  "description": "SEV2 incident: DNS Resolution Failure affecting metrics-collector. Cascading impact on cache-layer, api-gateway.",
   "expected_severity": "SEV2",
   "initial_alerts": [
     {
       "alert_id": "alert-10901",
       "severity": "critical",
-      "service": "internal-dns",
-      "message": "TLS certificate expired - all HTTPS connections failing",
-      "timestamp": "2026-03-26T17:49:05Z",
+      "service": "metrics-collector",
+      "message": "DNS query failure rate at 52.1% - resolution failing",
+      "timestamp": "2026-03-26T21:36:05Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-10902",
       "severity": "critical",
-      "service": "cdn-proxy",
-      "message": "Connection refused: TLS handshake failure with internal-dns",
-      "timestamp": "2026-03-26T17:50:10Z",
+      "service": "cache-layer",
+      "message": "Service connectivity lost - DNS resolution failed",
+      "timestamp": "2026-03-26T21:37:10Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-10903",
       "severity": "warning",
-      "service": "internal-dns",
-      "message": "Certificate validity: EXPIRED since 2026-03-26T15:00:00Z",
-      "timestamp": "2026-03-26T17:51:15Z",
+      "service": "metrics-collector",
+      "message": "DNS resolution latency increased to 3697ms",
+      "timestamp": "2026-03-26T21:38:15Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-10904",
       "severity": "critical",
-      "service": "cdn-proxy",
-      "message": "cdn-proxy error rate spiking - requests failing",
-      "timestamp": "2026-03-26T17:49:57Z",
+      "service": "cache-layer",
+      "message": "cache-layer error rate spiking - requests failing",
+      "timestamp": "2026-03-26T21:36:58Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-10905",
-      "severity": "info",
-      "service": "metrics-collector",
-      "message": "Feature flag 'new-checkout-flow' enabled for 5% of users",
-      "timestamp": "2026-03-26T17:39:40Z",
+      "severity": "critical",
+      "service": "api-gateway",
+      "message": "api-gateway error rate spiking - requests failing",
+      "timestamp": "2026-03-26T21:36:29Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-10906",
+      "severity": "info",
+      "service": "message-queue",
+      "message": "Elasticsearch reindex started - expected temporary latency increase",
+      "timestamp": "2026-03-26T21:34:02Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-10907",
       "severity": "warning",
-      "service": "notification-service",
-      "message": "CPU usage at 61% - approaching threshold",
-      "timestamp": "2026-03-26T17:39:49Z",
+      "service": "email-service",
+      "message": "Memory usage at 68% - within normal range but trending up",
+      "timestamp": "2026-03-26T21:32:39Z",
       "acknowledged": false,
       "silenced": false
     }
   ],
   "services": [
     {
-      "name": "internal-dns",
+      "name": "metrics-collector",
+      "status": "down",
+      "latency_ms": 0,
+      "error_rate": 95.8,
+      "cpu_percent": 40,
+      "memory_percent": 48,
+      "version": "4.1.0"
+    },
+    {
+      "name": "cache-layer",
       "status": "degraded",
-      "latency_ms": 5176,
-      "error_rate": 22.8,
-      "cpu_percent": 61,
-      "memory_percent": 70,
+      "latency_ms": 1886,
+      "error_rate": 10.3,
+      "cpu_percent": 44,
+      "memory_percent": 47,
       "version": "1.0.0"
     },
     {
-      "name": "cdn-proxy",
+      "name": "api-gateway",
       "status": "degraded",
-      "latency_ms": 3689,
-      "error_rate": 21.7,
-      "cpu_percent": 44,
-      "memory_percent": 66,
-      "version": "1.5.0"
+      "latency_ms": 4574,
+      "error_rate": 17.3,
+      "cpu_percent": 25,
+      "memory_percent": 51,
+      "version": "2.1.1"
     },
     {
       "name": "message-queue",
       "status": "healthy",
-      "latency_ms": 65,
-      "error_rate": 0.6,
-      "cpu_percent": 8,
-      "memory_percent": 28,
-      "version": "3.2.0"
+      "latency_ms": 34,
+      "error_rate": 0.4,
+      "cpu_percent": 32,
+      "memory_percent": 29,
+      "version": "4.2.0"
     },
     {
-      "name": "notification-service",
+      "name": "email-service",
       "status": "healthy",
-      "latency_ms": 147,
-      "error_rate": 0.7,
-      "cpu_percent": 37,
-      "memory_percent": 32,
-      "version": "5.0.3"
-    },
-    {
-      "name": "metrics-collector",
-      "status": "healthy",
-      "latency_ms": 100,
-      "error_rate": 0.2,
-      "cpu_percent": 16,
-      "memory_percent": 43,
-      "version": "1.5.0"
-    },
-    {
-      "name": "auth-service",
-      "status": "healthy",
-      "latency_ms": 115,
-      "error_rate": 0.5,
-      "cpu_percent": 19,
-      "memory_percent": 54,
-      "version": "2.3.0"
+      "latency_ms": 86,
+      "error_rate": 0.3,
+      "cpu_percent": 22,
+      "memory_percent": 34,
+      "version": "2.0.0"
     }
   ],
   "recent_deployments": [
     {
-      "service": "internal-dns",
-      "version": "1.0.0",
-      "timestamp": "2026-03-26T16:52:00Z",
+      "service": "metrics-collector",
+      "version": "4.1.0",
+      "timestamp": "2026-03-26T20:53:00Z",
+      "deployer": "release-manager"
+    },
+    {
+      "service": "email-service",
+      "version": "2.0.0",
+      "timestamp": "2026-03-26T18:55:00Z",
       "deployer": "dev-team"
     }
   ],
   "logs": {
-    "internal-dns": [
+    "metrics-collector": [
       {
-        "timestamp": "2026-03-26T17:48:00Z",
-        "service": "internal-dns",
+        "timestamp": "2026-03-26T21:35:00Z",
+        "service": "metrics-collector",
         "level": "ERROR",
-        "message": "TLS handshake failed: certificate expired at 2026-03-26T15:00:00Z"
+        "message": "c.a.s.dns.Resolver [dns-cache-1] - lookup 'cache-layer.internal' on 10.89.51.165:53: SERVFAIL (rcode=2)"
       },
       {
-        "timestamp": "2026-03-26T17:50:30Z",
-        "service": "internal-dns",
+        "timestamp": "2026-03-26T21:36:40Z",
+        "service": "metrics-collector",
         "level": "ERROR",
-        "message": "x509: certificate has expired or is not yet valid"
+        "message": "c.a.s.dns.Resolver [dns-cache-1] - lookup 'cache-layer-db.internal' on 10.89.51.165:53: NXDOMAIN (rcode=3)"
       },
       {
-        "timestamp": "2026-03-26T17:53:00Z",
-        "service": "internal-dns",
-        "level": "WARN",
-        "message": "Auto-renewal of TLS cert failed: ACME challenge timeout"
+        "timestamp": "2026-03-26T21:38:20Z",
+        "service": "metrics-collector",
+        "level": "ERROR",
+        "message": "c.a.s.dns.Resolver [dns-cache-1] - 534 SERVFAIL responses in last 60s from 10.89.51.165:53"
       },
       {
-        "timestamp": "2026-03-26T17:55:30Z",
-        "service": "internal-dns",
-        "level": "ERROR",
-        "message": "All incoming HTTPS connections rejected: invalid certificate"
+        "timestamp": "2026-03-26T21:40:00Z",
+        "service": "metrics-collector",
+        "level": "FATAL",
+        "message": "c.a.s.dns.ZoneLoader [zone-sync-1] - zone file checksum mismatch after 4.1.0 sync: expected sha256:055d155f, got sha256:0407c687"
       }
     ],
-    "cdn-proxy": [
+    "cache-layer": [
       {
-        "timestamp": "2026-03-26T17:49:00Z",
-        "service": "cdn-proxy",
+        "timestamp": "2026-03-26T21:36:00Z",
+        "service": "cache-layer",
         "level": "ERROR",
-        "message": "TLS handshake failed connecting to internal-dns: certificate expired"
+        "message": "c.a.s.net.ConnectionFactory [conn-pool-9] - java.net.UnknownHostException: cache-layer-db.internal.internal: Name or service not known"
       },
       {
-        "timestamp": "2026-03-26T17:54:00Z",
-        "service": "cdn-proxy",
-        "level": "WARN",
-        "message": "Falling back to cached data - internal-dns unreachable"
+        "timestamp": "2026-03-26T21:39:20Z",
+        "service": "cache-layer",
+        "level": "FATAL",
+        "message": "c.a.s.db.HikariPool [pool-3-housekeeper] - HikariPool-1 - Failed to validate connection: java.net.UnknownHostException: cache-layer-db.internal"
+      },
+      {
+        "timestamp": "2026-03-26T21:42:40Z",
+        "service": "cache-layer",
+        "level": "FATAL",
+        "message": "c.a.s.net.ConnectionFactory [conn-pool-30] - java.net.UnknownHostException: metrics-collector.internal: Name or service not known"
+      }
+    ],
+    "api-gateway": [
+      {
+        "timestamp": "2026-03-26T21:36:00Z",
+        "service": "api-gateway",
+        "level": "ERROR",
+        "message": "c.a.s.net.ConnectionFactory [conn-pool-44] - java.net.UnknownHostException: api-gateway-db.internal.internal: Name or service not known"
+      },
+      {
+        "timestamp": "2026-03-26T21:39:20Z",
+        "service": "api-gateway",
+        "level": "FATAL",
+        "message": "c.a.s.db.HikariPool [pool-3-housekeeper] - HikariPool-1 - Failed to validate connection: java.net.UnknownHostException: api-gateway-db.internal"
+      },
+      {
+        "timestamp": "2026-03-26T21:42:40Z",
+        "service": "api-gateway",
+        "level": "FATAL",
+        "message": "c.a.s.net.ConnectionFactory [conn-pool-16] - java.net.UnknownHostException: metrics-collector.internal: Name or service not known"
+      }
+    ],
+    "message-queue": [
+      {
+        "timestamp": "2026-03-26T21:35:00Z",
+        "service": "message-queue",
+        "level": "INFO",
+        "message": "c.a.s.ml.ModelServer [model-serve-1] - inference latency p99=23ms, model=v4.2, batch_size=32"
       }
     ]
   },
   "metrics": {
-    "internal-dns:tls_errors": [
-      1.0,
-      1.0,
-      1.0,
-      1.0,
-      60.5,
-      60.5,
-      60.5,
-      60.5
+    "metrics-collector:query_failure_rate": [
+      0.7,
+      1.8,
+      4.7,
+      12.6,
+      33.6
     ],
-    "internal-dns:error_rate": [
-      0.7,
-      0.7,
-      0.7,
-      81.1,
-      81.1,
-      81.1
+    "metrics-collector:resolution_latency_ms": [
+      0.4,
+      1.3,
+      4.5,
+      15.3,
+      52.0
     ],
-    "cdn-proxy:error_rate": [
-      0.0,
-      0.0,
-      62.1,
-      62.1,
-      62.1
+    "cache-layer:error_rate": [
+      0.2,
+      0.2,
+      45.5,
+      45.5,
+      45.5
+    ],
+    "api-gateway:error_rate": [
+      0.3,
+      0.3,
+      0.3,
+      46.0,
+      46.0,
+      46.0,
+      46.0
     ],
     "message-queue:cpu": [
-      34.4,
-      31.6,
-      25.0,
-      43.1,
-      36.7,
-      32.4
+      24.8,
+      25.9,
+      23.1,
+      21.3,
+      20.5,
+      23.6
     ],
-    "notification-service:cpu": [
-      32.9,
-      29.1,
-      40.7,
-      52.2,
-      42.0,
-      34.5
+    "email-service:cpu": [
+      32.7,
+      37.6,
+      31.0,
+      28.0,
+      37.5,
+      40.5
     ]
   },
   "dependencies": {
-    "internal-dns": [
-      "internal-dns-db",
-      "internal-dns-store"
+    "metrics-collector": [],
+    "cache-layer": [
+      "cache-layer-db.internal",
+      "metrics-collector"
     ],
-    "cdn-proxy": [
-      "internal-dns",
-      "cdn-proxy-db"
+    "api-gateway": [
+      "api-gateway-db.internal",
+      "metrics-collector"
     ],
     "message-queue": [
-      "internal-dns",
-      "message-queue-db"
+      "message-queue-db.internal",
+      "metrics-collector"
     ],
-    "notification-service": [
-      "notification-service-db"
-    ],
-    "metrics-collector": [
-      "metrics-collector-db"
-    ],
-    "auth-service": [
-      "auth-service-db"
+    "email-service": [
+      "email-service-db.internal",
+      "metrics-collector"
     ]
   },
   "root_cause": {
-    "service": "internal-dns",
-    "description": "TLS certificate expired on internal-dns causing all HTTPS connections to fail",
+    "service": "metrics-collector",
+    "description": "DNS resolution failure on metrics-collector after 4.1.0 deployment corrupted zone file records",
     "keywords": [
-      "tls",
-      "certificate",
-      "expired",
-      "ssl",
-      "https",
-      "cert",
-      "x509"
+      "dns",
+      "resolution",
+      "zone",
+      "corrupted",
+      "SERVFAIL",
+      "NXDOMAIN",
+      "zone file"
     ]
   },
   "valid_remediations": [
     {
-      "action": "restart_service",
-      "service": "internal-dns"
+      "action": "rollback_deploy",
+      "service": "metrics-collector"
     },
     {
-      "action": "update_config",
-      "service": "internal-dns"
+      "action": "restart_service",
+      "service": "metrics-collector"
     }
   ],
   "expected_diagnostics": [
     {
       "action_type": "query_logs",
       "params": {
-        "service": "internal-dns"
+        "service": "metrics-collector"
       }
     },
     {
       "action_type": "check_metrics",
       "params": {
-        "service": "internal-dns"
+        "service": "metrics-collector"
       }
     },
     {
-      "action_type": "query_logs",
+      "action_type": "view_dependencies",
       "params": {
-        "service": "cdn-proxy"
+        "service_name": "cache-layer"
       }
     }
   ],
   "grading_rubric": {
-    "triage_weight": 0.2,
+    "triage_weight": 0.18,
     "diagnostic_weight": 0.26,
-    "root_cause_weight": 0.21,
+    "root_cause_weight": 0.22,
     "remediation_weight": 0.18,
-    "efficiency_weight": 0.1,
+    "efficiency_weight": 0.11,
     "documentation_weight": 0.05
   }
 }

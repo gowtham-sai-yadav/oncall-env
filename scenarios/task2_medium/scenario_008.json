@@ -1,324 +1,332 @@
 {
   "incident_id": "INC-20260326-108",
   "difficulty": "medium",
-  "description": "SEV2 incident: DNS Resolution Failure affecting metrics-collector. Cascading impact on cache-layer, api-gateway.",
+  "description": "SEV2 incident: GC Pause Storm affecting order-service. Cascading impact on inventory-service, payment-api.",
   "expected_severity": "SEV2",
   "initial_alerts": [
     {
       "alert_id": "alert-10801",
       "severity": "critical",
-      "service": "metrics-collector",
-      "message": "DNS query failure rate at 52.1% - resolution failing",
-      "timestamp": "2026-03-26T21:36:05Z",
+      "service": "order-service",
+      "message": "P99 latency spiked to 7727ms - GC pauses detected",
+      "timestamp": "2026-03-26T19:06:05Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-10802",
-      "severity": "critical",
-      "service": "cache-layer",
-      "message": "Service connectivity lost - DNS resolution failed",
-      "timestamp": "2026-03-26T21:37:10Z",
+      "severity": "warning",
+      "service": "order-service",
+      "message": "GC pause time exceeding 2s per cycle",
+      "timestamp": "2026-03-26T19:07:10Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-10803",
       "severity": "warning",
-      "service": "metrics-collector",
-      "message": "DNS resolution latency increased to 3697ms",
-      "timestamp": "2026-03-26T21:38:15Z",
+      "service": "inventory-service",
+      "message": "Intermittent timeouts from order-service",
+      "timestamp": "2026-03-26T19:08:15Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-10804",
       "severity": "critical",
-      "service": "cache-layer",
-      "message": "cache-layer error rate spiking - requests failing",
-      "timestamp": "2026-03-26T21:36:58Z",
+      "service": "inventory-service",
+      "message": "inventory-service error rate spiking - requests failing",
+      "timestamp": "2026-03-26T19:06:13Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-10805",
       "severity": "critical",
-      "service": "api-gateway",
-      "message": "api-gateway error rate spiking - requests failing",
-      "timestamp": "2026-03-26T21:36:29Z",
+      "service": "payment-api",
+      "message": "payment-api error rate spiking - requests failing",
+      "timestamp": "2026-03-26T19:06:07Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-10806",
       "severity": "info",
-      "service": "message-queue",
-      "message": "Elasticsearch reindex started - expected temporary latency increase",
-      "timestamp": "2026-03-26T21:34:02Z",
+      "service": "service-mesh",
+      "message": "Automated backup completed successfully",
+      "timestamp": "2026-03-26T19:04:48Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-10807",
-      "severity": "warning",
-      "service": "email-service",
-      "message": "Memory usage at 68% - within normal range but trending up",
-      "timestamp": "2026-03-26T21:32:39Z",
+      "severity": "info",
+      "service": "service-mesh",
+      "message": "New dashboard version deployed - no action required",
+      "timestamp": "2026-03-26T19:58:16Z",
       "acknowledged": false,
       "silenced": false
     }
   ],
   "services": [
     {
-      "name": "metrics-collector",
+      "name": "order-service",
+      "status": "degraded",
+      "latency_ms": 7905,
+      "error_rate": 68.6,
+      "cpu_percent": 88,
+      "memory_percent": 68,
+      "version": "3.1.2"
+    },
+    {
+      "name": "inventory-service",
       "status": "down",
       "latency_ms": 0,
-      "error_rate": 95.8,
-      "cpu_percent": 40,
-      "memory_percent": 48,
+      "error_rate": 75.6,
+      "cpu_percent": 53,
+      "memory_percent": 67,
       "version": "4.1.0"
     },
     {
+      "name": "payment-api",
+      "status": "degraded",
+      "latency_ms": 644,
+      "error_rate": 25.1,
+      "cpu_percent": 80,
+      "memory_percent": 36,
+      "version": "2.4.1"
+    },
+    {
       "name": "cache-layer",
-      "status": "degraded",
-      "latency_ms": 1886,
-      "error_rate": 10.3,
-      "cpu_percent": 44,
-      "memory_percent": 47,
-      "version": "1.0.0"
-    },
-    {
-      "name": "api-gateway",
-      "status": "degraded",
-      "latency_ms": 4574,
-      "error_rate": 17.3,
-      "cpu_percent": 25,
-      "memory_percent": 51,
-      "version": "2.1.1"
-    },
-    {
-      "name": "message-queue",
       "status": "healthy",
-      "latency_ms": 34,
-      "error_rate": 0.4,
-      "cpu_percent": 32,
-      "memory_percent": 29,
-      "version": "4.2.0"
-    },
-    {
-      "name": "email-service",
-      "status": "healthy",
-      "latency_ms": 86,
-      "error_rate": 0.3,
+      "latency_ms": 75,
+      "error_rate": 0.7,
       "cpu_percent": 22,
-      "memory_percent": 34,
+      "memory_percent": 53,
       "version": "2.0.0"
+    },
+    {
+      "name": "logging-pipeline",
+      "status": "healthy",
+      "latency_ms": 37,
+      "error_rate": 0.4,
+      "cpu_percent": 17,
+      "memory_percent": 44,
+      "version": "1.1.0"
+    },
+    {
+      "name": "service-mesh",
+      "status": "healthy",
+      "latency_ms": 154,
+      "error_rate": 0.9,
+      "cpu_percent": 15,
+      "memory_percent": 37,
+      "version": "2.1.1"
     }
   ],
   "recent_deployments": [
     {
-      "service": "metrics-collector",
-      "version": "4.1.0",
-      "timestamp": "2026-03-26T20:53:00Z",
+      "service": "order-service",
+      "version": "3.1.2",
+      "timestamp": "2026-03-26T18:30:00Z",
       "deployer": "release-manager"
-    },
-    {
-      "service": "email-service",
-      "version": "2.0.0",
-      "timestamp": "2026-03-26T18:55:00Z",
-      "deployer": "dev-team"
     }
   ],
   "logs": {
-    "metrics-collector": [
+    "order-service": [
       {
-        "timestamp": "2026-03-26T21:35:00Z",
-        "service": "metrics-collector",
+        "timestamp": "2026-03-26T19:05:00Z",
+        "service": "order-service",
+        "level": "WARN",
+        "message": "GC overhead: pause=1617ms heap=6684M/7250M eden=0B survivor=65M old=3851M"
+      },
+      {
+        "timestamp": "2026-03-26T19:07:00Z",
+        "service": "order-service",
         "level": "ERROR",
-        "message": "SERVFAIL for cache-layer.internal: zone file contains invalid A record"
+        "message": "c.a.s.gc.Monitor [gc-monitor-1] - Full GC #128: 3678ms pause, freed 97M, heap 10868M/13123M"
       },
       {
-        "timestamp": "2026-03-26T21:36:40Z",
-        "service": "metrics-collector",
-        "level": "ERROR",
-        "message": "NXDOMAIN for cache-layer-db.internal: record missing from 4.1.0 zone file"
+        "timestamp": "2026-03-26T19:09:00Z",
+        "service": "order-service",
+        "level": "WARN",
+        "message": "c.a.s.gc.Monitor [gc-monitor-1] - GC overhead 85% in last 60s, effective throughput 12%"
       },
       {
-        "timestamp": "2026-03-26T21:38:20Z",
-        "service": "metrics-collector",
-        "level": "ERROR",
-        "message": "SERVFAIL rate increasing: 69.3% of queries failing"
-      },
-      {
-        "timestamp": "2026-03-26T21:40:00Z",
-        "service": "metrics-collector",
-        "level": "FATAL",
-        "message": "Multiple critical DNS records missing/corrupted after 4.1.0 zone migration"
-      }
-    ],
-    "cache-layer": [
-      {
-        "timestamp": "2026-03-26T21:36:00Z",
-        "service": "cache-layer",
-        "level": "ERROR",
-        "message": "Cannot resolve cache-layer-db.internal.internal - DNS lookup failed"
-      },
-      {
-        "timestamp": "2026-03-26T21:41:00Z",
-        "service": "cache-layer",
-        "level": "FATAL",
-        "message": "Database connection pool empty: all connections failed DNS resolution"
-      }
-    ],
-    "api-gateway": [
-      {
-        "timestamp": "2026-03-26T21:36:00Z",
-        "service": "api-gateway",
-        "level": "ERROR",
-        "message": "Cannot resolve api-gateway-db.internal.internal - DNS lookup failed"
-      },
-      {
-        "timestamp": "2026-03-26T21:39:20Z",
-        "service": "api-gateway",
-        "level": "FATAL",
-        "message": "Database connection pool empty: all connections failed DNS resolution"
-      },
-      {
-        "timestamp": "2026-03-26T21:42:40Z",
-        "service": "api-gateway",
-        "level": "FATAL",
-        "message": "Service degraded: critical dependency unreachable via DNS"
-      }
-    ],
-    "message-queue": [
-      {
-        "timestamp": "2026-03-26T21:35:00Z",
-        "service": "message-queue",
+        "timestamp": "2026-03-26T19:11:00Z",
+        "service": "order-service",
         "level": "INFO",
-        "message": "Model serving normally - no dependency issues"
+        "message": "c.a.s.gc.Monitor [gc-monitor-1] - CMS concurrent-mark: 4538ms, heap 92% occupied"
+      }
+    ],
+    "inventory-service": [
+      {
+        "timestamp": "2026-03-26T19:06:00Z",
+        "service": "inventory-service",
+        "level": "WARN",
+        "message": "c.a.s.client.ServiceClient [http-20] - HTTP 200 from 10.227.108.155:8085 (latency=13566ms) SLOW"
+      },
+      {
+        "timestamp": "2026-03-26T19:11:00Z",
+        "service": "inventory-service",
+        "level": "ERROR",
+        "message": "c.a.s.client.ServiceClient [http-15] - HTTP 504 from 10.227.108.155:8085 (latency=30001ms)"
+      }
+    ],
+    "payment-api": [
+      {
+        "timestamp": "2026-03-26T19:06:00Z",
+        "service": "payment-api",
+        "level": "WARN",
+        "message": "c.a.s.client.ServiceClient [http-24] - HTTP 200 from 10.227.108.155:8085 (latency=13748ms) SLOW"
+      },
+      {
+        "timestamp": "2026-03-26T19:11:00Z",
+        "service": "payment-api",
+        "level": "ERROR",
+        "message": "c.a.s.client.ServiceClient [http-6] - HTTP 504 from 10.227.108.155:8085 (latency=30001ms)"
       }
     ]
   },
   "metrics": {
-    "metrics-collector:query_failure_rate": [
-      0.2,
-      0.5,
-      1.2,
-      2.7,
-      6.2,
-      14.2,
-      32.5
+    "order-service:gc_pause_ms": [
+      1.1,
+      2.2,
+      4.2,
+      8.3,
+      16.4,
+      32.3,
+      63.6
     ],
-    "metrics-collector:resolution_latency_ms": [
+    "order-service:latency_p99": [
+      1.1,
+      2.2,
+      4.7,
+      10.0,
+      21.3,
+      45.1,
+      95.7
+    ],
+    "order-service:memory_percent": [
+      0.0,
+      29.1,
+      48.0,
+      60.4,
+      68.4,
+      73.7,
+      77.1,
+      79.3
+    ],
+    "inventory-service:error_rate": [
+      0.1,
+      0.1,
+      0.1,
+      99.9,
+      99.9,
+      99.9
+    ],
+    "payment-api:error_rate": [
       2.0,
-      4.3,
-      9.5,
-      20.7,
-      45.4,
-      99.6
+      2.0,
+      2.0,
+      2.0,
+      44.6,
+      44.6,
+      44.6,
+      44.6
     ],
-    "cache-layer:error_rate": [
-      1.0,
-      1.0,
-      93.6,
-      93.6,
-      93.6
+    "cache-layer:cpu": [
+      51.4,
+      49.0,
+      39.3,
+      52.6,
+      49.1,
+      40.0
     ],
-    "api-gateway:error_rate": [
-      1.4,
-      1.4,
-      1.4,
-      1.4,
-      55.4,
-      55.4,
-      55.4,
-      55.4
-    ],
-    "message-queue:cpu": [
-      26.9,
-      26.7,
-      20.4,
-      26.2,
-      25.5,
-      22.9
-    ],
-    "email-service:cpu": [
-      45.6,
-      47.0,
-      42.2,
-      48.2,
-      38.7,
-      44.7
+    "logging-pipeline:cpu": [
+      34.7,
+      40.8,
+      52.9,
+      49.4,
+      45.9,
+      52.8
     ]
   },
   "dependencies": {
-    "metrics-collector": [],
+    "order-service": [
+      "order-service-db",
+      "order-service-store"
+    ],
+    "inventory-service": [
+      "order-service",
+      "inventory-service-db"
+    ],
+    "payment-api": [
+      "order-service",
+      "payment-api-db"
+    ],
     "cache-layer": [
-      "cache-layer-db.internal",
-      "metrics-collector"
+      "cache-layer-db"
     ],
-    "api-gateway": [
-      "api-gateway-db.internal",
-      "metrics-collector"
+    "logging-pipeline": [
+      "logging-pipeline-db"
     ],
-    "message-queue": [
-      "message-queue-db.internal",
-      "metrics-collector"
-    ],
-    "email-service": [
-      "email-service-db.internal",
-      "metrics-collector"
+    "service-mesh": [
+      "service-mesh-db"
     ]
   },
   "root_cause": {
-    "service": "metrics-collector",
-    "description": "DNS resolution failure on metrics-collector after 4.1.0 deployment corrupted zone file records",
+    "service": "order-service",
+    "description": "GC pause storm in order-service 3.1.2 due to excessive object allocation in batch processor",
     "keywords": [
-      "dns",
-      "resolution",
-      "zone",
-      "corrupted",
-      "SERVFAIL",
-      "NXDOMAIN",
-      "zone file"
+      "gc",
+      "garbage collection",
+      "pause",
+      "stop-the-world",
+      "allocation",
+      "heap"
     ]
   },
   "valid_remediations": [
     {
-      "action": "rollback_deploy",
-      "service": "metrics-collector"
+      "action": "restart_service",
+      "service": "order-service"
     },
     {
-      "action": "restart_service",
-      "service": "metrics-collector"
+      "action": "rollback_deploy",
+      "service": "order-service"
+    },
+    {
+      "action": "scale_service",
+      "service": "order-service"
     }
   ],
   "expected_diagnostics": [
     {
       "action_type": "query_logs",
       "params": {
-        "service": "metrics-collector"
+        "service": "order-service"
       }
     },
     {
       "action_type": "check_metrics",
       "params": {
-        "service": "metrics-collector"
+        "service": "order-service"
       }
     },
     {
-      "action_type": "view_dependencies",
+      "action_type": "query_logs",
       "params": {
-        "service_name": "cache-layer"
+        "service": "inventory-service"
       }
     }
   ],
   "grading_rubric": {
-    "triage_weight": 0.21,
-    "diagnostic_weight": 0.24,
-    "root_cause_weight": 0.19,
-    "remediation_weight": 0.2,
-    "efficiency_weight": 0.13,
-    "documentation_weight": 0.03
+    "triage_weight": 0.22,
+    "diagnostic_weight": 0.22,
+    "root_cause_weight": 0.18,
+    "remediation_weight": 0.21,
+    "efficiency_weight": 0.11,
+    "documentation_weight": 0.06
   }
 }

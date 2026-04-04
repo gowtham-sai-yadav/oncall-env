@@ -1,330 +1,409 @@
 {
   "incident_id": "INC-20260326-211",
   "difficulty": "hard",
-  "description": "SEV1 incident: Bad Config Rollout affecting payment-api. Cascading impact on order-service, config-server. Multiple concurrent events make diagnosis challenging.",
+  "description": "SEV1 incident: Load Balancer Misconfiguration affecting logging-pipeline. Cascading impact on internal-dns, payment-api, email-service. Multiple concurrent events make diagnosis challenging.",
   "expected_severity": "SEV1",
   "initial_alerts": [
     {
       "alert_id": "alert-21101",
       "severity": "critical",
-      "service": "payment-api",
-      "message": "Error rate at 68.1% after config deployment",
-      "timestamp": "2026-03-26T10:22:05Z",
+      "service": "logging-pipeline",
+      "message": "Uneven traffic distribution - single backend receiving 100% traffic",
+      "timestamp": "2026-03-26T10:29:05Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-21102",
-      "severity": "warning",
-      "service": "payment-api",
-      "message": "Config refresh failed - serving with invalid config",
-      "timestamp": "2026-03-26T10:23:10Z",
+      "severity": "critical",
+      "service": "internal-dns",
+      "message": "Service overloaded - receiving all routed traffic",
+      "timestamp": "2026-03-26T10:30:10Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-21103",
       "severity": "warning",
-      "service": "order-service",
-      "message": "Upstream dependency payment-api returning errors",
-      "timestamp": "2026-03-26T10:24:15Z",
+      "service": "logging-pipeline",
+      "message": "Health check configuration mismatch detected",
+      "timestamp": "2026-03-26T10:31:15Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-21104",
       "severity": "critical",
-      "service": "order-service",
-      "message": "order-service error rate spiking - requests failing",
-      "timestamp": "2026-03-26T10:22:56Z",
+      "service": "internal-dns",
+      "message": "internal-dns error rate spiking - requests failing",
+      "timestamp": "2026-03-26T10:29:03Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-21105",
       "severity": "critical",
-      "service": "config-server",
-      "message": "config-server error rate spiking - requests failing",
-      "timestamp": "2026-03-26T10:22:58Z",
+      "service": "payment-api",
+      "message": "payment-api error rate spiking - requests failing",
+      "timestamp": "2026-03-26T10:29:34Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-21106",
       "severity": "warning",
-      "service": "api-gateway",
+      "service": "metrics-collector",
       "message": "Log volume increased 20% - review retention policy",
-      "timestamp": "2026-03-26T10:11:04Z",
+      "timestamp": "2026-03-26T10:26:08Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-21107",
       "severity": "info",
-      "service": "api-gateway",
-      "message": "New dashboard version deployed - no action required",
-      "timestamp": "2026-03-26T10:18:14Z",
+      "service": "metrics-collector",
+      "message": "SSL certificate renewal scheduled for next week",
+      "timestamp": "2026-03-26T10:23:31Z",
       "acknowledged": false,
       "silenced": false
     }
   ],
   "services": [
     {
+      "name": "logging-pipeline",
+      "status": "degraded",
+      "latency_ms": 1580,
+      "error_rate": 24.7,
+      "cpu_percent": 86,
+      "memory_percent": 75,
+      "version": "1.0.0"
+    },
+    {
+      "name": "internal-dns",
+      "status": "degraded",
+      "latency_ms": 2109,
+      "error_rate": 40.2,
+      "cpu_percent": 54,
+      "memory_percent": 49,
+      "version": "4.2.0"
+    },
+    {
       "name": "payment-api",
       "status": "degraded",
-      "latency_ms": 1027,
-      "error_rate": 26.8,
-      "cpu_percent": 43,
-      "memory_percent": 93,
-      "version": "3.1.2"
+      "latency_ms": 4782,
+      "error_rate": 13.8,
+      "cpu_percent": 71,
+      "memory_percent": 32,
+      "version": "1.5.0"
     },
     {
-      "name": "order-service",
+      "name": "email-service",
       "status": "degraded",
-      "latency_ms": 3180,
-      "error_rate": 32.9,
-      "cpu_percent": 43,
-      "memory_percent": 31,
-      "version": "2.1.1"
+      "latency_ms": 3582,
+      "error_rate": 45.6,
+      "cpu_percent": 24,
+      "memory_percent": 37,
+      "version": "5.0.3"
     },
     {
-      "name": "config-server",
-      "status": "degraded",
-      "latency_ms": 2457,
-      "error_rate": 65.6,
-      "cpu_percent": 21,
-      "memory_percent": 33,
-      "version": "4.1.0"
-    },
-    {
-      "name": "message-queue",
+      "name": "session-store",
       "status": "healthy",
-      "latency_ms": 47,
+      "latency_ms": 165,
       "error_rate": 0.7,
-      "cpu_percent": 16,
-      "memory_percent": 23,
-      "version": "3.0.0"
+      "cpu_percent": 33,
+      "memory_percent": 35,
+      "version": "1.0.0"
     },
     {
-      "name": "auth-service",
+      "name": "metrics-collector",
       "status": "healthy",
-      "latency_ms": 76,
-      "error_rate": 0.6,
-      "cpu_percent": 15,
-      "memory_percent": 18,
-      "version": "4.1.0"
+      "latency_ms": 197,
+      "error_rate": 1.0,
+      "cpu_percent": 41,
+      "memory_percent": 38,
+      "version": "2.3.0"
     },
     {
-      "name": "api-gateway",
+      "name": "user-service",
       "status": "healthy",
-      "latency_ms": 94,
-      "error_rate": 0.5,
-      "cpu_percent": 11,
-      "memory_percent": 50,
-      "version": "2.0.0"
+      "latency_ms": 192,
+      "error_rate": 0.8,
+      "cpu_percent": 9,
+      "memory_percent": 20,
+      "version": "3.2.0"
     }
   ],
   "recent_deployments": [
     {
-      "service": "payment-api",
-      "version": "3.1.2",
-      "timestamp": "2026-03-26T09:45:00Z",
-      "deployer": "platform-team"
+      "service": "logging-pipeline",
+      "version": "1.0.0",
+      "timestamp": "2026-03-26T09:19:00Z",
+      "deployer": "search-team"
     },
     {
-      "service": "auth-service",
-      "version": "4.1.0",
-      "timestamp": "2026-03-26T09:54:00Z",
-      "deployer": "ops-team"
+      "service": "metrics-collector",
+      "version": "2.3.0",
+      "timestamp": "2026-03-26T08:12:00Z",
+      "deployer": "ml-team"
+    },
+    {
+      "service": "session-store",
+      "version": "1.0.0",
+      "timestamp": "2026-03-26T07:11:00Z",
+      "deployer": "dev-team"
     }
   ],
   "logs": {
+    "logging-pipeline": [
+      {
+        "timestamp": "2026-03-26T10:28:00Z",
+        "service": "logging-pipeline",
+        "level": "ERROR",
+        "message": "c.a.s.lb.HealthChecker [hc-monitor-1] - backend 10.21.232.235:8096 health check failed: HTTP 404 (expected 200)"
+      },
+      {
+        "timestamp": "2026-03-26T10:29:25Z",
+        "service": "logging-pipeline",
+        "level": "WARN",
+        "message": "c.a.s.lb.HealthChecker [hc-monitor-1] - backend 10.60.108.183:8096 health check failed: HTTP 500 (expected 200)"
+      },
+      {
+        "timestamp": "2026-03-26T10:30:50Z",
+        "service": "logging-pipeline",
+        "level": "ERROR",
+        "message": "c.a.s.lb.Router [routing-47] - all backends unhealthy for pool 'logging-pipeline-pool', routing to last-known-good 10.81.230.195:8096"
+      },
+      {
+        "timestamp": "2026-03-26T10:32:15Z",
+        "service": "logging-pipeline",
+        "level": "WARN",
+        "message": "c.a.s.lb.ConfigSync [config-watch-1] - pool 'logging-pipeline-pool' config version 1.0.0: health_check_path=/healthz, but backends serve /health"
+      }
+    ],
+    "internal-dns": [
+      {
+        "timestamp": "2026-03-26T10:29:00Z",
+        "service": "internal-dns",
+        "level": "ERROR",
+        "message": "c.a.s.handler.RequestHandler [http-nio-8080-exec-38] - request queue depth 94898: accepting requests but response time degraded (16263ms)"
+      },
+      {
+        "timestamp": "2026-03-26T10:34:00Z",
+        "service": "internal-dns",
+        "level": "WARN",
+        "message": "c.a.s.handler.RequestHandler [http-nio-8080-exec-14] - thread pool 28/28 active, 136 requests queued"
+      }
+    ],
     "payment-api": [
       {
-        "timestamp": "2026-03-26T10:21:00Z",
+        "timestamp": "2026-03-26T10:29:00Z",
         "service": "payment-api",
         "level": "ERROR",
-        "message": "Database connection failed: invalid connection string in config v3.1.2"
+        "message": "c.a.s.handler.RequestHandler [http-nio-8080-exec-32] - request queue depth 89749: accepting requests but response time degraded (2232ms)"
       },
       {
-        "timestamp": "2026-03-26T10:22:40Z",
-        "service": "payment-api",
-        "level": "ERROR",
-        "message": "Config validation skipped in deployment pipeline"
-      },
-      {
-        "timestamp": "2026-03-26T10:24:20Z",
-        "service": "payment-api",
-        "level": "FATAL",
-        "message": "Cannot initialize connection pool: malformed DSN"
-      },
-      {
-        "timestamp": "2026-03-26T10:26:00Z",
+        "timestamp": "2026-03-26T10:34:00Z",
         "service": "payment-api",
         "level": "WARN",
-        "message": "Rolling back to cached config from previous version"
+        "message": "c.a.s.handler.RequestHandler [http-nio-8080-exec-18] - thread pool 96/96 active, 127 requests queued"
       }
     ],
-    "order-service": [
+    "email-service": [
       {
-        "timestamp": "2026-03-26T10:22:00Z",
-        "service": "order-service",
+        "timestamp": "2026-03-26T10:29:00Z",
+        "service": "email-service",
         "level": "ERROR",
-        "message": "payment-api returning 500 for all requests"
+        "message": "c.a.s.handler.RequestHandler [http-nio-8080-exec-1] - request queue depth 97719: accepting requests but response time degraded (11323ms)"
       },
       {
-        "timestamp": "2026-03-26T10:27:00Z",
-        "service": "order-service",
+        "timestamp": "2026-03-26T10:34:00Z",
+        "service": "email-service",
         "level": "WARN",
-        "message": "Dependency payment-api health check failing"
+        "message": "c.a.s.handler.RequestHandler [http-nio-8080-exec-43] - thread pool 58/58 active, 191 requests queued"
       }
     ],
-    "config-server": [
+    "metrics-collector": [
       {
-        "timestamp": "2026-03-26T10:22:00Z",
-        "service": "config-server",
-        "level": "ERROR",
-        "message": "payment-api returning 500 for all requests"
-      },
-      {
-        "timestamp": "2026-03-26T10:27:00Z",
-        "service": "config-server",
-        "level": "WARN",
-        "message": "Dependency payment-api health check failing"
-      }
-    ],
-    "message-queue": [
-      {
-        "timestamp": "2026-03-26T10:21:00Z",
-        "service": "message-queue",
+        "timestamp": "2026-03-26T10:28:00Z",
+        "service": "metrics-collector",
         "level": "INFO",
-        "message": "Healthy - serving requests normally"
+        "message": "c.a.s.ml.ModelServer [model-serve-1] - inference latency p99=23ms, model=v4.2, batch_size=32"
+      }
+    ],
+    "user-service": [
+      {
+        "timestamp": "2026-03-26T10:28:00Z",
+        "service": "user-service",
+        "level": "INFO",
+        "message": "c.a.s.cache.Stats [cache-stats-1] - hit_ratio=90% entries=24531 evictions=12/s"
       }
     ]
   },
   "metrics": {
+    "logging-pipeline:backend_health_pct": [
+      0.7,
+      0.7,
+      0.7,
+      86.9,
+      86.9,
+      86.9
+    ],
+    "logging-pipeline:error_rate": [
+      0.8,
+      0.8,
+      0.8,
+      42.7,
+      42.7,
+      42.7
+    ],
+    "internal-dns:cpu_percent": [
+      0.0,
+      42.4,
+      62.4,
+      71.8,
+      76.3
+    ],
+    "internal-dns:error_rate": [
+      0.9,
+      2.5,
+      7.2,
+      20.7,
+      59.1
+    ],
+    "payment-api:cpu_percent": [
+      0.0,
+      49.1,
+      72.4,
+      83.3,
+      88.5
+    ],
     "payment-api:error_rate": [
-      1.4,
-      1.4,
-      1.4,
-      52.3,
-      52.3,
-      52.3,
-      52.3
+      0.6,
+      1.9,
+      5.6,
+      16.3,
+      47.9
     ],
-    "payment-api:db_connections": [
-      1.5,
-      1.5,
-      1.5,
-      66.8,
-      66.8,
-      66.8
+    "email-service:cpu_percent": [
+      0.0,
+      38.3,
+      61.5,
+      75.6,
+      84.1,
+      89.3,
+      92.4
     ],
-    "order-service:error_rate": [
+    "email-service:error_rate": [
+      0.9,
       1.8,
-      1.8,
-      1.8,
-      78.9,
-      78.9,
-      78.9,
-      78.9
+      3.4,
+      6.7,
+      13.1,
+      25.7,
+      50.2
     ],
-    "config-server:error_rate": [
-      1.6,
-      1.6,
-      1.6,
-      78.0,
-      78.0,
-      78.0
+    "session-store:cpu": [
+      27.0,
+      26.2,
+      25.4,
+      30.7,
+      26.5,
+      16.2
     ],
-    "message-queue:cpu": [
-      24.2,
-      23.4,
-      19.5,
-      22.8,
-      26.9,
-      20.8
-    ],
-    "auth-service:cpu": [
-      45.9,
-      45.6,
-      37.9,
-      50.8,
-      41.5,
-      37.9
+    "metrics-collector:cpu": [
+      48.1,
+      47.5,
+      50.3,
+      52.9,
+      52.8,
+      51.7
     ]
   },
   "dependencies": {
+    "logging-pipeline": [
+      "logging-pipeline-db",
+      "logging-pipeline-store"
+    ],
+    "internal-dns": [
+      "logging-pipeline",
+      "internal-dns-db"
+    ],
     "payment-api": [
-      "payment-api-db",
-      "payment-api-store"
+      "logging-pipeline",
+      "payment-api-db"
     ],
-    "order-service": [
-      "payment-api",
-      "order-service-db"
+    "email-service": [
+      "logging-pipeline",
+      "email-service-db"
     ],
-    "config-server": [
-      "payment-api",
-      "config-server-db"
+    "session-store": [
+      "session-store-db"
     ],
-    "message-queue": [
-      "message-queue-db"
+    "metrics-collector": [
+      "metrics-collector-db"
     ],
-    "auth-service": [
-      "auth-service-db"
-    ],
-    "api-gateway": [
-      "api-gateway-db"
+    "user-service": [
+      "user-service-db"
     ]
   },
   "root_cause": {
-    "service": "payment-api",
-    "description": "Bad configuration rollout to payment-api in 3.1.2 - invalid database connection string causing all queries to fail",
+    "service": "logging-pipeline",
+    "description": "Load balancer misconfiguration on logging-pipeline routing all traffic to single unhealthy backend after 1.0.0 config change",
     "keywords": [
+      "load balancer",
+      "routing",
+      "misconfiguration",
       "config",
-      "configuration",
-      "rollout",
-      "invalid",
-      "connection string",
-      "misconfigured"
+      "backend",
+      "traffic"
     ]
   },
   "valid_remediations": [
     {
-      "action": "rollback_deploy",
-      "service": "payment-api"
+      "action": "update_config",
+      "service": "logging-pipeline"
     },
     {
-      "action": "update_config",
-      "service": "payment-api"
+      "action": "rollback_deploy",
+      "service": "logging-pipeline"
+    },
+    {
+      "action": "restart_service",
+      "service": "logging-pipeline"
     }
   ],
   "expected_diagnostics": [
     {
       "action_type": "query_logs",
       "params": {
-        "service": "payment-api"
+        "service": "logging-pipeline"
       }
     },
     {
       "action_type": "check_metrics",
       "params": {
-        "service": "payment-api"
+        "service": "logging-pipeline"
+      }
+    },
+    {
+      "action_type": "view_dependencies",
+      "params": {
+        "service_name": "internal-dns"
       }
     },
     {
       "action_type": "query_logs",
       "params": {
-        "service": "order-service"
+        "service": "internal-dns"
       }
     }
   ],
   "grading_rubric": {
-    "triage_weight": 0.12,
-    "diagnostic_weight": 0.26,
+    "triage_weight": 0.07,
+    "diagnostic_weight": 0.23,
     "root_cause_weight": 0.31,
-    "remediation_weight": 0.19,
-    "efficiency_weight": 0.09,
-    "documentation_weight": 0.03
+    "remediation_weight": 0.2,
+    "efficiency_weight": 0.11,
+    "documentation_weight": 0.08
   }
 }

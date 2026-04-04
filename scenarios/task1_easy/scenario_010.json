@@ -1,258 +1,252 @@
 {
   "incident_id": "INC-20260326-010",
   "difficulty": "easy",
-  "description": "SEV3 incident: Load Balancer Misconfiguration affecting cdn-proxy. Cascading impact on service-mesh.",
+  "description": "SEV3 incident: TLS Certificate Expiry affecting billing-service. Cascading impact on analytics-service.",
   "expected_severity": "SEV3",
   "initial_alerts": [
     {
       "alert_id": "alert-1001",
       "severity": "critical",
-      "service": "cdn-proxy",
-      "message": "Uneven traffic distribution - single backend receiving 100% traffic",
-      "timestamp": "2026-03-26T12:16:05Z",
+      "service": "billing-service",
+      "message": "TLS certificate expired - all HTTPS connections failing",
+      "timestamp": "2026-03-26T18:12:05Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-1002",
       "severity": "critical",
-      "service": "service-mesh",
-      "message": "Service overloaded - receiving all routed traffic",
-      "timestamp": "2026-03-26T12:17:10Z",
+      "service": "analytics-service",
+      "message": "Connection refused: TLS handshake failure with billing-service",
+      "timestamp": "2026-03-26T18:13:10Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-1003",
       "severity": "warning",
-      "service": "cdn-proxy",
-      "message": "Health check configuration mismatch detected",
-      "timestamp": "2026-03-26T12:18:15Z",
+      "service": "billing-service",
+      "message": "Certificate validity: EXPIRED since 2026-03-26T16:00:00Z",
+      "timestamp": "2026-03-26T18:14:15Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-1004",
       "severity": "critical",
-      "service": "service-mesh",
-      "message": "service-mesh error rate spiking - requests failing",
-      "timestamp": "2026-03-26T12:16:02Z",
+      "service": "analytics-service",
+      "message": "analytics-service error rate spiking - requests failing",
+      "timestamp": "2026-03-26T18:12:56Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-1005",
+      "severity": "warning",
+      "service": "internal-dns",
+      "message": "CPU usage at 65% - approaching threshold",
+      "timestamp": "2026-03-26T18:08:38Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-1006",
       "severity": "info",
-      "service": "analytics-service",
+      "service": "message-queue",
       "message": "Canary deployment proceeding as expected",
-      "timestamp": "2026-03-26T12:11:12Z",
+      "timestamp": "2026-03-26T18:07:54Z",
       "acknowledged": false,
       "silenced": false
     }
   ],
   "services": [
     {
-      "name": "cdn-proxy",
+      "name": "billing-service",
       "status": "down",
       "latency_ms": 0,
-      "error_rate": 86.2,
-      "cpu_percent": 78,
-      "memory_percent": 40,
-      "version": "1.0.0"
-    },
-    {
-      "name": "service-mesh",
-      "status": "degraded",
-      "latency_ms": 4717,
-      "error_rate": 28.3,
-      "cpu_percent": 39,
-      "memory_percent": 30,
-      "version": "4.1.0"
-    },
-    {
-      "name": "cache-layer",
-      "status": "healthy",
-      "latency_ms": 29,
-      "error_rate": 0.2,
-      "cpu_percent": 19,
-      "memory_percent": 22,
-      "version": "4.1.0"
+      "error_rate": 83.6,
+      "cpu_percent": 75,
+      "memory_percent": 64,
+      "version": "2.0.0"
     },
     {
       "name": "analytics-service",
+      "status": "degraded",
+      "latency_ms": 2978,
+      "error_rate": 58.9,
+      "cpu_percent": 20,
+      "memory_percent": 46,
+      "version": "1.2.3"
+    },
+    {
+      "name": "message-queue",
       "status": "healthy",
-      "latency_ms": 23,
-      "error_rate": 0.2,
-      "cpu_percent": 46,
-      "memory_percent": 53,
-      "version": "2.3.0"
+      "latency_ms": 109,
+      "error_rate": 0.9,
+      "cpu_percent": 6,
+      "memory_percent": 26,
+      "version": "3.1.2"
+    },
+    {
+      "name": "internal-dns",
+      "status": "healthy",
+      "latency_ms": 54,
+      "error_rate": 0.9,
+      "cpu_percent": 23,
+      "memory_percent": 46,
+      "version": "3.2.0"
     }
   ],
   "recent_deployments": [
     {
-      "service": "cdn-proxy",
-      "version": "1.0.0",
-      "timestamp": "2026-03-26T11:02:00Z",
-      "deployer": "infra-team"
+      "service": "billing-service",
+      "version": "2.0.0",
+      "timestamp": "2026-03-26T17:09:00Z",
+      "deployer": "dev-team"
     }
   ],
   "logs": {
-    "cdn-proxy": [
+    "billing-service": [
       {
-        "timestamp": "2026-03-26T12:15:00Z",
-        "service": "cdn-proxy",
+        "timestamp": "2026-03-26T18:11:00Z",
+        "service": "billing-service",
         "level": "ERROR",
-        "message": "Backend pool misconfigured: only 1 of 5 backends active"
+        "message": "c.a.s.tls.CertValidator [tls-handshake-15] - peer certificate rejected: notAfter=2026-03-26T16:00:00Z (expired 25 hours ago)"
       },
       {
-        "timestamp": "2026-03-26T12:17:00Z",
-        "service": "cdn-proxy",
-        "level": "WARN",
-        "message": "Health check endpoint changed in 1.0.0 but LB config not updated"
-      },
-      {
-        "timestamp": "2026-03-26T12:19:00Z",
-        "service": "cdn-proxy",
+        "timestamp": "2026-03-26T18:13:00Z",
+        "service": "billing-service",
         "level": "ERROR",
-        "message": "All traffic routed to service-mesh: other backends marked unhealthy"
+        "message": "c.a.s.tls.CertValidator [tls-handshake-8] - CERTIFICATE_VERIFY_FAILED: unable to get local issuer certificate (depth=1, CN=*.billing-service.internal)"
       },
       {
-        "timestamp": "2026-03-26T12:21:00Z",
-        "service": "cdn-proxy",
+        "timestamp": "2026-03-26T18:15:00Z",
+        "service": "billing-service",
         "level": "WARN",
-        "message": "Backend service-mesh reporting 503: overloaded from traffic spike"
+        "message": "c.a.s.tls.AutoRenew [cert-renew-1] - ACME challenge failed: timeout connecting to ca.internal:443 after 30000ms"
+      },
+      {
+        "timestamp": "2026-03-26T18:17:00Z",
+        "service": "billing-service",
+        "level": "ERROR",
+        "message": "c.a.s.tls.CertValidator [tls-handshake-24] - javax.net.ssl.SSLHandshakeException: PKIX path validation failed: java.security.cert.CertPathValidatorException: validity check failed"
       }
     ],
-    "service-mesh": [
+    "analytics-service": [
       {
-        "timestamp": "2026-03-26T12:16:00Z",
-        "service": "service-mesh",
+        "timestamp": "2026-03-26T18:12:00Z",
+        "service": "analytics-service",
         "level": "ERROR",
-        "message": "Request rate 10x normal - possible routing issue"
+        "message": "c.a.s.client.ServiceClient [http-8] - javax.net.ssl.SSLHandshakeException connecting to 10.220.128.60:8100: peer not authenticated"
       },
       {
-        "timestamp": "2026-03-26T12:21:00Z",
-        "service": "service-mesh",
+        "timestamp": "2026-03-26T18:17:00Z",
+        "service": "analytics-service",
         "level": "WARN",
-        "message": "Thread pool exhausted from unexpected traffic volume"
+        "message": "c.a.s.client.ServiceClient [http-24] - TLS handshake failed to 10.220.128.60:8100, falling back to cached response (age=38648s)"
       }
     ]
   },
   "metrics": {
-    "cdn-proxy:backend_health_pct": [
-      1.0,
-      1.0,
-      78.5,
-      78.5,
-      78.5
-    ],
-    "cdn-proxy:error_rate": [
-      0.4,
-      0.4,
-      0.4,
-      94.5,
-      94.5,
-      94.5
-    ],
-    "service-mesh:cpu_percent": [
-      0.0,
-      44.7,
-      65.8,
+    "billing-service:tls_errors": [
+      0.1,
+      0.1,
+      0.1,
       75.7,
-      80.4
+      75.7,
+      75.7
     ],
-    "service-mesh:error_rate": [
-      1.8,
-      4.5,
-      11.3,
-      28.7,
-      72.6
+    "billing-service:error_rate": [
+      0.5,
+      0.5,
+      71.9,
+      71.9,
+      71.9
     ],
-    "cache-layer:cpu": [
-      39.3,
-      36.8,
-      39.2,
-      40.8,
-      39.0,
-      47.5
+    "analytics-service:error_rate": [
+      0.2,
+      0.2,
+      0.2,
+      79.4,
+      79.4,
+      79.4
     ],
-    "analytics-service:cpu": [
-      19.7,
-      28.0,
-      25.6,
-      20.8,
-      20.8,
-      18.2
+    "message-queue:cpu": [
+      35.1,
+      44.9,
+      43.1,
+      45.3,
+      42.1,
+      43.2
+    ],
+    "internal-dns:cpu": [
+      42.3,
+      36.1,
+      50.5,
+      27.4,
+      46.2,
+      43.3
     ]
   },
   "dependencies": {
-    "cdn-proxy": [
-      "cdn-proxy-db",
-      "cdn-proxy-store"
-    ],
-    "service-mesh": [
-      "cdn-proxy",
-      "service-mesh-db"
-    ],
-    "cache-layer": [
-      "cache-layer-db"
+    "billing-service": [
+      "billing-service-db",
+      "billing-service-store"
     ],
     "analytics-service": [
+      "billing-service",
       "analytics-service-db"
+    ],
+    "message-queue": [
+      "message-queue-db"
+    ],
+    "internal-dns": [
+      "internal-dns-db"
     ]
   },
   "root_cause": {
-    "service": "cdn-proxy",
-    "description": "Load balancer misconfiguration on cdn-proxy routing all traffic to single unhealthy backend after 1.0.0 config change",
+    "service": "billing-service",
+    "description": "TLS certificate expired on billing-service causing all HTTPS connections to fail",
     "keywords": [
-      "load balancer",
-      "routing",
-      "misconfiguration",
-      "config",
-      "backend",
-      "traffic"
+      "tls",
+      "certificate",
+      "expired",
+      "ssl",
+      "https",
+      "cert",
+      "x509"
     ]
   },
   "valid_remediations": [
     {
-      "action": "update_config",
-      "service": "cdn-proxy"
-    },
-    {
-      "action": "rollback_deploy",
-      "service": "cdn-proxy"
-    },
-    {
       "action": "restart_service",
-      "service": "cdn-proxy"
+      "service": "billing-service"
+    },
+    {
+      "action": "update_config",
+      "service": "billing-service"
     }
   ],
   "expected_diagnostics": [
     {
       "action_type": "query_logs",
       "params": {
-        "service": "cdn-proxy"
+        "service": "billing-service"
       }
     },
     {
       "action_type": "check_metrics",
       "params": {
-        "service": "cdn-proxy"
-      }
-    },
-    {
-      "action_type": "view_dependencies",
-      "params": {
-        "service_name": "service-mesh"
+        "service": "billing-service"
       }
     }
   ],
   "grading_rubric": {
-    "triage_weight": 0.27,
-    "diagnostic_weight": 0.21,
-    "root_cause_weight": 0.16,
-    "remediation_weight": 0.15,
-    "efficiency_weight": 0.09,
-    "documentation_weight": 0.12
+    "triage_weight": 0.32,
+    "diagnostic_weight": 0.19,
+    "root_cause_weight": 0.18,
+    "remediation_weight": 0.13,
+    "efficiency_weight": 0.08,
+    "documentation_weight": 0.1
   }
 }

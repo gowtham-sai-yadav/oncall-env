@@ -1,267 +1,256 @@
 {
   "incident_id": "INC-20260326-012",
   "difficulty": "easy",
-  "description": "SEV3 incident: Dependency Version Mismatch affecting user-service. Cascading impact on service-mesh.",
+  "description": "SEV3 incident: Bad Config Rollout affecting billing-service. Cascading impact on logging-pipeline.",
   "expected_severity": "SEV3",
   "initial_alerts": [
     {
       "alert_id": "alert-1201",
       "severity": "critical",
-      "service": "user-service",
-      "message": "Deserialization errors spiking - 77.4% request failure",
-      "timestamp": "2026-03-26T16:29:05Z",
+      "service": "billing-service",
+      "message": "Error rate at 37.1% after config deployment",
+      "timestamp": "2026-03-26T11:01:05Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-1202",
       "severity": "warning",
-      "service": "user-service",
-      "message": "API contract violation detected in responses from upstream",
-      "timestamp": "2026-03-26T16:30:10Z",
+      "service": "billing-service",
+      "message": "Config refresh failed - serving with invalid config",
+      "timestamp": "2026-03-26T11:02:10Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-1203",
       "severity": "warning",
-      "service": "service-mesh",
-      "message": "Increased error responses from user-service",
-      "timestamp": "2026-03-26T16:31:15Z",
+      "service": "logging-pipeline",
+      "message": "Upstream dependency billing-service returning errors",
+      "timestamp": "2026-03-26T11:03:15Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-1204",
       "severity": "critical",
-      "service": "service-mesh",
-      "message": "service-mesh error rate spiking - requests failing",
-      "timestamp": "2026-03-26T16:29:34Z",
+      "service": "logging-pipeline",
+      "message": "logging-pipeline error rate spiking - requests failing",
+      "timestamp": "2026-03-26T11:01:54Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-1205",
-      "severity": "info",
+      "severity": "warning",
       "service": "order-service",
-      "message": "Canary deployment proceeding as expected",
-      "timestamp": "2026-03-26T16:22:28Z",
-      "acknowledged": false,
-      "silenced": false
-    },
-    {
-      "alert_id": "alert-1206",
-      "severity": "info",
-      "service": "order-service",
-      "message": "Canary deployment proceeding as expected",
-      "timestamp": "2026-03-26T16:25:41Z",
+      "message": "CPU usage at 66% - approaching threshold",
+      "timestamp": "2026-03-26T11:56:51Z",
       "acknowledged": false,
       "silenced": false
     }
   ],
   "services": [
     {
-      "name": "user-service",
+      "name": "billing-service",
+      "status": "degraded",
+      "latency_ms": 1392,
+      "error_rate": 29.3,
+      "cpu_percent": 43,
+      "memory_percent": 71,
+      "version": "2.0.0"
+    },
+    {
+      "name": "logging-pipeline",
       "status": "down",
       "latency_ms": 0,
-      "error_rate": 95.5,
-      "cpu_percent": 94,
-      "memory_percent": 46,
-      "version": "4.1.0"
-    },
-    {
-      "name": "service-mesh",
-      "status": "degraded",
-      "latency_ms": 2514,
-      "error_rate": 12.8,
-      "cpu_percent": 23,
-      "memory_percent": 34,
-      "version": "1.5.0"
-    },
-    {
-      "name": "payment-api",
-      "status": "healthy",
-      "latency_ms": 92,
-      "error_rate": 0.3,
-      "cpu_percent": 18,
-      "memory_percent": 45,
+      "error_rate": 72.4,
+      "cpu_percent": 79,
+      "memory_percent": 69,
       "version": "1.1.0"
-    },
-    {
-      "name": "config-server",
-      "status": "healthy",
-      "latency_ms": 55,
-      "error_rate": 0.3,
-      "cpu_percent": 42,
-      "memory_percent": 30,
-      "version": "2.0.0"
     },
     {
       "name": "order-service",
       "status": "healthy",
-      "latency_ms": 109,
-      "error_rate": 0.9,
-      "cpu_percent": 44,
-      "memory_percent": 18,
-      "version": "3.1.2"
+      "latency_ms": 70,
+      "error_rate": 0.4,
+      "cpu_percent": 33,
+      "memory_percent": 35,
+      "version": "1.1.0"
+    },
+    {
+      "name": "metrics-collector",
+      "status": "healthy",
+      "latency_ms": 157,
+      "error_rate": 0.1,
+      "cpu_percent": 7,
+      "memory_percent": 23,
+      "version": "2.4.1"
+    },
+    {
+      "name": "cache-layer",
+      "status": "healthy",
+      "latency_ms": 40,
+      "error_rate": 0.2,
+      "cpu_percent": 24,
+      "memory_percent": 27,
+      "version": "2.3.0"
     }
   ],
   "recent_deployments": [
     {
-      "service": "user-service",
-      "version": "4.1.0",
-      "timestamp": "2026-03-26T15:41:00Z",
-      "deployer": "infra-team"
+      "service": "billing-service",
+      "version": "2.0.0",
+      "timestamp": "2026-03-26T10:08:00Z",
+      "deployer": "platform-team"
     }
   ],
   "logs": {
-    "user-service": [
+    "billing-service": [
       {
-        "timestamp": "2026-03-26T16:28:00Z",
-        "service": "user-service",
+        "timestamp": "2026-03-26T11:00:00Z",
+        "service": "billing-service",
         "level": "ERROR",
-        "message": "Failed to deserialize response from upstream: unexpected field format"
+        "message": "c.a.s.config.Loader [config-watch-1] - loaded key='db.connection.url' value='jdbc:postgresql://10.161.184.78:5436/billing-service_db?ssl=true' source=configmap/billing-service-2.0.0"
       },
       {
-        "timestamp": "2026-03-26T16:30:00Z",
-        "service": "user-service",
+        "timestamp": "2026-03-26T11:02:00Z",
+        "service": "billing-service",
         "level": "ERROR",
-        "message": "API version mismatch: expected v3 response, got v2 schema"
+        "message": "c.a.s.db.HikariPool [pool-3-thread-3] - Failed to obtain JDBC Connection: java.net.ConnectException: Connection refused (Connection refused) to 10.161.184.78:5436"
       },
       {
-        "timestamp": "2026-03-26T16:32:00Z",
-        "service": "user-service",
+        "timestamp": "2026-03-26T11:04:00Z",
+        "service": "billing-service",
+        "level": "FATAL",
+        "message": "c.a.s.db.HikariPool [pool-3-thread-11] - HikariPool-1 - Exception during pool initialization: java.net.ConnectException: Connection refused"
+      },
+      {
+        "timestamp": "2026-03-26T11:06:00Z",
+        "service": "billing-service",
         "level": "WARN",
-        "message": "Contract test failures detected post-deployment of 4.1.0"
-      },
-      {
-        "timestamp": "2026-03-26T16:34:00Z",
-        "service": "user-service",
-        "level": "ERROR",
-        "message": "Null pointer: response missing required field 'metadata.trace_id'"
+        "message": "c.a.s.config.Validator [startup-1] - WARN: unrecognized config key 'db.connection.pool.maxSize' in namespace 'billing-service', using default"
       }
     ],
-    "service-mesh": [
+    "logging-pipeline": [
       {
-        "timestamp": "2026-03-26T16:29:00Z",
-        "service": "service-mesh",
-        "level": "WARN",
-        "message": "user-service returning malformed responses"
+        "timestamp": "2026-03-26T11:01:00Z",
+        "service": "logging-pipeline",
+        "level": "ERROR",
+        "message": "c.a.s.client.ServiceClient [http-28] - HTTP 500 from 10.62.34.1:8094 (latency=23100ms)"
       },
       {
-        "timestamp": "2026-03-26T16:34:00Z",
-        "service": "service-mesh",
-        "level": "ERROR",
-        "message": "Failed to process response from user-service: schema mismatch"
+        "timestamp": "2026-03-26T11:06:00Z",
+        "service": "logging-pipeline",
+        "level": "WARN",
+        "message": "c.a.s.lb.HealthChecker [hc-monitor-1] - backend 10.62.34.1:8094 health check failed: HTTP 500 (expected 200)"
       }
     ]
   },
   "metrics": {
-    "user-service:error_rate": [
-      1.7,
-      1.7,
+    "billing-service:error_rate": [
+      1.6,
+      1.6,
+      1.6,
+      94.8,
+      94.8,
+      94.8
+    ],
+    "billing-service:db_connections": [
+      1.6,
+      1.6,
+      1.6,
+      91.1,
+      91.1,
+      91.1
+    ],
+    "logging-pipeline:error_rate": [
+      0.5,
+      0.5,
+      0.5,
       41.7,
       41.7,
       41.7
     ],
-    "user-service:deserialization_errors": [
-      1.9,
-      1.9,
-      1.9,
-      86.8,
-      86.8,
-      86.8,
-      86.8
-    ],
-    "service-mesh:error_rate": [
-      1.9,
-      1.9,
-      1.9,
-      82.3,
-      82.3,
-      82.3,
-      82.3
-    ],
-    "payment-api:cpu": [
-      44.3,
-      51.2,
-      52.0,
-      58.7,
-      48.1,
-      50.6
-    ],
-    "config-server:cpu": [
+    "order-service:cpu": [
+      35.3,
       28.4,
-      23.6,
-      35.5,
-      30.7,
-      30.4,
-      31.2
+      29.8,
+      27.6,
+      34.2,
+      25.0
+    ],
+    "metrics-collector:cpu": [
+      32.4,
+      35.0,
+      24.5,
+      22.2,
+      19.0,
+      28.8
     ]
   },
   "dependencies": {
-    "user-service": [
-      "user-service-db",
-      "user-service-store"
+    "billing-service": [
+      "billing-service-db",
+      "billing-service-store"
     ],
-    "service-mesh": [
-      "user-service",
-      "service-mesh-db"
-    ],
-    "payment-api": [
-      "user-service",
-      "payment-api-db"
-    ],
-    "config-server": [
-      "config-server-db"
+    "logging-pipeline": [
+      "billing-service",
+      "logging-pipeline-db"
     ],
     "order-service": [
+      "billing-service",
       "order-service-db"
+    ],
+    "metrics-collector": [
+      "metrics-collector-db"
+    ],
+    "cache-layer": [
+      "cache-layer-db"
     ]
   },
   "root_cause": {
-    "service": "user-service",
-    "description": "Dependency version mismatch: user-service 4.1.0 expects API v3 but upstream provides v2, causing deserialization failures",
+    "service": "billing-service",
+    "description": "Bad configuration rollout to billing-service in 2.0.0 - invalid database connection string causing all queries to fail",
     "keywords": [
-      "version",
-      "mismatch",
-      "api",
-      "incompatible",
-      "deserialization",
-      "contract",
-      "breaking change"
+      "config",
+      "configuration",
+      "rollout",
+      "invalid",
+      "connection string",
+      "misconfigured"
     ]
   },
   "valid_remediations": [
     {
       "action": "rollback_deploy",
-      "service": "user-service"
+      "service": "billing-service"
     },
     {
-      "action": "restart_service",
-      "service": "user-service"
+      "action": "update_config",
+      "service": "billing-service"
     }
   ],
   "expected_diagnostics": [
     {
       "action_type": "query_logs",
       "params": {
-        "service": "user-service"
+        "service": "billing-service"
       }
     },
     {
       "action_type": "check_metrics",
       "params": {
-        "service": "user-service"
+        "service": "billing-service"
       }
     }
   ],
   "grading_rubric": {
-    "triage_weight": 0.28,
+    "triage_weight": 0.31,
     "diagnostic_weight": 0.21,
-    "root_cause_weight": 0.14,
-    "remediation_weight": 0.15,
-    "efficiency_weight": 0.11,
+    "root_cause_weight": 0.15,
+    "remediation_weight": 0.12,
+    "efficiency_weight": 0.1,
     "documentation_weight": 0.11
   }
 }

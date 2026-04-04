@@ -1,51 +1,51 @@
 {
   "incident_id": "INC-20260326-111",
   "difficulty": "medium",
-  "description": "SEV2 incident: Bad Config Rollout affecting user-service. Cascading impact on message-queue, cache-layer.",
+  "description": "SEV2 incident: Load Balancer Misconfiguration affecting cdn-proxy. Cascading impact on user-service, auth-service.",
   "expected_severity": "SEV2",
   "initial_alerts": [
     {
       "alert_id": "alert-11101",
       "severity": "critical",
-      "service": "user-service",
-      "message": "Error rate at 22.6% after config deployment",
-      "timestamp": "2026-03-26T17:09:05Z",
+      "service": "cdn-proxy",
+      "message": "Uneven traffic distribution - single backend receiving 100% traffic",
+      "timestamp": "2026-03-26T15:36:05Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-11102",
-      "severity": "warning",
+      "severity": "critical",
       "service": "user-service",
-      "message": "Config refresh failed - serving with invalid config",
-      "timestamp": "2026-03-26T17:10:10Z",
+      "message": "Service overloaded - receiving all routed traffic",
+      "timestamp": "2026-03-26T15:37:10Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-11103",
       "severity": "warning",
-      "service": "message-queue",
-      "message": "Upstream dependency user-service returning errors",
-      "timestamp": "2026-03-26T17:11:15Z",
+      "service": "cdn-proxy",
+      "message": "Health check configuration mismatch detected",
+      "timestamp": "2026-03-26T15:38:15Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-11104",
       "severity": "critical",
-      "service": "message-queue",
-      "message": "message-queue error rate spiking - requests failing",
-      "timestamp": "2026-03-26T17:09:05Z",
+      "service": "user-service",
+      "message": "user-service error rate spiking - requests failing",
+      "timestamp": "2026-03-26T15:36:51Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-11105",
       "severity": "critical",
-      "service": "cache-layer",
-      "message": "cache-layer error rate spiking - requests failing",
-      "timestamp": "2026-03-26T17:09:45Z",
+      "service": "auth-service",
+      "message": "auth-service error rate spiking - requests failing",
+      "timestamp": "2026-03-26T15:36:36Z",
       "acknowledged": false,
       "silenced": false
     },
@@ -54,257 +54,295 @@
       "severity": "info",
       "service": "session-store",
       "message": "New dashboard version deployed - no action required",
-      "timestamp": "2026-03-26T17:59:08Z",
+      "timestamp": "2026-03-26T15:33:04Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-11107",
-      "severity": "info",
-      "service": "logging-pipeline",
-      "message": "Automated backup completed successfully",
-      "timestamp": "2026-03-26T17:01:22Z",
+      "severity": "warning",
+      "service": "session-store",
+      "message": "CPU usage at 70% - approaching threshold",
+      "timestamp": "2026-03-26T15:34:57Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-11108",
+      "severity": "warning",
+      "service": "api-gateway",
+      "message": "Log volume increased 20% - review retention policy",
+      "timestamp": "2026-03-26T15:30:30Z",
       "acknowledged": false,
       "silenced": false
     }
   ],
   "services": [
     {
+      "name": "cdn-proxy",
+      "status": "degraded",
+      "latency_ms": 5735,
+      "error_rate": 21.5,
+      "cpu_percent": 54,
+      "memory_percent": 89,
+      "version": "4.2.0"
+    },
+    {
       "name": "user-service",
       "status": "degraded",
-      "latency_ms": 6749,
-      "error_rate": 40.8,
+      "latency_ms": 2201,
+      "error_rate": 23.7,
+      "cpu_percent": 78,
+      "memory_percent": 42,
+      "version": "2.1.1"
+    },
+    {
+      "name": "auth-service",
+      "status": "degraded",
+      "latency_ms": 4170,
+      "error_rate": 50.3,
       "cpu_percent": 40,
-      "memory_percent": 79,
-      "version": "2.4.1"
-    },
-    {
-      "name": "message-queue",
-      "status": "degraded",
-      "latency_ms": 1619,
-      "error_rate": 31.6,
-      "cpu_percent": 27,
-      "memory_percent": 45,
-      "version": "2.0.0"
-    },
-    {
-      "name": "cache-layer",
-      "status": "degraded",
-      "latency_ms": 2244,
-      "error_rate": 65.9,
-      "cpu_percent": 55,
-      "memory_percent": 65,
-      "version": "1.1.0"
+      "memory_percent": 31,
+      "version": "4.0.1"
     },
     {
       "name": "session-store",
       "status": "healthy",
-      "latency_ms": 95,
-      "error_rate": 0.7,
-      "cpu_percent": 44,
-      "memory_percent": 41,
-      "version": "2.1.1"
+      "latency_ms": 78,
+      "error_rate": 0.2,
+      "cpu_percent": 47,
+      "memory_percent": 29,
+      "version": "3.1.2"
     },
     {
-      "name": "logging-pipeline",
+      "name": "api-gateway",
       "status": "healthy",
-      "latency_ms": 189,
-      "error_rate": 0.9,
-      "cpu_percent": 22,
-      "memory_percent": 52,
-      "version": "2.4.1"
+      "latency_ms": 102,
+      "error_rate": 0.5,
+      "cpu_percent": 27,
+      "memory_percent": 28,
+      "version": "1.1.0"
     }
   ],
   "recent_deployments": [
     {
-      "service": "user-service",
-      "version": "2.4.1",
-      "timestamp": "2026-03-26T16:23:00Z",
-      "deployer": "dev-team"
+      "service": "cdn-proxy",
+      "version": "4.2.0",
+      "timestamp": "2026-03-26T14:04:00Z",
+      "deployer": "infra-team"
     },
     {
       "service": "session-store",
-      "version": "2.1.1",
-      "timestamp": "2026-03-26T16:08:00Z",
+      "version": "3.1.2",
+      "timestamp": "2026-03-26T14:34:00Z",
       "deployer": "ops-team"
     }
   ],
   "logs": {
+    "cdn-proxy": [
+      {
+        "timestamp": "2026-03-26T15:35:00Z",
+        "service": "cdn-proxy",
+        "level": "ERROR",
+        "message": "c.a.s.lb.HealthChecker [hc-monitor-1] - backend 10.127.211.166:8086 health check failed: HTTP 503 (expected 200)"
+      },
+      {
+        "timestamp": "2026-03-26T15:37:30Z",
+        "service": "cdn-proxy",
+        "level": "WARN",
+        "message": "c.a.s.lb.HealthChecker [hc-monitor-1] - backend 10.170.119.121:8086 health check failed: HTTP 502 (expected 200)"
+      },
+      {
+        "timestamp": "2026-03-26T15:40:00Z",
+        "service": "cdn-proxy",
+        "level": "ERROR",
+        "message": "c.a.s.lb.Router [routing-43] - all backends unhealthy for pool 'cdn-proxy-pool', routing to last-known-good 10.80.167.89:8086"
+      },
+      {
+        "timestamp": "2026-03-26T15:42:30Z",
+        "service": "cdn-proxy",
+        "level": "WARN",
+        "message": "c.a.s.lb.ConfigSync [config-watch-1] - pool 'cdn-proxy-pool' config version 4.2.0: health_check_path=/healthz, but backends serve /health"
+      }
+    ],
     "user-service": [
       {
-        "timestamp": "2026-03-26T17:08:00Z",
+        "timestamp": "2026-03-26T15:36:00Z",
         "service": "user-service",
         "level": "ERROR",
-        "message": "Database connection failed: invalid connection string in config v2.4.1"
+        "message": "c.a.s.handler.RequestHandler [http-nio-8080-exec-23] - request queue depth 52691: accepting requests but response time degraded (8394ms)"
       },
       {
-        "timestamp": "2026-03-26T17:10:30Z",
-        "service": "user-service",
-        "level": "ERROR",
-        "message": "Config validation skipped in deployment pipeline"
-      },
-      {
-        "timestamp": "2026-03-26T17:13:00Z",
-        "service": "user-service",
-        "level": "FATAL",
-        "message": "Cannot initialize connection pool: malformed DSN"
-      },
-      {
-        "timestamp": "2026-03-26T17:15:30Z",
+        "timestamp": "2026-03-26T15:41:00Z",
         "service": "user-service",
         "level": "WARN",
-        "message": "Rolling back to cached config from previous version"
+        "message": "c.a.s.handler.RequestHandler [http-nio-8080-exec-18] - thread pool 46/46 active, 192 requests queued"
       }
     ],
-    "message-queue": [
+    "auth-service": [
       {
-        "timestamp": "2026-03-26T17:09:00Z",
-        "service": "message-queue",
+        "timestamp": "2026-03-26T15:36:00Z",
+        "service": "auth-service",
         "level": "ERROR",
-        "message": "user-service returning 500 for all requests"
+        "message": "c.a.s.handler.RequestHandler [http-nio-8080-exec-41] - request queue depth 12936: accepting requests but response time degraded (29337ms)"
       },
       {
-        "timestamp": "2026-03-26T17:14:00Z",
-        "service": "message-queue",
+        "timestamp": "2026-03-26T15:41:00Z",
+        "service": "auth-service",
         "level": "WARN",
-        "message": "Dependency user-service health check failing"
+        "message": "c.a.s.handler.RequestHandler [http-nio-8080-exec-25] - thread pool 83/83 active, 168 requests queued"
       }
     ],
-    "cache-layer": [
+    "session-store": [
       {
-        "timestamp": "2026-03-26T17:09:00Z",
-        "service": "cache-layer",
-        "level": "ERROR",
-        "message": "user-service returning 500 for all requests"
-      },
-      {
-        "timestamp": "2026-03-26T17:14:00Z",
-        "service": "cache-layer",
-        "level": "WARN",
-        "message": "Dependency user-service health check failing"
-      }
-    ],
-    "logging-pipeline": [
-      {
-        "timestamp": "2026-03-26T17:08:00Z",
-        "service": "logging-pipeline",
-        "level": "WARN",
-        "message": "Slow query detected (non-critical): SELECT took 2.1s"
+        "timestamp": "2026-03-26T15:35:00Z",
+        "service": "session-store",
+        "level": "INFO",
+        "message": "c.a.s.health.Monitor [health-check-1] - status=UP, checks=[db:UP, cache:UP, queue:UP]"
       }
     ]
   },
   "metrics": {
+    "cdn-proxy:backend_health_pct": [
+      1.6,
+      1.6,
+      54.6,
+      54.6,
+      54.6
+    ],
+    "cdn-proxy:error_rate": [
+      1.9,
+      1.9,
+      1.9,
+      65.2,
+      65.2,
+      65.2
+    ],
+    "user-service:cpu_percent": [
+      0.0,
+      36.5,
+      58.6,
+      72.0,
+      80.2,
+      85.1,
+      88.1
+    ],
     "user-service:error_rate": [
-      1.6,
-      1.6,
-      1.6,
-      66.4,
-      66.4,
-      66.4
+      0.6,
+      1.3,
+      2.7,
+      5.5,
+      11.2,
+      23.0,
+      47.1,
+      96.6
     ],
-    "user-service:db_connections": [
-      0.2,
-      0.2,
-      97.6,
-      97.6,
-      97.6
+    "auth-service:cpu_percent": [
+      0.0,
+      41.0,
+      63.5,
+      75.9,
+      82.7,
+      86.4
     ],
-    "message-queue:error_rate": [
-      0.3,
-      0.3,
-      0.3,
-      0.3,
-      81.7,
-      81.7,
-      81.7,
-      81.7
-    ],
-    "cache-layer:error_rate": [
-      1.2,
-      1.2,
-      85.6,
-      85.6,
-      85.6
+    "auth-service:error_rate": [
+      1.7,
+      3.2,
+      6.3,
+      12.2,
+      23.7,
+      46.2,
+      90.0
     ],
     "session-store:cpu": [
-      46.6,
-      39.8,
-      48.8,
-      50.8,
-      48.4,
-      45.7
+      33.4,
+      47.3,
+      45.4,
+      36.4,
+      40.2,
+      38.0
     ],
-    "logging-pipeline:cpu": [
-      30.0,
-      32.3,
-      26.1,
-      38.0,
-      33.1,
-      37.1
+    "api-gateway:cpu": [
+      15.8,
+      16.1,
+      20.8,
+      27.9,
+      35.2,
+      20.5
     ]
   },
   "dependencies": {
+    "cdn-proxy": [
+      "cdn-proxy-db",
+      "cdn-proxy-store"
+    ],
     "user-service": [
-      "user-service-db",
-      "user-service-store"
+      "cdn-proxy",
+      "user-service-db"
     ],
-    "message-queue": [
-      "user-service",
-      "message-queue-db"
-    ],
-    "cache-layer": [
-      "user-service",
-      "cache-layer-db"
+    "auth-service": [
+      "cdn-proxy",
+      "auth-service-db"
     ],
     "session-store": [
       "session-store-db"
     ],
-    "logging-pipeline": [
-      "logging-pipeline-db"
+    "api-gateway": [
+      "api-gateway-db"
     ]
   },
   "root_cause": {
-    "service": "user-service",
-    "description": "Bad configuration rollout to user-service in 2.4.1 - invalid database connection string causing all queries to fail",
+    "service": "cdn-proxy",
+    "description": "Load balancer misconfiguration on cdn-proxy routing all traffic to single unhealthy backend after 4.2.0 config change",
     "keywords": [
+      "load balancer",
+      "routing",
+      "misconfiguration",
       "config",
-      "configuration",
-      "rollout",
-      "invalid",
-      "connection string",
-      "misconfigured"
+      "backend",
+      "traffic"
     ]
   },
   "valid_remediations": [
     {
-      "action": "rollback_deploy",
-      "service": "user-service"
+      "action": "update_config",
+      "service": "cdn-proxy"
     },
     {
-      "action": "update_config",
-      "service": "user-service"
+      "action": "rollback_deploy",
+      "service": "cdn-proxy"
+    },
+    {
+      "action": "restart_service",
+      "service": "cdn-proxy"
     }
   ],
   "expected_diagnostics": [
     {
       "action_type": "query_logs",
       "params": {
-        "service": "user-service"
+        "service": "cdn-proxy"
       }
     },
     {
       "action_type": "check_metrics",
       "params": {
-        "service": "user-service"
+        "service": "cdn-proxy"
+      }
+    },
+    {
+      "action_type": "view_dependencies",
+      "params": {
+        "service_name": "user-service"
       }
     }
   ],
   "grading_rubric": {
-    "triage_weight": 0.19,
-    "diagnostic_weight": 0.26,
-    "root_cause_weight": 0.22,
-    "remediation_weight": 0.22,
-    "efficiency_weight": 0.08,
-    "documentation_weight": 0.03
+    "triage_weight": 0.2,
+    "diagnostic_weight": 0.24,
+    "root_cause_weight": 0.19,
+    "remediation_weight": 0.18,
+    "efficiency_weight": 0.12,
+    "documentation_weight": 0.07
   }
 }

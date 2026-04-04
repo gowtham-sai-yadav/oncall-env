@@ -92,31 +92,31 @@
   ],
   "logs": {
     "order-service": [
-      {"timestamp": "2026-03-26T17:30:00Z", "service": "order-service", "level": "WARN", "message": "Memory usage growing: 2.1GB / 2.5GB limit"},
-      {"timestamp": "2026-03-26T17:40:00Z", "service": "order-service", "level": "WARN", "message": "GC pause time: 850ms -- exceeding 200ms threshold"},
-      {"timestamp": "2026-03-26T17:45:00Z", "service": "order-service", "level": "ERROR", "message": "Memory usage: 2.4GB / 2.5GB -- GC unable to reclaim sufficient memory"},
-      {"timestamp": "2026-03-26T17:50:00Z", "service": "order-service", "level": "ERROR", "message": "New config 'order.cache.mode=aggressive' causing unbounded in-memory cache growth"},
-      {"timestamp": "2026-03-26T17:55:00Z", "service": "order-service", "level": "FATAL", "message": "OutOfMemoryError: Java heap space -- service shutting down"},
-      {"timestamp": "2026-03-26T18:00:00Z", "service": "order-service", "level": "FATAL", "message": "Health check failed -- container restarting (crash loop)"}
+      {"timestamp": "2026-03-26T17:30:00Z", "service": "order-service", "level": "WARN", "message": "c.a.o.monitor.HeapMonitor [jvm-monitor-1] - GC overhead: pause=120ms heap=2148M/2560M eden=412M survivor=24M old=1712M (old_gen_usage=66.9%)"},
+      {"timestamp": "2026-03-26T17:40:00Z", "service": "order-service", "level": "WARN", "message": "c.a.o.monitor.HeapMonitor [jvm-monitor-1] - GC overhead: pause=850ms heap=2441M/2560M eden=0B survivor=12M old=2429M (old_gen_usage=94.9%)"},
+      {"timestamp": "2026-03-26T17:45:00Z", "service": "order-service", "level": "ERROR", "message": "c.a.o.monitor.HeapMonitor [jvm-monitor-1] - GC overhead: pause=1850ms heap=2519M/2560M eden=0B survivor=0B old=2519M -- consecutive_full_gc=8 reclaimed=41M"},
+      {"timestamp": "2026-03-26T17:50:00Z", "service": "order-service", "level": "ERROR", "message": "c.a.o.config.Loader [config-refresh-1] - loaded config key=order.cache.mode value=aggressive source=configmap/order-service-v3.3.0 at 17:02:11Z; c.a.o.cache.OrderCache entries=2847291 size=1894M evictions=0"},
+      {"timestamp": "2026-03-26T17:55:00Z", "service": "order-service", "level": "FATAL", "message": "java.lang.OutOfMemoryError: Java heap space\n\tat c.a.o.cache.OrderCache.put(OrderCache.java:142)\n\tat c.a.o.handler.OrderHandler.processOrder(OrderHandler.java:88)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)"},
+      {"timestamp": "2026-03-26T18:00:00Z", "service": "order-service", "level": "FATAL", "message": "k8s.io/lifecycle [kubelet] - container order-service-0 liveness probe failed: HTTP probe failed with statuscode 503; restarting container (restartCount=4, backoff=160s)"}
     ],
     "order-db": [
-      {"timestamp": "2026-03-26T17:55:00Z", "service": "order-db", "level": "WARN", "message": "Long-running queries detected: 15 queries > 10s"},
-      {"timestamp": "2026-03-26T17:58:00Z", "service": "order-db", "level": "ERROR", "message": "Connection pool saturated: 500/500 connections in use"},
-      {"timestamp": "2026-03-26T18:00:00Z", "service": "order-db", "level": "WARN", "message": "Replication lag increasing: primary under heavy write load"}
+      {"timestamp": "2026-03-26T17:55:00Z", "service": "order-db", "level": "WARN", "message": "postgres[14.2] LOG: duration: 12450.231 ms statement: SELECT o.*, oi.* FROM orders o JOIN order_items oi ON o.id=oi.order_id WHERE o.status='pending' -- 15 similar queries running"},
+      {"timestamp": "2026-03-26T17:58:00Z", "service": "order-db", "level": "ERROR", "message": "postgres[14.2] FATAL: remaining connection slots are reserved for non-replication superuser connections (used=500, max=500, reserved=3)"},
+      {"timestamp": "2026-03-26T18:00:00Z", "service": "order-db", "level": "WARN", "message": "postgres[14.2] LOG: recovery is not in progress; replication lag on standby 10.0.3.48:5432 increased to 32s (write_lag=28s, flush_lag=30s, replay_lag=32s)"}
     ],
     "payment-api": [
-      {"timestamp": "2026-03-26T18:00:05Z", "service": "payment-api", "level": "ERROR", "message": "Order validation timeout: order-service not responding"},
-      {"timestamp": "2026-03-26T18:00:15Z", "service": "payment-api", "level": "ERROR", "message": "Transaction rollback for pay-99001: order confirmation timeout"},
-      {"timestamp": "2026-03-26T18:00:30Z", "service": "payment-api", "level": "WARN", "message": "Circuit breaker OPEN for order-service dependency"}
+      {"timestamp": "2026-03-26T18:00:05Z", "service": "payment-api", "level": "ERROR", "message": "c.a.p.client.OrderClient [http-nio-8080-exec-36] - java.net.SocketTimeoutException: upstream 10.0.4.22:8081 read timed out after 5000ms (GET /api/orders/pay-99001/validate)"},
+      {"timestamp": "2026-03-26T18:00:15Z", "service": "payment-api", "level": "ERROR", "message": "c.a.p.handler.TransactionHandler [http-nio-8080-exec-39] - rolling back txn pay-99001: java.lang.IllegalStateException: order confirmation not received within 10000ms from 10.0.4.22:8081"},
+      {"timestamp": "2026-03-26T18:00:30Z", "service": "payment-api", "level": "WARN", "message": "i.g.r.CircuitBreaker [cb-order-service] - state transition: CLOSED -> OPEN (failure_count=40, threshold=25, last_error=java.net.ConnectException: Connection refused to 10.0.4.22:8081)"}
     ],
     "api-gateway": [
-      {"timestamp": "2026-03-26T18:00:00Z", "service": "api-gateway", "level": "ERROR", "message": "Upstream order-service: connection refused"},
-      {"timestamp": "2026-03-26T18:00:10Z", "service": "api-gateway", "level": "ERROR", "message": "502 Bad Gateway for 45% of /api/orders requests"},
-      {"timestamp": "2026-03-26T18:00:20Z", "service": "api-gateway", "level": "WARN", "message": "Request queue depth: 5000 -- approaching backpressure limit"}
+      {"timestamp": "2026-03-26T18:00:00Z", "service": "api-gateway", "level": "ERROR", "message": "c.a.g.proxy.UpstreamRouter [http-nio-9090-exec-44] - upstream connect error: connection refused to 10.0.4.22:8081, reset reason: remote connection failure"},
+      {"timestamp": "2026-03-26T18:00:10Z", "service": "api-gateway", "level": "ERROR", "message": "c.a.g.proxy.UpstreamRouter [http-nio-9090-exec-51] - no healthy upstream for route=/api/orders/*, 1847/4105 requests returning 502 to clients in last 60s"},
+      {"timestamp": "2026-03-26T18:00:20Z", "service": "api-gateway", "level": "WARN", "message": "c.a.g.queue.RequestQueue [queue-manager-1] - pending_requests=5000 max_queue=6000 oldest_request_age=12400ms reject_policy=drop_oldest"}
     ],
     "cache-layer": [
-      {"timestamp": "2026-03-26T18:00:00Z", "service": "cache-layer", "level": "WARN", "message": "Cache miss rate elevated: order-service keys expired and not refreshed"},
-      {"timestamp": "2026-03-26T18:00:15Z", "service": "cache-layer", "level": "INFO", "message": "Serving stale data for order queries (TTL bypass mode)"}
+      {"timestamp": "2026-03-26T18:00:00Z", "service": "cache-layer", "level": "WARN", "message": "c.a.c.redis.CacheStats [cache-monitor-1] - keyspace: hits=2410 misses=1298 hit_ratio=65.0% expired_keys=4521 prefix=order:* last_refresh_source=10.0.4.22:8081 last_refresh_status=timeout"},
+      {"timestamp": "2026-03-26T18:00:15Z", "service": "cache-layer", "level": "INFO", "message": "c.a.c.redis.StaleCacheHandler [stale-serve-1] - serving stale entries: prefix=order:* ttl_override=300s original_ttl=60s reason=upstream_unavailable entries_served=892"}
     ]
   },
   "metrics": {

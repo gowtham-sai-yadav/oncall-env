@@ -1,346 +1,373 @@
 {
   "incident_id": "INC-20260326-205",
   "difficulty": "hard",
-  "description": "SEV1 incident: Memory Leak (OOM) affecting notification-service. Cascading impact on user-service, service-mesh. Multiple concurrent events make diagnosis challenging.",
+  "description": "SEV1 incident: Deadlock Storm affecting user-service. Cascading impact on cache-layer, message-queue. Multiple concurrent events make diagnosis challenging.",
   "expected_severity": "SEV1",
   "initial_alerts": [
     {
       "alert_id": "alert-20501",
       "severity": "critical",
-      "service": "notification-service",
-      "message": "Memory usage at 86% - OOM kill imminent",
-      "timestamp": "2026-03-26T16:26:05Z",
+      "service": "user-service",
+      "message": "Transaction deadlocks spiking - 448/min detected",
+      "timestamp": "2026-03-26T22:49:05Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-20502",
       "severity": "critical",
-      "service": "notification-service",
-      "message": "Service restarts detected - 11 OOM kills in last 10 minutes",
-      "timestamp": "2026-03-26T16:27:10Z",
+      "service": "user-service",
+      "message": "Request queue depth exceeding 500 - requests backing up",
+      "timestamp": "2026-03-26T22:50:10Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-20503",
       "severity": "warning",
-      "service": "user-service",
-      "message": "Elevated error rate due to notification-service instability",
-      "timestamp": "2026-03-26T16:28:15Z",
+      "service": "cache-layer",
+      "message": "Upstream user-service response time degraded",
+      "timestamp": "2026-03-26T22:51:15Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-20504",
       "severity": "critical",
-      "service": "user-service",
-      "message": "user-service error rate spiking - requests failing",
-      "timestamp": "2026-03-26T16:26:39Z",
+      "service": "cache-layer",
+      "message": "cache-layer error rate spiking - requests failing",
+      "timestamp": "2026-03-26T22:49:42Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-20505",
       "severity": "critical",
-      "service": "service-mesh",
-      "message": "service-mesh error rate spiking - requests failing",
-      "timestamp": "2026-03-26T16:26:15Z",
+      "service": "message-queue",
+      "message": "message-queue error rate spiking - requests failing",
+      "timestamp": "2026-03-26T22:49:49Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-20506",
       "severity": "info",
-      "service": "cache-layer",
-      "message": "Automated backup completed successfully",
-      "timestamp": "2026-03-26T16:23:13Z",
+      "service": "config-server",
+      "message": "Elasticsearch reindex started - expected temporary latency increase",
+      "timestamp": "2026-03-26T22:45:09Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-20507",
+      "severity": "warning",
+      "service": "service-mesh",
+      "message": "CPU usage at 71% - approaching threshold",
+      "timestamp": "2026-03-26T22:47:32Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-20508",
       "severity": "info",
-      "service": "cache-layer",
-      "message": "Automated backup completed successfully",
-      "timestamp": "2026-03-26T16:17:05Z",
+      "service": "config-server",
+      "message": "SSL certificate renewal scheduled for next week",
+      "timestamp": "2026-03-26T22:47:38Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-20509",
+      "severity": "info",
+      "service": "config-server",
+      "message": "Model v4.2 deployment started - canary rollout in progress",
+      "timestamp": "2026-03-26T22:44:43Z",
       "acknowledged": false,
       "silenced": false
     }
   ],
   "services": [
     {
-      "name": "notification-service",
-      "status": "degraded",
-      "latency_ms": 5617,
-      "error_rate": 25.9,
-      "cpu_percent": 92,
-      "memory_percent": 84,
-      "version": "1.5.0"
-    },
-    {
       "name": "user-service",
       "status": "down",
       "latency_ms": 0,
-      "error_rate": 72.3,
-      "cpu_percent": 64,
-      "memory_percent": 37,
-      "version": "3.1.2"
+      "error_rate": 79.6,
+      "cpu_percent": 93,
+      "memory_percent": 43,
+      "version": "2.3.0"
     },
     {
-      "name": "service-mesh",
+      "name": "cache-layer",
       "status": "degraded",
-      "latency_ms": 1764,
-      "error_rate": 67.0,
-      "cpu_percent": 35,
-      "memory_percent": 64,
-      "version": "1.1.0"
+      "latency_ms": 3042,
+      "error_rate": 20.7,
+      "cpu_percent": 42,
+      "memory_percent": 66,
+      "version": "3.2.0"
     },
     {
-      "name": "payment-api",
+      "name": "message-queue",
+      "status": "degraded",
+      "latency_ms": 876,
+      "error_rate": 49.6,
+      "cpu_percent": 20,
+      "memory_percent": 43,
+      "version": "2.4.1"
+    },
+    {
+      "name": "config-server",
       "status": "healthy",
-      "latency_ms": 199,
-      "error_rate": 0.3,
-      "cpu_percent": 34,
-      "memory_percent": 17,
-      "version": "2.1.1"
+      "latency_ms": 80,
+      "error_rate": 0.8,
+      "cpu_percent": 5,
+      "memory_percent": 35,
+      "version": "4.0.1"
     },
     {
       "name": "auth-service",
       "status": "healthy",
-      "latency_ms": 26,
-      "error_rate": 0.7,
-      "cpu_percent": 30,
-      "memory_percent": 40,
-      "version": "2.0.0"
+      "latency_ms": 182,
+      "error_rate": 0.6,
+      "cpu_percent": 29,
+      "memory_percent": 22,
+      "version": "4.2.0"
     },
     {
-      "name": "cache-layer",
+      "name": "service-mesh",
       "status": "healthy",
-      "latency_ms": 123,
-      "error_rate": 0.9,
-      "cpu_percent": 7,
-      "memory_percent": 48,
-      "version": "4.0.1"
+      "latency_ms": 48,
+      "error_rate": 0.8,
+      "cpu_percent": 36,
+      "memory_percent": 35,
+      "version": "2.1.1"
     }
   ],
   "recent_deployments": [
     {
-      "service": "notification-service",
-      "version": "1.5.0",
-      "timestamp": "2026-03-26T15:32:00Z",
-      "deployer": "sre-bot"
+      "service": "user-service",
+      "version": "2.3.0",
+      "timestamp": "2026-03-26T21:03:00Z",
+      "deployer": "ml-team"
     },
     {
-      "service": "auth-service",
-      "version": "2.0.0",
-      "timestamp": "2026-03-26T13:40:00Z",
-      "deployer": "dev-team"
+      "service": "service-mesh",
+      "version": "2.1.1",
+      "timestamp": "2026-03-26T21:45:00Z",
+      "deployer": "search-team"
+    },
+    {
+      "service": "config-server",
+      "version": "4.0.1",
+      "timestamp": "2026-03-26T19:00:00Z",
+      "deployer": "search-team"
     }
   ],
   "logs": {
-    "notification-service": [
-      {
-        "timestamp": "2026-03-26T16:25:00Z",
-        "service": "notification-service",
-        "level": "WARN",
-        "message": "Heap usage at 85% - garbage collection ineffective"
-      },
-      {
-        "timestamp": "2026-03-26T16:26:40Z",
-        "service": "notification-service",
-        "level": "ERROR",
-        "message": "Out of memory: process killed by OOM killer (RSS: 4921MB)"
-      },
-      {
-        "timestamp": "2026-03-26T16:28:20Z",
-        "service": "notification-service",
-        "level": "INFO",
-        "message": "Service restarting after OOM kill - attempt 2"
-      },
-      {
-        "timestamp": "2026-03-26T16:30:00Z",
-        "service": "notification-service",
-        "level": "WARN",
-        "message": "Request cache size growing unbounded: 875337 entries"
-      },
-      {
-        "timestamp": "2026-03-26T16:31:40Z",
-        "service": "notification-service",
-        "level": "ERROR",
-        "message": "Failed to allocate memory for request processing"
-      }
-    ],
     "user-service": [
       {
-        "timestamp": "2026-03-26T16:26:00Z",
+        "timestamp": "2026-03-26T22:48:00Z",
         "service": "user-service",
         "level": "ERROR",
-        "message": "Connection refused from notification-service: service restarting"
+        "message": "c.a.s.db.DeadlockDetector [monitor-1] - deadlock detected: tx-84305 holds lock on user-service_records.row_id=325006, waiting for user-service_index.row_id=518825; tx-82527 holds user-service_index.row_id=518825, waiting for user-service_records.row_id=325006"
       },
       {
-        "timestamp": "2026-03-26T16:31:00Z",
+        "timestamp": "2026-03-26T22:49:15Z",
+        "service": "user-service",
+        "level": "ERROR",
+        "message": "c.a.s.db.TransactionManager [tx-pool-28] - Lock wait timeout after 30000ms on table 'user-service_records' row_id=839255"
+      },
+      {
+        "timestamp": "2026-03-26T22:50:30Z",
         "service": "user-service",
         "level": "WARN",
-        "message": "Retrying request to notification-service after connection failure"
+        "message": "c.a.s.db.ConnectionPool [pool-monitor-1] - 133 threads waiting for connection, active=86/86"
+      },
+      {
+        "timestamp": "2026-03-26T22:51:45Z",
+        "service": "user-service",
+        "level": "ERROR",
+        "message": "c.a.s.db.TransactionManager [tx-pool-20] - Lock wait timeout after 10000ms on table 'user-service_index' row_id=358968"
+      }
+    ],
+    "cache-layer": [
+      {
+        "timestamp": "2026-03-26T22:49:00Z",
+        "service": "cache-layer",
+        "level": "ERROR",
+        "message": "c.a.s.client.ServiceClient [http-29] - HTTP 504 from 10.49.198.126:8093 (latency=21635ms)"
+      },
+      {
+        "timestamp": "2026-03-26T22:54:00Z",
+        "service": "cache-layer",
+        "level": "WARN",
+        "message": "c.a.s.circuit.CircuitBreaker [cb-user-service] - state: HALF_OPEN -> OPEN after probe failure (HTTP 504)"
+      }
+    ],
+    "message-queue": [
+      {
+        "timestamp": "2026-03-26T22:49:00Z",
+        "service": "message-queue",
+        "level": "ERROR",
+        "message": "c.a.s.client.ServiceClient [http-43] - HTTP 504 from 10.49.198.126:8093 (latency=20896ms)"
+      },
+      {
+        "timestamp": "2026-03-26T22:54:00Z",
+        "service": "message-queue",
+        "level": "WARN",
+        "message": "c.a.s.circuit.CircuitBreaker [cb-user-service] - state: HALF_OPEN -> OPEN after probe failure (HTTP 504)"
+      }
+    ],
+    "auth-service": [
+      {
+        "timestamp": "2026-03-26T22:48:00Z",
+        "service": "auth-service",
+        "level": "INFO",
+        "message": "c.a.s.health.Monitor [health-check-1] - status=UP, checks=[db:UP, cache:UP, queue:UP]"
       }
     ],
     "service-mesh": [
       {
-        "timestamp": "2026-03-26T16:26:00Z",
+        "timestamp": "2026-03-26T22:48:00Z",
         "service": "service-mesh",
-        "level": "ERROR",
-        "message": "Connection refused from notification-service: service restarting"
-      },
-      {
-        "timestamp": "2026-03-26T16:31:00Z",
-        "service": "service-mesh",
-        "level": "WARN",
-        "message": "Retrying request to notification-service after connection failure"
-      }
-    ],
-    "payment-api": [
-      {
-        "timestamp": "2026-03-26T16:25:00Z",
-        "service": "payment-api",
         "level": "INFO",
-        "message": "Healthy - serving requests normally"
+        "message": "c.a.s.search.Indexer [reindex-pool-1] - reindex progress: 40% (12403/31008 docs), est. remaining: 340s"
       }
     ]
   },
   "metrics": {
-    "notification-service:memory_percent": [
-      0.0,
-      43.8,
-      67.8,
-      81.0,
-      88.3,
-      92.2
-    ],
-    "notification-service:error_rate": [
-      1.5,
-      1.5,
-      1.5,
-      1.5,
-      51.9,
-      51.9,
-      51.9,
-      51.9
-    ],
-    "notification-service:restarts": [
-      1.7,
-      1.7,
-      1.7,
-      46.7,
-      46.7,
-      46.7
+    "user-service:deadlocks_per_min": [
+      1.4,
+      2.5,
+      4.6,
+      8.6,
+      15.9,
+      29.3,
+      54.2
     ],
     "user-service:error_rate": [
-      1.5,
-      1.5,
-      54.3,
-      54.3,
-      54.3
+      0.8,
+      1.6,
+      3.3,
+      6.6,
+      13.1,
+      26.2,
+      52.4
     ],
-    "service-mesh:error_rate": [
-      1.7,
-      1.7,
-      1.7,
-      1.7,
-      91.4,
-      91.4,
-      91.4,
-      91.4
+    "user-service:latency_p99": [
+      1.5,
+      3.4,
+      7.8,
+      17.8,
+      40.9,
+      93.7
     ],
-    "payment-api:cpu": [
-      48.3,
-      44.2,
-      47.9,
-      33.2,
-      35.4,
-      39.3
+    "cache-layer:error_rate": [
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      85.7,
+      85.7,
+      85.7,
+      85.7
+    ],
+    "message-queue:error_rate": [
+      0.3,
+      0.3,
+      0.3,
+      87.3,
+      87.3,
+      87.3,
+      87.3
+    ],
+    "config-server:cpu": [
+      38.5,
+      35.3,
+      32.0,
+      31.4,
+      33.7,
+      33.3
     ],
     "auth-service:cpu": [
-      23.9,
-      24.7,
-      32.0,
-      22.5,
-      21.7,
-      19.2
+      30.7,
+      24.0,
+      36.8,
+      28.7,
+      24.6,
+      42.0
     ]
   },
   "dependencies": {
-    "notification-service": [
-      "notification-service-db",
-      "notification-service-store"
-    ],
     "user-service": [
-      "notification-service",
-      "user-service-db"
+      "user-service-db",
+      "user-service-store"
     ],
-    "service-mesh": [
-      "notification-service",
-      "service-mesh-db"
+    "cache-layer": [
+      "user-service",
+      "cache-layer-db"
     ],
-    "payment-api": [
-      "payment-api-db"
+    "message-queue": [
+      "user-service",
+      "message-queue-db"
+    ],
+    "config-server": [
+      "config-server-db"
     ],
     "auth-service": [
       "auth-service-db"
     ],
-    "cache-layer": [
-      "cache-layer-db"
+    "service-mesh": [
+      "service-mesh-db"
     ]
   },
   "root_cause": {
-    "service": "notification-service",
-    "description": "Memory leak in notification-service 1.5.0 causing OOM kills - unbounded cache growth in request handler",
+    "service": "user-service",
+    "description": "Deadlock storm in user-service database caused by concurrent transaction ordering bug in 2.3.0",
     "keywords": [
-      "memory",
-      "leak",
-      "OOM",
-      "out of memory",
-      "heap",
-      "cache",
-      "growth"
+      "deadlock",
+      "transaction",
+      "lock",
+      "contention",
+      "database",
+      "concurrent"
     ]
   },
   "valid_remediations": [
     {
       "action": "restart_service",
-      "service": "notification-service"
+      "service": "user-service"
     },
     {
       "action": "rollback_deploy",
-      "service": "notification-service"
+      "service": "user-service"
     }
   ],
   "expected_diagnostics": [
     {
       "action_type": "query_logs",
       "params": {
-        "service": "notification-service"
+        "service": "user-service"
       }
     },
     {
       "action_type": "check_metrics",
       "params": {
-        "service": "notification-service"
+        "service": "user-service"
       }
     },
     {
       "action_type": "query_logs",
       "params": {
-        "service": "user-service"
+        "service": "cache-layer"
       }
     }
   ],
   "grading_rubric": {
-    "triage_weight": 0.1,
-    "diagnostic_weight": 0.27,
-    "root_cause_weight": 0.3,
-    "remediation_weight": 0.21,
-    "efficiency_weight": 0.08,
+    "triage_weight": 0.09,
+    "diagnostic_weight": 0.24,
+    "root_cause_weight": 0.32,
+    "remediation_weight": 0.18,
+    "efficiency_weight": 0.13,
     "documentation_weight": 0.04
   }
 }

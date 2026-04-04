@@ -113,40 +113,40 @@
   ],
   "logs": {
     "internal-dns": [
-      {"timestamp": "2026-03-26T19:35:00Z", "service": "internal-dns", "level": "INFO", "message": "DNS server v3.0.0 started -- new zone file loaded"},
-      {"timestamp": "2026-03-26T19:40:00Z", "service": "internal-dns", "level": "WARN", "message": "Zone transfer to secondary DNS delayed by 5 minutes"},
-      {"timestamp": "2026-03-26T19:55:00Z", "service": "internal-dns", "level": "ERROR", "message": "SERVFAIL for config-service.internal: zone file contains invalid A record"},
-      {"timestamp": "2026-03-26T19:58:00Z", "service": "internal-dns", "level": "ERROR", "message": "NXDOMAIN for order-db.internal: record missing from v3.0.0 zone file"},
-      {"timestamp": "2026-03-26T20:00:00Z", "service": "internal-dns", "level": "ERROR", "message": "SERVFAIL rate increasing: 30% of queries failing -- corrupted zone records for *.internal domain"},
-      {"timestamp": "2026-03-26T20:00:10Z", "service": "internal-dns", "level": "FATAL", "message": "Multiple critical DNS records missing/corrupted after v3.0.0 zone migration"}
+      {"timestamp": "2026-03-26T19:35:00Z", "service": "internal-dns", "level": "INFO", "message": "named[3842]: loading configuration from '/etc/bind/named.conf.local'; zone 'internal' loaded serial 2026032602 (v3.0.0)"},
+      {"timestamp": "2026-03-26T19:40:00Z", "service": "internal-dns", "level": "WARN", "message": "named[3842]: zone internal/IN: AXFR to secondary 10.0.1.3#53 failed: REFUSED (expected serial 2026032602, secondary has 2026032601); retrying in 300s"},
+      {"timestamp": "2026-03-26T19:55:00Z", "service": "internal-dns", "level": "ERROR", "message": "named[3842]: client 10.0.6.15#44821 (config-service.internal): query failed (SERVFAIL) for config-service.internal/A/IN: broken trust chain, RRSIG validation failed for config-service.internal A record"},
+      {"timestamp": "2026-03-26T19:58:00Z", "service": "internal-dns", "level": "ERROR", "message": "named[3842]: client 10.0.4.22#38190 (order-db.internal): query failed (NXDOMAIN) for order-db.internal/A/IN: name not found in zone 'internal' (serial 2026032602)"},
+      {"timestamp": "2026-03-26T20:00:00Z", "service": "internal-dns", "level": "ERROR", "message": "named[3842]: stats: queries=12847 NOERROR=8993 SERVFAIL=2569 NXDOMAIN=1285 (SERVFAIL rate 20.0% -> 30.1% in last 60s); failing domains: config-service.internal, order-db.internal, payment-db.internal, auth-cache.internal"},
+      {"timestamp": "2026-03-26T20:00:10Z", "service": "internal-dns", "level": "FATAL", "message": "named[3842]: zone internal/IN: zone serial 2026032602 has 7 fewer A records than serial 2026032601; missing: order-db, payment-db, config-db, auth-cache, session-db, inventory-db, notification-db"}
     ],
     "config-service": [
-      {"timestamp": "2026-03-26T19:58:00Z", "service": "config-service", "level": "ERROR", "message": "Cannot connect to config-db.internal: DNS resolution failed"},
-      {"timestamp": "2026-03-26T20:00:00Z", "service": "config-service", "level": "FATAL", "message": "Config store unreachable -- serving stale config (last refresh: 19:30)"},
-      {"timestamp": "2026-03-26T20:00:10Z", "service": "config-service", "level": "FATAL", "message": "Health check failing: backend connectivity lost"}
+      {"timestamp": "2026-03-26T19:58:00Z", "service": "config-service", "level": "ERROR", "message": "c.a.c.db.PgConnector [pool-1-thread-2] - java.net.UnknownHostException: config-db.internal: Name or service not known (queried 10.0.1.2:53, response code SERVFAIL)"},
+      {"timestamp": "2026-03-26T20:00:00Z", "service": "config-service", "level": "FATAL", "message": "c.a.c.store.ConfigStore [config-refresh-1] - backend unreachable after 3 retries to config-db.internal:5432; serving cached config (age=1800s, max_stale=3600s)"},
+      {"timestamp": "2026-03-26T20:00:10Z", "service": "config-service", "level": "FATAL", "message": "k8s.io/lifecycle [kubelet] - container config-service-0 liveness probe failed: HTTP probe GET http://10.0.6.15:8080/health returned 503 (connect_backend=false, dns_ok=false)"}
     ],
     "order-service": [
-      {"timestamp": "2026-03-26T19:58:00Z", "service": "order-service", "level": "ERROR", "message": "Cannot resolve order-db.internal -- DNS lookup failed"},
-      {"timestamp": "2026-03-26T20:00:00Z", "service": "order-service", "level": "FATAL", "message": "Database connection pool empty: all connections failed DNS resolution"},
-      {"timestamp": "2026-03-26T20:00:05Z", "service": "order-service", "level": "FATAL", "message": "Service shutting down: critical dependency order-db unreachable"}
+      {"timestamp": "2026-03-26T19:58:00Z", "service": "order-service", "level": "ERROR", "message": "c.a.o.db.PgConnector [pool-2-thread-4] - java.net.UnknownHostException: order-db.internal: Name or service not known (queried 10.0.1.2:53, response code NXDOMAIN)"},
+      {"timestamp": "2026-03-26T20:00:00Z", "service": "order-service", "level": "FATAL", "message": "c.a.o.db.HikariPool [HikariPool-1 housekeeper] - pool stats: total=0, active=0, idle=0, waiting=89; all 50 create-connection attempts failed with java.net.UnknownHostException: order-db.internal"},
+      {"timestamp": "2026-03-26T20:00:05Z", "service": "order-service", "level": "FATAL", "message": "k8s.io/lifecycle [kubelet] - container order-service-0 readiness probe failed: TCP connect to 10.0.4.22:8081 succeeded but HTTP GET /health returned 503 (db_connected=false, last_dns_error=\"NXDOMAIN for order-db.internal\")"}
     ],
     "payment-api": [
-      {"timestamp": "2026-03-26T19:59:00Z", "service": "payment-api", "level": "ERROR", "message": "Cannot resolve payment-db.internal: SERVFAIL"},
-      {"timestamp": "2026-03-26T20:00:00Z", "service": "payment-api", "level": "FATAL", "message": "All payment processing halted: database DNS resolution failed"},
-      {"timestamp": "2026-03-26T20:00:10Z", "service": "payment-api", "level": "ERROR", "message": "Stripe webhook delivery failing: cannot resolve callback URL"}
+      {"timestamp": "2026-03-26T19:59:00Z", "service": "payment-api", "level": "ERROR", "message": "c.a.p.db.PgConnector [pool-1-thread-3] - java.net.UnknownHostException: payment-db.internal: Name or service not known (queried 10.0.1.2:53, response code SERVFAIL)"},
+      {"timestamp": "2026-03-26T20:00:00Z", "service": "payment-api", "level": "FATAL", "message": "c.a.p.db.HikariPool [HikariPool-1 housekeeper] - pool stats: total=0, active=0, idle=0, waiting=204; all create-connection attempts failing: java.net.UnknownHostException: payment-db.internal"},
+      {"timestamp": "2026-03-26T20:00:10Z", "service": "payment-api", "level": "ERROR", "message": "c.a.p.webhook.StripeListener [webhook-handler-2] - POST to https://hooks.stripe.com/callback failed: java.net.UnknownHostException: could not resolve hooks.stripe.com via 10.0.1.2:53 (upstream SERVFAIL)"}
     ],
     "user-service": [
-      {"timestamp": "2026-03-26T20:00:00Z", "service": "user-service", "level": "ERROR", "message": "Session validation failing: cannot reach auth-cache.internal"},
-      {"timestamp": "2026-03-26T20:00:05Z", "service": "user-service", "level": "WARN", "message": "Falling back to DB-only auth -- slow path active"},
-      {"timestamp": "2026-03-26T20:00:10Z", "service": "user-service", "level": "ERROR", "message": "user-db.internal resolution intermittent: 70% failure rate"}
+      {"timestamp": "2026-03-26T20:00:00Z", "service": "user-service", "level": "ERROR", "message": "c.a.u.cache.SessionValidator [http-nio-8080-exec-22] - java.net.UnknownHostException: auth-cache.internal: Name or service not known (queried 10.0.1.2:53, response code SERVFAIL)"},
+      {"timestamp": "2026-03-26T20:00:05Z", "service": "user-service", "level": "WARN", "message": "c.a.u.auth.AuthHandler [http-nio-8080-exec-25] - cache bypass active, falling back to direct DB query: latency=450ms vs baseline=12ms (user-db.internal resolved on retry after 2 failures)"},
+      {"timestamp": "2026-03-26T20:00:10Z", "service": "user-service", "level": "ERROR", "message": "c.a.u.db.DnsResolver [dns-health-1] - user-db.internal resolution: 3/10 succeeded (10.0.7.11), 7/10 returned SERVFAIL from 10.0.1.2:53; connection pool draining (active=6, idle=0, failed_create=14)"}
     ],
     "recommendation-engine": [
-      {"timestamp": "2026-03-26T19:50:00Z", "service": "recommendation-engine", "level": "INFO", "message": "Model v4.2 loaded -- inference latency baseline: 300ms (expected: higher than v4.1 during warmup)"},
-      {"timestamp": "2026-03-26T20:00:00Z", "service": "recommendation-engine", "level": "INFO", "message": "Model serving normally -- no DNS dependency issues (uses IP-based model store)"}
+      {"timestamp": "2026-03-26T19:50:00Z", "service": "recommendation-engine", "level": "INFO", "message": "c.a.r.model.ModelLoader [model-init-1] - loaded model v4.2 from 10.0.10.5:8443/models/rec-v4.2.bin (2.1GB, warmup_latency=300ms, baseline_v4.1=100ms)"},
+      {"timestamp": "2026-03-26T20:00:00Z", "service": "recommendation-engine", "level": "INFO", "message": "c.a.r.model.InferenceEngine [inference-pool-4] - serving normally: p50=180ms p99=300ms requests=1247/min; model_store=10.0.10.5:8443 (direct IP, no DNS dependency)"}
     ],
     "search-api": [
-      {"timestamp": "2026-03-26T19:55:00Z", "service": "search-api", "level": "INFO", "message": "Elasticsearch reindex started -- expected temporary latency increase"},
-      {"timestamp": "2026-03-26T20:00:00Z", "service": "search-api", "level": "INFO", "message": "Reindex 40% complete -- search serving from stale index, latency elevated but functional"}
+      {"timestamp": "2026-03-26T19:55:00Z", "service": "search-api", "level": "INFO", "message": "c.a.s.index.ReindexJob [reindex-worker-1] - starting full reindex: cluster=10.0.11.2:9200 index=products-v7 docs_total=4218903 estimated_time=45min"},
+      {"timestamp": "2026-03-26T20:00:00Z", "service": "search-api", "level": "INFO", "message": "c.a.s.index.ReindexJob [reindex-worker-1] - reindex progress: docs_processed=1687561/4218903 (40.0%) elapsed=5min; serving from stale index products-v6, p99=600ms (baseline=200ms)"}
     ]
   },
   "metrics": {

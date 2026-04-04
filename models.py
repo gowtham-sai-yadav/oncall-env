@@ -28,7 +28,7 @@ class ServiceStatus(BaseModel):
     model_config = {"extra": "allow"}
 
     name: str = Field(description="Service name")
-    status: Literal["healthy", "degraded", "down"] = Field(description="Current health status")
+    status: Literal["healthy", "degraded", "down", "unknown"] = Field(description="Current health status")
     latency_ms: float = Field(default=0.0, description="P99 latency in milliseconds")
     error_rate: float = Field(default=0.0, description="Error rate percentage")
     cpu_percent: float = Field(default=0.0, description="CPU utilization percentage")

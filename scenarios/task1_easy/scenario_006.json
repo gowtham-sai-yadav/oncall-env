@@ -1,253 +1,257 @@
 {
   "incident_id": "INC-20260326-006",
   "difficulty": "easy",
-  "description": "SEV3 incident: CPU Spin Loop affecting payment-api. Cascading impact on billing-service.",
+  "description": "SEV3 incident: Memory Leak (OOM) affecting inventory-service. Cascading impact on auth-service.",
   "expected_severity": "SEV3",
   "initial_alerts": [
     {
       "alert_id": "alert-601",
       "severity": "critical",
-      "service": "payment-api",
-      "message": "CPU usage at 94% - all cores saturated",
-      "timestamp": "2026-03-26T17:12:05Z",
+      "service": "inventory-service",
+      "message": "Memory usage at 90% - OOM kill imminent",
+      "timestamp": "2026-03-26T14:06:05Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-602",
       "severity": "critical",
-      "service": "payment-api",
-      "message": "Service unresponsive - health check failures",
-      "timestamp": "2026-03-26T17:13:10Z",
+      "service": "inventory-service",
+      "message": "Service restarts detected - 13 OOM kills in last 10 minutes",
+      "timestamp": "2026-03-26T14:07:10Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-603",
       "severity": "warning",
-      "service": "billing-service",
-      "message": "Timeout errors from payment-api increasing",
-      "timestamp": "2026-03-26T17:14:15Z",
+      "service": "auth-service",
+      "message": "Elevated error rate due to inventory-service instability",
+      "timestamp": "2026-03-26T14:08:15Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-604",
       "severity": "critical",
-      "service": "billing-service",
-      "message": "billing-service error rate spiking - requests failing",
-      "timestamp": "2026-03-26T17:12:39Z",
+      "service": "auth-service",
+      "message": "auth-service error rate spiking - requests failing",
+      "timestamp": "2026-03-26T14:06:13Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-605",
       "severity": "info",
-      "service": "email-service",
-      "message": "Model v4.2 deployment started - canary rollout in progress",
-      "timestamp": "2026-03-26T17:03:52Z",
-      "acknowledged": false,
-      "silenced": false
-    },
-    {
-      "alert_id": "alert-606",
-      "severity": "info",
-      "service": "metrics-collector",
-      "message": "Feature flag 'new-checkout-flow' enabled for 5% of users",
-      "timestamp": "2026-03-26T17:01:55Z",
+      "service": "config-server",
+      "message": "Scheduled maintenance window starting in 2 hours",
+      "timestamp": "2026-03-26T14:01:03Z",
       "acknowledged": false,
       "silenced": false
     }
   ],
   "services": [
     {
-      "name": "payment-api",
-      "status": "degraded",
-      "latency_ms": 1203,
-      "error_rate": 37.6,
-      "cpu_percent": 50,
-      "memory_percent": 72,
-      "version": "4.0.1"
-    },
-    {
-      "name": "billing-service",
-      "status": "degraded",
-      "latency_ms": 3399,
-      "error_rate": 50.9,
-      "cpu_percent": 61,
-      "memory_percent": 51,
-      "version": "5.0.3"
-    },
-    {
-      "name": "email-service",
-      "status": "healthy",
-      "latency_ms": 174,
-      "error_rate": 0.6,
-      "cpu_percent": 35,
-      "memory_percent": 42,
+      "name": "inventory-service",
+      "status": "down",
+      "latency_ms": 0,
+      "error_rate": 99.7,
+      "cpu_percent": 71,
+      "memory_percent": 88,
       "version": "1.2.3"
     },
     {
-      "name": "metrics-collector",
+      "name": "auth-service",
+      "status": "down",
+      "latency_ms": 0,
+      "error_rate": 70.4,
+      "cpu_percent": 70,
+      "memory_percent": 61,
+      "version": "1.0.0"
+    },
+    {
+      "name": "config-server",
       "status": "healthy",
-      "latency_ms": 66,
-      "error_rate": 0.9,
-      "cpu_percent": 11,
-      "memory_percent": 15,
-      "version": "3.0.0"
+      "latency_ms": 179,
+      "error_rate": 0.7,
+      "cpu_percent": 15,
+      "memory_percent": 44,
+      "version": "2.3.0"
+    },
+    {
+      "name": "cdn-proxy",
+      "status": "healthy",
+      "latency_ms": 32,
+      "error_rate": 0.6,
+      "cpu_percent": 48,
+      "memory_percent": 53,
+      "version": "3.2.0"
     }
   ],
   "recent_deployments": [
     {
-      "service": "payment-api",
-      "version": "4.0.1",
-      "timestamp": "2026-03-26T16:01:00Z",
-      "deployer": "dev-team"
+      "service": "inventory-service",
+      "version": "1.2.3",
+      "timestamp": "2026-03-26T13:42:00Z",
+      "deployer": "sre-bot"
     }
   ],
   "logs": {
-    "payment-api": [
+    "inventory-service": [
       {
-        "timestamp": "2026-03-26T17:11:00Z",
-        "service": "payment-api",
+        "timestamp": "2026-03-26T14:05:00Z",
+        "service": "inventory-service",
         "level": "WARN",
-        "message": "CPU usage at 100% - throttling requests"
+        "message": "GC overhead: pause=4098ms heap=7199M/8349M eden=0B survivor=155M old=2625M"
       },
       {
-        "timestamp": "2026-03-26T17:13:30Z",
-        "service": "payment-api",
+        "timestamp": "2026-03-26T14:07:00Z",
+        "service": "inventory-service",
         "level": "ERROR",
-        "message": "Worker thread pool exhausted - all threads blocked"
+        "message": "kernel: [9254.476724] Out of memory: Killed process 22612 (inventory-service) total-vm:13634359kB anon-rss:2823569kB oom_score_adj:999"
       },
       {
-        "timestamp": "2026-03-26T17:16:00Z",
-        "service": "payment-api",
-        "level": "ERROR",
-        "message": "Health check timeout after 5s - service appears hung"
-      },
-      {
-        "timestamp": "2026-03-26T17:18:30Z",
-        "service": "payment-api",
+        "timestamp": "2026-03-26T14:09:00Z",
+        "service": "inventory-service",
         "level": "WARN",
-        "message": "Error handler retry loop detected: 3834 retries in 10s"
+        "message": "c.a.s.cache.Manager [cache-evictor-1] - heap pressure: 86% used, eviction rate: 2553/s"
+      },
+      {
+        "timestamp": "2026-03-26T14:11:00Z",
+        "service": "inventory-service",
+        "level": "WARN",
+        "message": "c.a.s.gc.Monitor [gc-monitor-1] - Full GC #136: 2343ms pause, freed 316M, heap 13221M/15011M"
+      },
+      {
+        "timestamp": "2026-03-26T14:13:00Z",
+        "service": "inventory-service",
+        "level": "ERROR",
+        "message": "c.a.s.handler.RequestHandler [http-nio-8080-exec-30] - java.lang.OutOfMemoryError: Java heap space"
       }
     ],
-    "billing-service": [
+    "auth-service": [
       {
-        "timestamp": "2026-03-26T17:12:00Z",
-        "service": "billing-service",
+        "timestamp": "2026-03-26T14:06:00Z",
+        "service": "auth-service",
         "level": "ERROR",
-        "message": "payment-api health check failed: timeout after 10s"
+        "message": "upstream connect error: connection refused to 10.136.161.132:8081, reset reason: connection failure"
       },
       {
-        "timestamp": "2026-03-26T17:17:00Z",
-        "service": "billing-service",
+        "timestamp": "2026-03-26T14:11:00Z",
+        "service": "auth-service",
         "level": "WARN",
-        "message": "Load balancer removed payment-api from pool"
+        "message": "c.a.s.client.ServiceClient [http-19] - HTTP 503 from 10.136.161.132:8081 (latency=6650ms), retrying in 1000ms"
       }
     ]
   },
   "metrics": {
-    "payment-api:cpu_percent": [
+    "inventory-service:memory_percent": [
       0.0,
-      48.3,
-      71.2,
-      81.9,
-      87.0
+      36.5,
+      56.5,
+      67.5,
+      73.5,
+      76.8
     ],
-    "payment-api:latency_p99": [
-      1.3,
-      3.5,
-      9.2,
-      24.4,
-      65.0
+    "inventory-service:error_rate": [
+      0.6,
+      0.6,
+      82.5,
+      82.5,
+      82.5
     ],
-    "billing-service:error_rate": [
-      0.1,
-      0.1,
-      0.1,
-      0.1,
-      66.4,
-      66.4,
-      66.4,
-      66.4
+    "inventory-service:restarts": [
+      1.1,
+      1.1,
+      78.9,
+      78.9,
+      78.9
     ],
-    "email-service:cpu": [
-      46.1,
-      46.2,
-      44.8,
-      42.2,
-      42.8,
-      45.3
+    "auth-service:error_rate": [
+      0.0,
+      0.0,
+      0.0,
+      68.0,
+      68.0,
+      68.0,
+      68.0
     ],
-    "metrics-collector:cpu": [
-      36.6,
-      36.4,
-      20.8,
-      30.2,
+    "config-server:cpu": [
+      27.1,
       23.3,
-      27.4
+      33.4,
+      36.4,
+      31.5,
+      25.2
+    ],
+    "cdn-proxy:cpu": [
+      35.6,
+      31.6,
+      22.4,
+      32.6,
+      28.4,
+      33.2
     ]
   },
   "dependencies": {
-    "payment-api": [
-      "payment-api-db",
-      "payment-api-store"
+    "inventory-service": [
+      "inventory-service-db",
+      "inventory-service-store"
     ],
-    "billing-service": [
-      "payment-api",
-      "billing-service-db"
+    "auth-service": [
+      "inventory-service",
+      "auth-service-db"
     ],
-    "email-service": [
-      "email-service-db"
+    "config-server": [
+      "config-server-db"
     ],
-    "metrics-collector": [
-      "metrics-collector-db"
+    "cdn-proxy": [
+      "cdn-proxy-db"
     ]
   },
   "root_cause": {
-    "service": "payment-api",
-    "description": "CPU spin loop in payment-api 4.0.1 caused by infinite retry loop in error handler",
+    "service": "inventory-service",
+    "description": "Memory leak in inventory-service 1.2.3 causing OOM kills - unbounded cache growth in request handler",
     "keywords": [
-      "cpu",
-      "spin",
-      "loop",
-      "100%",
-      "retry",
-      "infinite",
-      "hang"
+      "memory",
+      "leak",
+      "OOM",
+      "out of memory",
+      "heap",
+      "cache",
+      "growth"
     ]
   },
   "valid_remediations": [
     {
       "action": "restart_service",
-      "service": "payment-api"
+      "service": "inventory-service"
     },
     {
       "action": "rollback_deploy",
-      "service": "payment-api"
+      "service": "inventory-service"
     }
   ],
   "expected_diagnostics": [
     {
       "action_type": "query_logs",
       "params": {
-        "service": "payment-api"
+        "service": "inventory-service"
       }
     },
     {
       "action_type": "check_metrics",
       "params": {
-        "service": "payment-api"
+        "service": "inventory-service"
       }
     }
   ],
   "grading_rubric": {
     "triage_weight": 0.32,
     "diagnostic_weight": 0.19,
-    "root_cause_weight": 0.15,
-    "remediation_weight": 0.13,
+    "root_cause_weight": 0.17,
+    "remediation_weight": 0.15,
     "efficiency_weight": 0.08,
-    "documentation_weight": 0.13
+    "documentation_weight": 0.09
   }
 }

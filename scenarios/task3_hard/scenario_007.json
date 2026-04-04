@@ -1,69 +1,87 @@
 {
   "incident_id": "INC-20260326-207",
   "difficulty": "hard",
-  "description": "SEV1 incident: GC Pause Storm affecting order-service. Cascading impact on session-store, notification-service. Multiple concurrent events make diagnosis challenging.",
+  "description": "SEV1 incident: CPU Spin Loop affecting order-service. Cascading impact on internal-dns, email-service. Multiple concurrent events make diagnosis challenging.",
   "expected_severity": "SEV1",
   "initial_alerts": [
     {
       "alert_id": "alert-20701",
       "severity": "critical",
       "service": "order-service",
-      "message": "P99 latency spiked to 1912ms - GC pauses detected",
-      "timestamp": "2026-03-26T13:51:05Z",
+      "message": "CPU usage at 90% - all cores saturated",
+      "timestamp": "2026-03-26T09:11:05Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-20702",
-      "severity": "warning",
+      "severity": "critical",
       "service": "order-service",
-      "message": "GC pause time exceeding 2s per cycle",
-      "timestamp": "2026-03-26T13:52:10Z",
+      "message": "Service unresponsive - health check failures",
+      "timestamp": "2026-03-26T09:12:10Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-20703",
       "severity": "warning",
-      "service": "session-store",
-      "message": "Intermittent timeouts from order-service",
-      "timestamp": "2026-03-26T13:53:15Z",
+      "service": "internal-dns",
+      "message": "Timeout errors from order-service increasing",
+      "timestamp": "2026-03-26T09:13:15Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-20704",
       "severity": "critical",
-      "service": "session-store",
-      "message": "session-store error rate spiking - requests failing",
-      "timestamp": "2026-03-26T13:51:28Z",
+      "service": "internal-dns",
+      "message": "internal-dns error rate spiking - requests failing",
+      "timestamp": "2026-03-26T09:11:33Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-20705",
       "severity": "critical",
-      "service": "notification-service",
-      "message": "notification-service error rate spiking - requests failing",
-      "timestamp": "2026-03-26T13:51:27Z",
+      "service": "email-service",
+      "message": "email-service error rate spiking - requests failing",
+      "timestamp": "2026-03-26T09:11:03Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-20706",
-      "severity": "warning",
-      "service": "cache-layer",
-      "message": "Memory usage at 68% - within normal range but trending up",
-      "timestamp": "2026-03-26T13:46:48Z",
+      "severity": "info",
+      "service": "payment-api",
+      "message": "Feature flag 'new-checkout-flow' enabled for 5% of users",
+      "timestamp": "2026-03-26T09:08:18Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-20707",
       "severity": "info",
-      "service": "api-gateway",
-      "message": "Automated backup completed successfully",
-      "timestamp": "2026-03-26T13:49:58Z",
+      "service": "payment-api",
+      "message": "New dashboard version deployed - no action required",
+      "timestamp": "2026-03-26T09:00:54Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-20708",
+      "severity": "warning",
+      "service": "logging-pipeline",
+      "message": "CPU usage at 63% - approaching threshold",
+      "timestamp": "2026-03-26T09:03:41Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-20709",
+      "severity": "info",
+      "service": "cdn-proxy",
+      "message": "Model v4.2 deployment started - canary rollout in progress",
+      "timestamp": "2026-03-26T09:06:41Z",
       "acknowledged": false,
       "silenced": false
     }
@@ -71,197 +89,200 @@
   "services": [
     {
       "name": "order-service",
-      "status": "down",
-      "latency_ms": 0,
-      "error_rate": 75.7,
-      "cpu_percent": 76,
-      "memory_percent": 47,
+      "status": "degraded",
+      "latency_ms": 4412,
+      "error_rate": 46.4,
+      "cpu_percent": 65,
+      "memory_percent": 54,
+      "version": "3.2.0"
+    },
+    {
+      "name": "internal-dns",
+      "status": "degraded",
+      "latency_ms": 4604,
+      "error_rate": 60.5,
+      "cpu_percent": 64,
+      "memory_percent": 49,
+      "version": "5.0.3"
+    },
+    {
+      "name": "email-service",
+      "status": "degraded",
+      "latency_ms": 2628,
+      "error_rate": 44.2,
+      "cpu_percent": 54,
+      "memory_percent": 42,
+      "version": "4.1.0"
+    },
+    {
+      "name": "logging-pipeline",
+      "status": "healthy",
+      "latency_ms": 98,
+      "error_rate": 0.7,
+      "cpu_percent": 42,
+      "memory_percent": 18,
       "version": "4.2.0"
     },
     {
-      "name": "session-store",
-      "status": "degraded",
-      "latency_ms": 3102,
-      "error_rate": 57.3,
-      "cpu_percent": 76,
+      "name": "cdn-proxy",
+      "status": "healthy",
+      "latency_ms": 63,
+      "error_rate": 1.0,
+      "cpu_percent": 27,
       "memory_percent": 50,
-      "version": "2.1.1"
+      "version": "3.1.2"
     },
     {
-      "name": "notification-service",
-      "status": "down",
-      "latency_ms": 0,
-      "error_rate": 70.8,
-      "cpu_percent": 74,
-      "memory_percent": 48,
-      "version": "5.0.3"
-    },
-    {
-      "name": "config-server",
+      "name": "payment-api",
       "status": "healthy",
-      "latency_ms": 108,
-      "error_rate": 0.2,
-      "cpu_percent": 37,
-      "memory_percent": 22,
-      "version": "5.0.3"
-    },
-    {
-      "name": "api-gateway",
-      "status": "healthy",
-      "latency_ms": 186,
-      "error_rate": 0.6,
-      "cpu_percent": 31,
-      "memory_percent": 37,
-      "version": "5.0.3"
-    },
-    {
-      "name": "cache-layer",
-      "status": "healthy",
-      "latency_ms": 101,
-      "error_rate": 0.7,
-      "cpu_percent": 30,
-      "memory_percent": 53,
-      "version": "2.1.1"
+      "latency_ms": 194,
+      "error_rate": 0.8,
+      "cpu_percent": 10,
+      "memory_percent": 49,
+      "version": "4.0.1"
     }
   ],
   "recent_deployments": [
     {
       "service": "order-service",
-      "version": "4.2.0",
-      "timestamp": "2026-03-26T12:13:00Z",
-      "deployer": "infra-team"
+      "version": "3.2.0",
+      "timestamp": "2026-03-26T08:50:00Z",
+      "deployer": "dev-team"
     },
     {
-      "service": "config-server",
-      "version": "5.0.3",
-      "timestamp": "2026-03-26T11:22:00Z",
+      "service": "payment-api",
+      "version": "4.0.1",
+      "timestamp": "2026-03-26T08:38:00Z",
+      "deployer": "dev-team"
+    },
+    {
+      "service": "logging-pipeline",
+      "version": "4.2.0",
+      "timestamp": "2026-03-26T07:54:00Z",
       "deployer": "dev-team"
     }
   ],
   "logs": {
     "order-service": [
       {
-        "timestamp": "2026-03-26T13:50:00Z",
+        "timestamp": "2026-03-26T09:10:00Z",
         "service": "order-service",
         "level": "WARN",
-        "message": "GC pause duration: 2757ms (threshold: 500ms)"
+        "message": "c.a.s.retry.ExponentialBackoff [retry-pool-23] - attempt 13/10 for operation 'payment.charge' (elapsed: 18459ms)"
       },
       {
-        "timestamp": "2026-03-26T13:51:15Z",
+        "timestamp": "2026-03-26T09:11:40Z",
         "service": "order-service",
         "level": "ERROR",
-        "message": "Stop-the-world GC: 2283ms - request processing halted"
+        "message": "c.a.s.monitor.ThreadDump [watchdog-1] - thread 'http-nio-8080-exec-27' in RUNNABLE state for 165s, stack: c.a.s.handler.RequestHandler.processRetry(line:743)"
       },
       {
-        "timestamp": "2026-03-26T13:52:30Z",
+        "timestamp": "2026-03-26T09:13:20Z",
+        "service": "order-service",
+        "level": "ERROR",
+        "message": "c.a.s.monitor.ThreadDump [watchdog-1] - 20/72 threads in RUNNABLE state, CPU 97%"
+      },
+      {
+        "timestamp": "2026-03-26T09:15:00Z",
         "service": "order-service",
         "level": "WARN",
-        "message": "Heap occupancy at 88% - frequent full GC cycles"
+        "message": "c.a.s.retry.ExponentialBackoff [retry-pool-24] - attempt 5/5 for operation 'payment.charge' (elapsed: 60988ms), max retries exhausted"
+      }
+    ],
+    "internal-dns": [
+      {
+        "timestamp": "2026-03-26T09:11:00Z",
+        "service": "internal-dns",
+        "level": "ERROR",
+        "message": "c.a.s.client.ServiceClient [http-45] - HTTP 504 from 10.84.246.251:8080 (latency=10003ms)"
       },
       {
-        "timestamp": "2026-03-26T13:53:45Z",
-        "service": "order-service",
+        "timestamp": "2026-03-26T09:16:00Z",
+        "service": "internal-dns",
+        "level": "WARN",
+        "message": "c.a.s.lb.HealthChecker [hc-monitor-1] - backend 10.84.246.251:8080 health check failed: timeout after 5000ms"
+      }
+    ],
+    "email-service": [
+      {
+        "timestamp": "2026-03-26T09:11:00Z",
+        "service": "email-service",
+        "level": "ERROR",
+        "message": "c.a.s.client.ServiceClient [http-22] - HTTP 504 from 10.84.246.251:8080 (latency=10003ms)"
+      },
+      {
+        "timestamp": "2026-03-26T09:16:00Z",
+        "service": "email-service",
+        "level": "WARN",
+        "message": "c.a.s.lb.HealthChecker [hc-monitor-1] - backend 10.84.246.251:8080 health check failed: timeout after 5000ms"
+      }
+    ],
+    "logging-pipeline": [
+      {
+        "timestamp": "2026-03-26T09:10:00Z",
+        "service": "logging-pipeline",
         "level": "INFO",
-        "message": "GC tuning: concurrent mark phase taking 2869ms"
+        "message": "c.a.s.search.Indexer [reindex-pool-1] - reindex progress: 40% (12403/31008 docs), est. remaining: 340s"
       }
     ],
-    "session-store": [
+    "payment-api": [
       {
-        "timestamp": "2026-03-26T13:51:00Z",
-        "service": "session-store",
-        "level": "WARN",
-        "message": "Intermittent timeout from order-service: latency spike detected"
-      },
-      {
-        "timestamp": "2026-03-26T13:56:00Z",
-        "service": "session-store",
-        "level": "ERROR",
-        "message": "Request to order-service timed out during GC pause"
-      }
-    ],
-    "notification-service": [
-      {
-        "timestamp": "2026-03-26T13:51:00Z",
-        "service": "notification-service",
-        "level": "WARN",
-        "message": "Intermittent timeout from order-service: latency spike detected"
-      },
-      {
-        "timestamp": "2026-03-26T13:56:00Z",
-        "service": "notification-service",
-        "level": "ERROR",
-        "message": "Request to order-service timed out during GC pause"
-      }
-    ],
-    "config-server": [
-      {
-        "timestamp": "2026-03-26T13:50:00Z",
-        "service": "config-server",
+        "timestamp": "2026-03-26T09:10:00Z",
+        "service": "payment-api",
         "level": "INFO",
-        "message": "Healthy - serving requests normally"
+        "message": "c.a.s.ml.ModelServer [model-serve-1] - inference latency p99=23ms, model=v4.2, batch_size=32"
       }
     ]
   },
   "metrics": {
-    "order-service:gc_pause_ms": [
-      1.9,
-      4.3,
-      10.0,
-      23.3,
-      54.1
+    "order-service:cpu_percent": [
+      0.0,
+      45.0,
+      69.7,
+      83.3,
+      90.7,
+      94.8
     ],
     "order-service:latency_p99": [
-      0.5,
-      1.2,
-      2.8,
-      6.5,
-      15.2,
-      35.1,
-      81.4
+      0.8,
+      1.8,
+      4.3,
+      10.0,
+      23.4,
+      54.6
     ],
-    "order-service:memory_percent": [
-      0.0,
-      31.4,
-      51.9,
-      65.3,
-      73.9,
-      79.6,
-      83.3,
-      85.7
+    "internal-dns:error_rate": [
+      1.8,
+      1.8,
+      1.8,
+      54.6,
+      54.6,
+      54.6
     ],
-    "session-store:error_rate": [
-      0.2,
-      0.2,
-      0.2,
-      68.6,
-      68.6,
-      68.6
+    "email-service:error_rate": [
+      0.3,
+      0.3,
+      0.3,
+      62.6,
+      62.6,
+      62.6,
+      62.6
     ],
-    "notification-service:error_rate": [
-      0.6,
-      0.6,
-      0.6,
-      0.6,
-      68.0,
-      68.0,
-      68.0,
-      68.0
+    "logging-pipeline:cpu": [
+      40.4,
+      46.4,
+      30.9,
+      34.1,
+      43.3,
+      37.2
     ],
-    "config-server:cpu": [
-      39.7,
-      27.5,
-      25.6,
-      25.0,
-      34.8,
-      23.2
-    ],
-    "api-gateway:cpu": [
-      49.2,
-      42.0,
-      44.4,
-      49.6,
-      39.8,
-      47.6
+    "cdn-proxy:cpu": [
+      30.5,
+      36.9,
+      26.3,
+      22.0,
+      25.5,
+      31.6
     ]
   },
   "dependencies": {
@@ -269,34 +290,35 @@
       "order-service-db",
       "order-service-store"
     ],
-    "session-store": [
+    "internal-dns": [
       "order-service",
-      "session-store-db"
+      "internal-dns-db"
     ],
-    "notification-service": [
+    "email-service": [
       "order-service",
-      "notification-service-db"
+      "email-service-db"
     ],
-    "config-server": [
-      "config-server-db"
+    "logging-pipeline": [
+      "logging-pipeline-db"
     ],
-    "api-gateway": [
-      "api-gateway-db"
+    "cdn-proxy": [
+      "cdn-proxy-db"
     ],
-    "cache-layer": [
-      "cache-layer-db"
+    "payment-api": [
+      "payment-api-db"
     ]
   },
   "root_cause": {
     "service": "order-service",
-    "description": "GC pause storm in order-service 4.2.0 due to excessive object allocation in batch processor",
+    "description": "CPU spin loop in order-service 3.2.0 caused by infinite retry loop in error handler",
     "keywords": [
-      "gc",
-      "garbage collection",
-      "pause",
-      "stop-the-world",
-      "allocation",
-      "heap"
+      "cpu",
+      "spin",
+      "loop",
+      "100%",
+      "retry",
+      "infinite",
+      "hang"
     ]
   },
   "valid_remediations": [
@@ -306,10 +328,6 @@
     },
     {
       "action": "rollback_deploy",
-      "service": "order-service"
-    },
-    {
-      "action": "scale_service",
       "service": "order-service"
     }
   ],
@@ -329,16 +347,16 @@
     {
       "action_type": "query_logs",
       "params": {
-        "service": "session-store"
+        "service": "internal-dns"
       }
     }
   ],
   "grading_rubric": {
-    "triage_weight": 0.08,
-    "diagnostic_weight": 0.25,
+    "triage_weight": 0.09,
+    "diagnostic_weight": 0.27,
     "root_cause_weight": 0.3,
-    "remediation_weight": 0.18,
-    "efficiency_weight": 0.11,
-    "documentation_weight": 0.08
+    "remediation_weight": 0.21,
+    "efficiency_weight": 0.1,
+    "documentation_weight": 0.03
   }
 }

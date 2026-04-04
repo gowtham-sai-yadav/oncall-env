@@ -1,360 +1,403 @@
 {
   "incident_id": "INC-20260326-303",
   "difficulty": "expert",
-  "description": "SEV1 incident: Replication Lag affecting cache-layer. Cascading impact on cdn-proxy, analytics-service. Multiple concurrent events make diagnosis challenging. Red herrings present - focus on evidence-based investigation.",
+  "description": "SEV1 incident: Connection Pool Exhaustion affecting auth-service. Cascading impact on cache-layer, notification-service. Multiple concurrent events make diagnosis challenging. Red herrings present - focus on evidence-based investigation.",
   "expected_severity": "SEV1",
   "initial_alerts": [
     {
       "alert_id": "alert-30301",
       "severity": "critical",
-      "service": "cache-layer",
-      "message": "Data inconsistency detected - read replicas 35s behind primary",
-      "timestamp": "2026-03-26T09:33:05Z",
+      "service": "auth-service",
+      "message": "Error rate exceeded 5% threshold - currently at 29.0%",
+      "timestamp": "2026-03-26T22:31:05Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-30302",
-      "severity": "warning",
-      "service": "cache-layer",
-      "message": "Replication lag exceeding 30s threshold",
-      "timestamp": "2026-03-26T09:34:10Z",
+      "severity": "critical",
+      "service": "auth-service",
+      "message": "P99 latency > 2000ms (currently 4981ms)",
+      "timestamp": "2026-03-26T22:32:10Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-30303",
       "severity": "warning",
-      "service": "cdn-proxy",
-      "message": "Stale data returned for user queries",
-      "timestamp": "2026-03-26T09:35:15Z",
+      "service": "cache-layer",
+      "message": "Increased 4xx responses from downstream dependency",
+      "timestamp": "2026-03-26T22:33:15Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-30304",
       "severity": "critical",
-      "service": "cdn-proxy",
-      "message": "cdn-proxy error rate spiking - requests failing",
-      "timestamp": "2026-03-26T09:33:19Z",
+      "service": "cache-layer",
+      "message": "cache-layer error rate spiking - requests failing",
+      "timestamp": "2026-03-26T22:31:51Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-30305",
       "severity": "critical",
-      "service": "analytics-service",
-      "message": "analytics-service error rate spiking - requests failing",
-      "timestamp": "2026-03-26T09:33:42Z",
+      "service": "notification-service",
+      "message": "notification-service error rate spiking - requests failing",
+      "timestamp": "2026-03-26T22:31:51Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-30306",
       "severity": "info",
-      "service": "email-service",
-      "message": "Scheduled maintenance window starting in 2 hours",
-      "timestamp": "2026-03-26T09:22:02Z",
+      "service": "search-service",
+      "message": "New dashboard version deployed - no action required",
+      "timestamp": "2026-03-26T22:28:46Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-30307",
       "severity": "info",
-      "service": "logging-pipeline",
-      "message": "Canary deployment proceeding as expected",
-      "timestamp": "2026-03-26T09:28:08Z",
+      "service": "api-gateway",
+      "message": "Scheduled maintenance window starting in 2 hours",
+      "timestamp": "2026-03-26T22:23:12Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-30308",
       "severity": "info",
-      "service": "logging-pipeline",
-      "message": "New dashboard version deployed - no action required",
-      "timestamp": "2026-03-26T09:29:54Z",
+      "service": "search-service",
+      "message": "SSL certificate renewal scheduled for next week",
+      "timestamp": "2026-03-26T22:24:09Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-30309",
       "severity": "info",
-      "service": "billing-service",
-      "message": "Elasticsearch reindex started - expected temporary latency increase",
-      "timestamp": "2026-03-26T09:28:01Z",
+      "service": "api-gateway",
+      "message": "Canary deployment proceeding as expected",
+      "timestamp": "2026-03-26T22:25:11Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-30310",
+      "severity": "warning",
+      "service": "metrics-collector",
+      "message": "Log volume increased 20% - review retention policy",
+      "timestamp": "2026-03-26T22:27:49Z",
       "acknowledged": false,
       "silenced": false
     }
   ],
   "services": [
     {
-      "name": "cache-layer",
-      "status": "degraded",
-      "latency_ms": 3252,
-      "error_rate": 57.4,
-      "cpu_percent": 94,
-      "memory_percent": 82,
-      "version": "1.1.0"
-    },
-    {
-      "name": "cdn-proxy",
+      "name": "auth-service",
       "status": "down",
       "latency_ms": 0,
-      "error_rate": 73.1,
-      "cpu_percent": 28,
-      "memory_percent": 50,
+      "error_rate": 75.1,
+      "cpu_percent": 63,
+      "memory_percent": 45,
+      "version": "2.3.0"
+    },
+    {
+      "name": "cache-layer",
+      "status": "degraded",
+      "latency_ms": 2126,
+      "error_rate": 40.4,
+      "cpu_percent": 76,
+      "memory_percent": 55,
+      "version": "3.0.0"
+    },
+    {
+      "name": "notification-service",
+      "status": "degraded",
+      "latency_ms": 1011,
+      "error_rate": 30.2,
+      "cpu_percent": 63,
+      "memory_percent": 60,
       "version": "5.0.3"
     },
     {
-      "name": "analytics-service",
-      "status": "degraded",
-      "latency_ms": 4495,
-      "error_rate": 48.5,
-      "cpu_percent": 39,
-      "memory_percent": 43,
-      "version": "2.4.1"
-    },
-    {
-      "name": "email-service",
+      "name": "metrics-collector",
       "status": "healthy",
-      "latency_ms": 186,
-      "error_rate": 0.5,
-      "cpu_percent": 11,
-      "memory_percent": 27,
+      "latency_ms": 88,
+      "error_rate": 0.2,
+      "cpu_percent": 37,
+      "memory_percent": 50,
       "version": "1.0.0"
     },
     {
-      "name": "logging-pipeline",
+      "name": "api-gateway",
       "status": "healthy",
-      "latency_ms": 121,
-      "error_rate": 0.7,
-      "cpu_percent": 41,
-      "memory_percent": 25,
-      "version": "4.1.0"
+      "latency_ms": 21,
+      "error_rate": 0.5,
+      "cpu_percent": 43,
+      "memory_percent": 42,
+      "version": "5.0.3"
     },
     {
-      "name": "billing-service",
+      "name": "search-service",
       "status": "healthy",
-      "latency_ms": 198,
-      "error_rate": 0.2,
-      "cpu_percent": 48,
-      "memory_percent": 19,
-      "version": "1.5.0"
+      "latency_ms": 40,
+      "error_rate": 0.1,
+      "cpu_percent": 21,
+      "memory_percent": 25,
+      "version": "2.4.1"
     }
   ],
   "recent_deployments": [
     {
-      "service": "cache-layer",
-      "version": "1.1.0",
-      "timestamp": "2026-03-26T08:25:00Z",
+      "service": "auth-service",
+      "version": "2.3.0",
+      "timestamp": "2026-03-26T21:50:00Z",
+      "deployer": "search-team"
+    },
+    {
+      "service": "api-gateway",
+      "version": "5.0.3",
+      "timestamp": "2026-03-26T19:00:00Z",
       "deployer": "dev-team"
     },
     {
-      "service": "billing-service",
-      "version": "1.5.0",
-      "timestamp": "2026-03-26T06:35:00Z",
-      "deployer": "search-team"
+      "service": "search-service",
+      "version": "2.4.1",
+      "timestamp": "2026-03-26T21:27:00Z",
+      "deployer": "ops-team"
     },
     {
-      "service": "email-service",
+      "service": "metrics-collector",
       "version": "1.0.0",
-      "timestamp": "2026-03-26T08:27:00Z",
-      "deployer": "search-team"
-    },
-    {
-      "service": "logging-pipeline",
-      "version": "4.1.0",
-      "timestamp": "2026-03-26T08:42:00Z",
-      "deployer": "search-team"
+      "timestamp": "2026-03-26T19:38:00Z",
+      "deployer": "dev-team"
     }
   ],
   "logs": {
+    "auth-service": [
+      {
+        "timestamp": "2026-03-26T22:30:00Z",
+        "service": "auth-service",
+        "level": "ERROR",
+        "message": "c.a.s.db.HikariPool [pool-3-thread-6] - Connection is not available, request timed out after 15000ms. (total=96, active=96, idle=0, waiting=32)"
+      },
+      {
+        "timestamp": "2026-03-26T22:31:40Z",
+        "service": "auth-service",
+        "level": "ERROR",
+        "message": "c.a.s.handler.RequestHandler [http-nio-8080-exec-23] - java.net.SocketTimeoutException: connect timed out to 10.183.43.6:5436"
+      },
+      {
+        "timestamp": "2026-03-26T22:33:20Z",
+        "service": "auth-service",
+        "level": "WARN",
+        "message": "c.a.s.circuit.CircuitBreaker [cb-monitor-1] - Circuit breaker 'auth-service-db' state: CLOSED -> OPEN (failures=287/20)"
+      },
+      {
+        "timestamp": "2026-03-26T22:35:00Z",
+        "service": "auth-service",
+        "level": "ERROR",
+        "message": "c.a.s.handler.RequestHandler [http-nio-8080-exec-28] - java.sql.SQLTransientConnectionException: HikariPool-1 - Connection is not available, request timed out after 5000ms"
+      },
+      {
+        "timestamp": "2026-03-26T22:36:40Z",
+        "service": "auth-service",
+        "level": "INFO",
+        "message": "c.a.s.db.HikariPool [pool-3-housekeeper] - HikariPool-1 - Pool stats (total=54, active=54, idle=0, waiting=152)"
+      }
+    ],
     "cache-layer": [
       {
-        "timestamp": "2026-03-26T09:32:00Z",
+        "timestamp": "2026-03-26T22:31:00Z",
         "service": "cache-layer",
         "level": "ERROR",
-        "message": "Replication lag at 36s - exceeds SLO of 5s"
+        "message": "upstream connect error: connection refused to 10.220.151.31:8098, reset reason: remote reset"
       },
       {
-        "timestamp": "2026-03-26T09:34:00Z",
+        "timestamp": "2026-03-26T22:34:20Z",
+        "service": "cache-layer",
+        "level": "ERROR",
+        "message": "c.a.s.client.ServiceClient [http-25] - HTTP 503 from 10.220.151.31:8098 (latency=21757ms)"
+      },
+      {
+        "timestamp": "2026-03-26T22:37:40Z",
         "service": "cache-layer",
         "level": "WARN",
-        "message": "Read replica cache-layer-replica-2 falling behind primary"
-      },
-      {
-        "timestamp": "2026-03-26T09:36:00Z",
-        "service": "cache-layer",
-        "level": "ERROR",
-        "message": "Schema migration v1.1.0 causing replication bottleneck"
-      },
-      {
-        "timestamp": "2026-03-26T09:38:00Z",
-        "service": "cache-layer",
-        "level": "INFO",
-        "message": "Attempting to pause non-critical replication streams"
+        "message": "c.a.s.circuit.CircuitBreaker [cb-auth-service] - state: CLOSED -> OPEN after 95 consecutive failures"
       }
     ],
-    "cdn-proxy": [
+    "notification-service": [
       {
-        "timestamp": "2026-03-26T09:33:00Z",
-        "service": "cdn-proxy",
+        "timestamp": "2026-03-26T22:31:00Z",
+        "service": "notification-service",
+        "level": "ERROR",
+        "message": "upstream connect error: connection refused to 10.220.151.31:8098, reset reason: remote reset"
+      },
+      {
+        "timestamp": "2026-03-26T22:34:20Z",
+        "service": "notification-service",
+        "level": "ERROR",
+        "message": "c.a.s.client.ServiceClient [http-1] - HTTP 503 from 10.220.151.31:8098 (latency=12209ms)"
+      },
+      {
+        "timestamp": "2026-03-26T22:37:40Z",
+        "service": "notification-service",
         "level": "WARN",
-        "message": "Inconsistent read from cache-layer: got stale version"
-      },
-      {
-        "timestamp": "2026-03-26T09:38:00Z",
-        "service": "cdn-proxy",
-        "level": "ERROR",
-        "message": "Cache invalidation failed: stale data propagated from cache-layer"
+        "message": "c.a.s.circuit.CircuitBreaker [cb-auth-service] - state: CLOSED -> OPEN after 58 consecutive failures"
       }
     ],
-    "analytics-service": [
+    "api-gateway": [
       {
-        "timestamp": "2026-03-26T09:33:00Z",
-        "service": "analytics-service",
+        "timestamp": "2026-03-26T22:30:00Z",
+        "service": "api-gateway",
         "level": "WARN",
-        "message": "Inconsistent read from cache-layer: got stale version"
-      },
-      {
-        "timestamp": "2026-03-26T09:38:00Z",
-        "service": "analytics-service",
-        "level": "ERROR",
-        "message": "Cache invalidation failed: stale data propagated from cache-layer"
+        "message": "c.a.s.db.SlowQueryLog [query-monitor-1] - slow query: 2103ms SELECT * FROM audit_log WHERE created_at > '2026-03-25' (non-critical)"
       }
     ],
-    "email-service": [
+    "metrics-collector": [
       {
-        "timestamp": "2026-03-26T09:32:00Z",
-        "service": "email-service",
+        "timestamp": "2026-03-26T22:30:00Z",
+        "service": "metrics-collector",
         "level": "INFO",
-        "message": "Batch job completed: processed 39842 records"
+        "message": "c.a.s.batch.Executor [batch-pool-3] - job 'daily-reconcile' completed: 15838 records processed in 142s"
       }
     ],
-    "billing-service": [
+    "search-service": [
       {
-        "timestamp": "2026-03-26T09:32:00Z",
-        "service": "billing-service",
+        "timestamp": "2026-03-26T22:30:00Z",
+        "service": "search-service",
         "level": "INFO",
-        "message": "Scheduled reindex 40% complete - elevated latency expected"
-      }
-    ],
-    "logging-pipeline": [
-      {
-        "timestamp": "2026-03-26T09:32:00Z",
-        "service": "logging-pipeline",
-        "level": "INFO",
-        "message": "Healthy - serving requests normally"
+        "message": "c.a.s.batch.Executor [batch-pool-3] - job 'daily-reconcile' completed: 16247 records processed in 142s"
       }
     ]
   },
   "metrics": {
-    "cache-layer:replication_lag_s": [
+    "auth-service:error_rate": [
+      0.3,
       0.6,
-      1.1,
-      2.0,
+      1.5,
       3.8,
-      7.1,
-      13.5,
-      25.4,
-      47.9
+      9.4,
+      23.3,
+      57.5
+    ],
+    "auth-service:latency_p99": [
+      1.4,
+      2.9,
+      5.8,
+      11.7,
+      23.6,
+      47.3,
+      95.0
+    ],
+    "auth-service:db_connections": [
+      0.0,
+      34.8,
+      57.5,
+      72.2,
+      81.9,
+      88.1,
+      92.2,
+      94.9
     ],
     "cache-layer:error_rate": [
-      1.2,
-      1.2,
-      43.8,
-      43.8,
-      43.8
+      1.1,
+      3.5,
+      10.6,
+      32.3,
+      98.7
     ],
-    "cdn-proxy:error_rate": [
-      0.1,
-      0.1,
-      84.7,
-      84.7,
-      84.7
+    "notification-service:error_rate": [
+      0.6,
+      1.1,
+      2.2,
+      4.2,
+      7.9,
+      15.2,
+      28.9,
+      55.2
     ],
-    "analytics-service:error_rate": [
-      1.5,
-      1.5,
-      1.5,
-      1.5,
-      48.6,
-      48.6,
-      48.6,
-      48.6
+    "metrics-collector:cpu": [
+      20.4,
+      28.5,
+      21.2,
+      28.3,
+      24.0,
+      28.9
     ],
-    "email-service:cpu": [
-      49.4,
-      52.5,
-      45.0,
-      37.2,
-      50.6,
-      50.3
-    ],
-    "logging-pipeline:cpu": [
-      33.5,
-      27.0,
-      40.0,
-      45.7,
-      28.0,
-      39.0
+    "api-gateway:cpu": [
+      34.2,
+      32.4,
+      30.0,
+      40.9,
+      29.9,
+      37.2
     ]
   },
   "dependencies": {
+    "auth-service": [
+      "auth-service-db",
+      "auth-service-store"
+    ],
     "cache-layer": [
-      "cache-layer-db",
-      "cache-layer-store"
+      "auth-service",
+      "cache-layer-db"
     ],
-    "cdn-proxy": [
-      "cache-layer",
-      "cdn-proxy-db"
+    "notification-service": [
+      "auth-service",
+      "notification-service-db"
     ],
-    "analytics-service": [
-      "cache-layer",
-      "analytics-service-db"
+    "metrics-collector": [
+      "metrics-collector-db"
     ],
-    "email-service": [
-      "email-service-db"
+    "api-gateway": [
+      "api-gateway-db"
     ],
-    "logging-pipeline": [
-      "logging-pipeline-db"
-    ],
-    "billing-service": [
-      "billing-service-db"
+    "search-service": [
+      "search-service-db"
     ]
   },
   "root_cause": {
-    "service": "cache-layer",
-    "description": "Database replication lag on cache-layer caused read replicas to serve stale data after 1.1.0 schema migration",
+    "service": "auth-service",
+    "description": "DB connection pool exhaustion on auth-service caused by connection leak in 2.3.0 deployment",
     "keywords": [
-      "replication",
-      "lag",
-      "stale",
-      "replica",
-      "schema",
-      "migration",
-      "database"
+      "connection pool",
+      "database",
+      "db",
+      "exhausted",
+      "leak",
+      "connection"
     ]
   },
   "valid_remediations": [
     {
-      "action": "rollback_deploy",
-      "service": "cache-layer"
+      "action": "restart_service",
+      "service": "auth-service"
     },
     {
-      "action": "restart_service",
-      "service": "cache-layer"
+      "action": "rollback_deploy",
+      "service": "auth-service"
     }
   ],
   "expected_diagnostics": [
     {
       "action_type": "query_logs",
       "params": {
-        "service": "cache-layer"
+        "service": "auth-service"
       }
     },
     {
       "action_type": "check_metrics",
+      "params": {
+        "service": "auth-service"
+      }
+    },
+    {
+      "action_type": "query_logs",
       "params": {
         "service": "cache-layer"
       }
@@ -362,16 +405,16 @@
     {
       "action_type": "query_logs",
       "params": {
-        "service": "cdn-proxy"
+        "service": "notification-service"
       }
     }
   ],
   "grading_rubric": {
-    "triage_weight": 0.04,
-    "diagnostic_weight": 0.24,
+    "triage_weight": 0.05,
+    "diagnostic_weight": 0.19,
     "root_cause_weight": 0.37,
-    "remediation_weight": 0.19,
-    "efficiency_weight": 0.08,
-    "documentation_weight": 0.08
+    "remediation_weight": 0.2,
+    "efficiency_weight": 0.09,
+    "documentation_weight": 0.1
   }
 }

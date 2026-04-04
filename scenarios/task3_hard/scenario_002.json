@@ -159,31 +159,31 @@
         "timestamp": "2026-03-26T15:39:00Z",
         "service": "order-service",
         "level": "ERROR",
-        "message": "Connection pool exhausted - cannot acquire connection to order-service-db"
+        "message": "c.a.o.db.HikariPool [pool-2-thread-8] - Connection is not available, request timed out after 30000ms. (total=40, active=40, idle=0, waiting=112)"
       },
       {
         "timestamp": "2026-03-26T15:41:00Z",
         "service": "order-service",
         "level": "ERROR",
-        "message": "Timeout waiting for DB connection after 5000ms"
+        "message": "c.a.o.handler.OrderHandler [http-nio-8081-exec-29] - java.sql.SQLTransientConnectionException: HikariPool-1 - Connection is not available, request timed out after 5000ms to 10.0.3.51:5432"
       },
       {
         "timestamp": "2026-03-26T15:43:00Z",
         "service": "order-service",
         "level": "WARN",
-        "message": "Circuit breaker OPEN for order-service-db connections"
+        "message": "i.g.r.CircuitBreaker [cb-order-db] - state transition: CLOSED -> OPEN (failure_count=28, threshold=20, last_error=java.net.SocketTimeoutException: connect timed out to 10.0.3.51:5432)"
       },
       {
         "timestamp": "2026-03-26T15:45:00Z",
         "service": "order-service",
         "level": "ERROR",
-        "message": "Failed to process request txn-72814: DB connection unavailable"
+        "message": "c.a.o.handler.OrderHandler [http-nio-8081-exec-37] - txn-72814 failed: java.sql.SQLTransientConnectionException: HikariPool-1 - Connection is not available (total=40, active=40, idle=0, waiting=148)"
       },
       {
         "timestamp": "2026-03-26T15:47:00Z",
         "service": "order-service",
         "level": "INFO",
-        "message": "Retrying DB connection pool initialization"
+        "message": "c.a.o.db.HikariPool [HikariPool-1 housekeeper] - pool stats: total=40, active=40, idle=0, waiting=163; attempting pool restart to 10.0.3.51:5432"
       }
     ],
     "email-service": [
@@ -191,13 +191,13 @@
         "timestamp": "2026-03-26T15:40:00Z",
         "service": "email-service",
         "level": "ERROR",
-        "message": "order-service returned 503 for request req-27015"
+        "message": "c.a.e.client.OrderClient [http-nio-8084-exec-6] - upstream 10.0.4.22:8081 returned HTTP 503 (0.002s) for req-27015"
       },
       {
         "timestamp": "2026-03-26T15:45:00Z",
         "service": "email-service",
         "level": "ERROR",
-        "message": "Failed to complete operation: upstream order-service unavailable"
+        "message": "c.a.e.client.OrderClient [http-nio-8084-exec-11] - upstream connect error: connection refused to 10.0.4.22:8081, reset reason: remote connection failure"
       }
     ],
     "session-store": [
@@ -205,19 +205,19 @@
         "timestamp": "2026-03-26T15:40:00Z",
         "service": "session-store",
         "level": "ERROR",
-        "message": "order-service returned 503 for request req-94066"
+        "message": "c.a.ss.client.OrderClient [http-nio-8085-exec-3] - upstream 10.0.4.22:8081 returned HTTP 503 (0.001s) for req-94066"
       },
       {
         "timestamp": "2026-03-26T15:43:20Z",
         "service": "session-store",
         "level": "ERROR",
-        "message": "Failed to complete operation: upstream order-service unavailable"
+        "message": "c.a.ss.client.OrderClient [http-nio-8085-exec-9] - upstream connect error: connection refused to 10.0.4.22:8081, reset reason: remote connection failure"
       },
       {
         "timestamp": "2026-03-26T15:46:40Z",
         "service": "session-store",
         "level": "WARN",
-        "message": "Fallback: queuing request for retry"
+        "message": "c.a.ss.queue.RetryQueue [retry-worker-1] - enqueuing failed request for async retry: requestId=req-94120, attempts=0, backoff=5000ms"
       }
     ],
     "service-mesh": [
@@ -225,7 +225,7 @@
         "timestamp": "2026-03-26T15:39:00Z",
         "service": "service-mesh",
         "level": "INFO",
-        "message": "Scheduled reindex 40% complete - elevated latency expected"
+        "message": "c.a.m.reindex.ElasticReindexJob [reindex-worker-3] - reindex progress: index=service-mesh-events-2026.03 docs_processed=1247832/3119580 (40.0%) elapsed=24m rate=866docs/s"
       }
     ],
     "payment-api": [
@@ -233,7 +233,7 @@
         "timestamp": "2026-03-26T15:39:00Z",
         "service": "payment-api",
         "level": "INFO",
-        "message": "Cache hit ratio: 98%"
+        "message": "c.a.p.cache.RedisCache [cache-stats-1] - hits=28410 misses=577 ratio=98.0% evictions=0 pool=10.0.5.12:6379"
       }
     ]
   },

@@ -138,25 +138,25 @@
         "timestamp": "2026-03-26T09:10:00Z",
         "service": "search-service",
         "level": "ERROR",
-        "message": "Connection pool exhausted - cannot acquire connection to search-service-db"
+        "message": "c.a.s.db.HikariPool [pool-1-thread-5] - Connection is not available, request timed out after 30000ms. (total=30, active=30, idle=0, waiting=74)"
       },
       {
         "timestamp": "2026-03-26T09:12:30Z",
         "service": "search-service",
         "level": "ERROR",
-        "message": "Timeout waiting for DB connection after 5000ms"
+        "message": "c.a.s.handler.SearchHandler [http-nio-8083-exec-19] - java.sql.SQLTransientConnectionException: HikariPool-1 - Connection is not available, request timed out after 5000ms to 10.0.9.33:5432"
       },
       {
         "timestamp": "2026-03-26T09:15:00Z",
         "service": "search-service",
         "level": "WARN",
-        "message": "Circuit breaker OPEN for search-service-db connections"
+        "message": "i.g.r.CircuitBreaker [cb-search-db] - state transition: CLOSED -> OPEN (failure_count=18, threshold=15, last_error=java.net.SocketTimeoutException: connect timed out to 10.0.9.33:5432)"
       },
       {
         "timestamp": "2026-03-26T09:17:30Z",
         "service": "search-service",
         "level": "ERROR",
-        "message": "Failed to process request txn-33889: DB connection unavailable"
+        "message": "c.a.s.handler.SearchHandler [http-nio-8083-exec-27] - txn-33889 failed: java.sql.SQLTransientConnectionException: HikariPool-1 - Connection is not available (total=30, active=30, idle=0, waiting=98)"
       }
     ],
     "order-service": [
@@ -164,13 +164,13 @@
         "timestamp": "2026-03-26T09:11:00Z",
         "service": "order-service",
         "level": "ERROR",
-        "message": "search-service returned 503 for request req-35115"
+        "message": "c.a.o.client.SearchClient [http-nio-8081-exec-11] - upstream 10.0.5.44:8083 returned HTTP 503 (0.002s) for req-35115"
       },
       {
         "timestamp": "2026-03-26T09:16:00Z",
         "service": "order-service",
         "level": "ERROR",
-        "message": "Failed to complete operation: upstream search-service unavailable"
+        "message": "c.a.o.client.SearchClient [http-nio-8081-exec-18] - upstream connect error: connection refused to 10.0.5.44:8083, reset reason: remote connection failure"
       }
     ]
   },

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import copy
 import random
+import re
 from datetime import datetime, timezone
 from typing import Any
 from uuid import uuid4
@@ -24,7 +25,7 @@ ALL_ACTIONS = [
     "set_severity", "write_summary", "escalate", "resolve_incident",
 ]
 
-MAX_STEPS = 30
+MAX_STEPS = 60
 MAX_STRING_LEN = 5000
 
 
@@ -48,6 +49,9 @@ class OnCallEnvironment(Environment[OnCallAction, OnCallObservation, OnCallState
         self._escalated_to: str | None = None
         self._resolved: bool = False
         self._actions_taken: list[dict] = []
+        self._investigated_services: set = set()
+        self._service_alias_map: dict[str, str] = {}  # real_name -> anonymous label
+        self._alias_to_real: dict[str, str] = {}  # anonymous label -> real_name
 
     # ── reset ───────────────────────────────────────────────────────────
 
@@ -72,6 +76,19 @@ class OnCallEnvironment(Environment[OnCallAction, OnCallObservation, OnCallState
         self._escalated_to = None
         self._resolved = False
         self._actions_taken = []
+        self._investigated_services = set()
+
+        # Build anonymization map from ALL service names appearing in BOTH
+        # the services list AND the alerts (some alerts reference services not
+        # in the main services list, e.g., "monitoring")
+        svc_names_from_services = {s["name"] for s in self._services}
+        svc_names_from_alerts = {a["service"] for a in self._alerts}
+        all_svc_names = list(svc_names_from_services | svc_names_from_alerts)
+        rng.shuffle(all_svc_names)
+        self._service_alias_map = {
+            name: f"service-{chr(65 + i)}" for i, name in enumerate(all_svc_names)
+        }
+        self._alias_to_real = {v: k for k, v in self._service_alias_map.items()}
 
         eid = episode_id or str(uuid4())
         self._state = OnCallState(
@@ -83,9 +100,40 @@ class OnCallEnvironment(Environment[OnCallAction, OnCallObservation, OnCallState
 
         self._add_event("system_event", "Incident opened. You are the on-call engineer.")
 
+        # Anonymize the scenario description: replace real service names with aliases
+        # and strip root cause type hints
+        raw_desc = self._scenario.get("description", "New incident detected. Begin triage.")
+        redacted_desc = self._redact_description(raw_desc)
+
         return self._make_observation(
-            message=self._scenario.get("description", "New incident detected. Begin triage."),
+            message=redacted_desc,
         )
+
+    # ── alias resolution ─────────────────────────────────────────────
+
+    def _resolve_service(self, name: str) -> str:
+        """Resolve a service alias to its real name. Accepts both aliases and real names."""
+        if not name:
+            return name
+        # Check if it's an alias (e.g., "service-B" -> "payment-api")
+        if name in self._alias_to_real:
+            return self._alias_to_real[name]
+        # Already a real name, return as-is
+        return name
+
+    def _resolve_params(self, params: dict) -> dict:
+        """Resolve any service aliases in action params to real service names.
+
+        This ensures:
+        - Handlers always work with real names (for looking up logs/metrics/deps)
+        - _actions_taken records real names (for grader compatibility)
+        - The model can use EITHER aliases or real names
+        """
+        resolved = dict(params)
+        for key in ("service", "service_name"):
+            if key in resolved and resolved[key]:
+                resolved[key] = self._resolve_service(resolved[key])
+        return resolved
 
     # ── step ────────────────────────────────────────────────────────────
 
@@ -100,6 +148,8 @@ class OnCallEnvironment(Environment[OnCallAction, OnCallObservation, OnCallState
 
         # Sanitize params: truncate extremely long strings
         sanitized_params = self._sanitize_params(action.params)
+        # Resolve any service aliases to real names (so handlers and grader work correctly)
+        sanitized_params = self._resolve_params(sanitized_params)
 
         self._state.step_count += 1
         self._actions_taken.append({"action_type": action.action_type, "params": sanitized_params, "step": self._state.step_count})
@@ -172,6 +222,9 @@ class OnCallEnvironment(Environment[OnCallAction, OnCallObservation, OnCallState
         time_range = params.get("time_range", "")
         logs_db: dict = self._scenario.get("logs", {})
 
+        if service:
+            self._investigated_services.add(service)
+
         results = []
         for key, entries in logs_db.items():
             for entry in entries:
@@ -191,6 +244,9 @@ class OnCallEnvironment(Environment[OnCallAction, OnCallObservation, OnCallState
         metric_name = params.get("metric_name", "")
         metrics_db: dict = self._scenario.get("metrics", {})
 
+        if service:
+            self._investigated_services.add(service)
+
         key = f"{service}:{metric_name}" if service and metric_name else service or metric_name
         # Try exact match, then prefix match
         result = metrics_db.get(key)
@@ -202,7 +258,18 @@ class OnCallEnvironment(Environment[OnCallAction, OnCallObservation, OnCallState
                         break
 
         if result is None:
-            return f"No metrics found for service='{service}' metric='{metric_name}'.", {"metric_results": None}
+            # List available metrics for this service so the model can retry
+            available = [
+                k.split(":", 1)[1] if ":" in k else k
+                for k in metrics_db.keys()
+                if service and service.lower() in k.lower()
+            ]
+            if available:
+                return (
+                    f"No metric '{metric_name}' for service='{service}'. Available metrics: {', '.join(available)}",
+                    {"metric_results": None},
+                )
+            return f"No metrics found for service='{service}'.", {"metric_results": None}
         return (
             f"Metrics for {service}/{metric_name}: returned {len(result) if isinstance(result, list) else 1} data points.",
             {"metric_results": {key: result}},
@@ -211,12 +278,24 @@ class OnCallEnvironment(Environment[OnCallAction, OnCallObservation, OnCallState
     def _handle_view_dependencies(self, params: dict) -> tuple[str, dict]:
         service = params.get("service_name", "")
         deps: dict = self._scenario.get("dependencies", {})
+
+        if service:
+            self._investigated_services.add(service)
         svc_deps = deps.get(service)
         if svc_deps is None:
             return f"No dependency info for '{service}'.", {"dependency_graph": None}
+        # Anonymize any internal service names in the dependency list
+        # (external deps like databases keep their real names)
+        anonymized_deps = []
+        for dep in svc_deps:
+            alias = self._service_alias_map.get(dep)
+            if alias and dep not in self._investigated_services:
+                anonymized_deps.append(alias)
+            else:
+                anonymized_deps.append(dep)
         return (
-            f"Dependencies for {service}: {svc_deps}",
-            {"dependency_graph": {service: svc_deps}},
+            f"Dependencies for {service}: {anonymized_deps}",
+            {"dependency_graph": {service: anonymized_deps}},
         )
 
     def _handle_acknowledge_alert(self, params: dict) -> tuple[str, dict]:
@@ -400,16 +479,93 @@ class OnCallEnvironment(Environment[OnCallAction, OnCallObservation, OnCallState
             "oncall.resolved": 1.0 if self._resolved else 0.0,
         }
 
+    def _redact_description(self, desc: str) -> str:
+        """Redact the scenario description to remove service names and root cause hints.
+
+        Replaces real service names with aliases and strips root cause type
+        information (e.g., 'Connection Pool Exhaustion') so the agent
+        can't identify the problem before investigating.
+        """
+        redacted = desc
+        # Replace real service names with aliases
+        for real_name, alias in self._service_alias_map.items():
+            redacted = redacted.replace(real_name, alias)
+        # Strip common root cause type patterns that give away the diagnosis
+        root_cause_types = [
+            "Connection Pool Exhaustion", "Memory Leak (OOM)", "Memory Leak",
+            "Replication Lag", "Deadlock Storm", "CPU Spin Loop",
+            "GC Pause Storm", "DNS Resolution Failure", "DNS Failure",
+            "TLS Certificate Expiry", "Load Balancer Misconfiguration",
+            "Bad Configuration Rollout", "Dependency Version Mismatch",
+            "OOM", "Connection Pool", "Config Change",
+        ]
+        for rct in root_cause_types:
+            redacted = redacted.replace(rct, "service degradation")
+            redacted = redacted.replace(rct.lower(), "service degradation")
+        return redacted
+
+    def _redact_alert_messages(self, alerts: list[dict]) -> list[dict]:
+        """Redact alerts: anonymize service names + strip metric values.
+
+        The agent sees generic labels (service-A, service-B) instead of real
+        service names. It must investigate to discover which real service
+        corresponds to each alert.
+        """
+        redacted = []
+        for alert in alerts:
+            a = dict(alert)  # shallow copy
+            msg = a.get("message", "")
+            svc = a.get("service", "")
+
+            # Anonymize the service field
+            alias = self._service_alias_map.get(svc, svc)
+            a["service"] = alias
+
+            # Strip exact metric values from message
+            msg = re.sub(r'\d+\.?\d*%', 'elevated', msg)
+            msg = re.sub(r'\d+\.?\d*ms', 'high', msg)
+            msg = re.sub(r'currently at \w+', 'currently elevated', msg)
+
+            # Replace any real service names that appear in the message text
+            for real_name, anon_label in self._service_alias_map.items():
+                msg = msg.replace(real_name, anon_label)
+
+            a["message"] = msg
+            redacted.append(a)
+        return redacted
+
     def _make_observation(
         self,
         message: str = "",
         done: bool = False,
         reward: float | None = None,
     ) -> OnCallObservation:
+        # Partial observability: services show ALIASES until investigated
+        observable_services = []
+        for svc in self._services:
+            real_name = svc["name"]
+            alias = self._service_alias_map.get(real_name, real_name)
+            if real_name in self._investigated_services:
+                # Investigated: show REAL name + full details
+                observable_services.append(svc)
+            else:
+                # Not investigated: show ALIAS + no details
+                observable_services.append({"name": alias, "status": "unknown"})
+
+        # Only show deployments for investigated services (with real names)
+        observable_deployments = [
+            d for d in self._deployments
+            if d.get("service") in self._investigated_services
+               or d.get("service_name") in self._investigated_services
+        ]
+
+        # Redact alert messages: anonymize service names + strip metric values
+        redacted_alerts = self._redact_alert_messages(self._alerts)
+
         return OnCallObservation(
-            alerts=self._alerts,
-            services=self._services,
-            recent_deployments=self._deployments,
+            alerts=redacted_alerts,
+            services=observable_services,
+            recent_deployments=observable_deployments,
             incident_timeline=self._timeline,
             current_severity=self._severity,
             available_actions=ALL_ACTIONS,

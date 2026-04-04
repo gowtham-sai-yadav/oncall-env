@@ -1,370 +1,383 @@
 {
   "incident_id": "INC-20260326-203",
   "difficulty": "hard",
-  "description": "SEV1 incident: Replication Lag affecting inventory-service. Cascading impact on auth-service, internal-dns. Multiple concurrent events make diagnosis challenging.",
+  "description": "SEV1 incident: Connection Pool Exhaustion affecting order-service. Cascading impact on email-service, session-store. Multiple concurrent events make diagnosis challenging.",
   "expected_severity": "SEV1",
   "initial_alerts": [
     {
       "alert_id": "alert-20301",
       "severity": "critical",
-      "service": "inventory-service",
-      "message": "Data inconsistency detected - read replicas 100s behind primary",
-      "timestamp": "2026-03-26T18:17:05Z",
+      "service": "order-service",
+      "message": "Error rate exceeded 5% threshold - currently at 53.5%",
+      "timestamp": "2026-03-26T15:40:05Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-20302",
-      "severity": "warning",
-      "service": "inventory-service",
-      "message": "Replication lag exceeding 30s threshold",
-      "timestamp": "2026-03-26T18:18:10Z",
+      "severity": "critical",
+      "service": "order-service",
+      "message": "P99 latency > 2000ms (currently 2194ms)",
+      "timestamp": "2026-03-26T15:41:10Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-20303",
       "severity": "warning",
-      "service": "auth-service",
-      "message": "Stale data returned for user queries",
-      "timestamp": "2026-03-26T18:19:15Z",
+      "service": "email-service",
+      "message": "Increased 4xx responses from downstream dependency",
+      "timestamp": "2026-03-26T15:42:15Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-20304",
       "severity": "critical",
-      "service": "auth-service",
-      "message": "auth-service error rate spiking - requests failing",
-      "timestamp": "2026-03-26T18:17:11Z",
+      "service": "email-service",
+      "message": "email-service error rate spiking - requests failing",
+      "timestamp": "2026-03-26T15:40:13Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-20305",
       "severity": "critical",
-      "service": "internal-dns",
-      "message": "internal-dns error rate spiking - requests failing",
-      "timestamp": "2026-03-26T18:17:53Z",
+      "service": "session-store",
+      "message": "session-store error rate spiking - requests failing",
+      "timestamp": "2026-03-26T15:40:02Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-20306",
-      "severity": "warning",
-      "service": "logging-pipeline",
-      "message": "CPU usage at 62% - approaching threshold",
-      "timestamp": "2026-03-26T18:08:08Z",
+      "severity": "info",
+      "service": "service-mesh",
+      "message": "Feature flag 'new-checkout-flow' enabled for 5% of users",
+      "timestamp": "2026-03-26T15:30:15Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-20307",
-      "severity": "warning",
-      "service": "logging-pipeline",
-      "message": "Disk usage at 72% on data volume",
-      "timestamp": "2026-03-26T18:14:57Z",
+      "severity": "info",
+      "service": "service-mesh",
+      "message": "New dashboard version deployed - no action required",
+      "timestamp": "2026-03-26T15:35:59Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-20308",
       "severity": "warning",
-      "service": "logging-pipeline",
-      "message": "Memory usage at 68% - within normal range but trending up",
-      "timestamp": "2026-03-26T18:13:07Z",
-      "acknowledged": false,
-      "silenced": false
-    },
-    {
-      "alert_id": "alert-20309",
-      "severity": "warning",
-      "service": "cdn-proxy",
-      "message": "Log volume increased 20% - review retention policy",
-      "timestamp": "2026-03-26T18:14:38Z",
+      "service": "service-mesh",
+      "message": "Disk usage at 72% on data volume",
+      "timestamp": "2026-03-26T15:38:29Z",
       "acknowledged": false,
       "silenced": false
     }
   ],
   "services": [
     {
-      "name": "inventory-service",
-      "status": "degraded",
-      "latency_ms": 1124,
-      "error_rate": 68.8,
-      "cpu_percent": 68,
-      "memory_percent": 84,
-      "version": "1.5.0"
-    },
-    {
-      "name": "auth-service",
-      "status": "degraded",
-      "latency_ms": 3182,
-      "error_rate": 14.4,
-      "cpu_percent": 37,
-      "memory_percent": 56,
-      "version": "4.0.1"
-    },
-    {
-      "name": "internal-dns",
+      "name": "order-service",
       "status": "down",
       "latency_ms": 0,
-      "error_rate": 78.4,
-      "cpu_percent": 24,
-      "memory_percent": 61,
-      "version": "1.2.3"
-    },
-    {
-      "name": "logging-pipeline",
-      "status": "healthy",
-      "latency_ms": 141,
-      "error_rate": 0.1,
-      "cpu_percent": 42,
-      "memory_percent": 44,
+      "error_rate": 82.3,
+      "cpu_percent": 65,
+      "memory_percent": 77,
       "version": "2.0.0"
     },
     {
-      "name": "config-server",
+      "name": "email-service",
+      "status": "down",
+      "latency_ms": 0,
+      "error_rate": 76.0,
+      "cpu_percent": 67,
+      "memory_percent": 52,
+      "version": "1.1.0"
+    },
+    {
+      "name": "session-store",
+      "status": "down",
+      "latency_ms": 0,
+      "error_rate": 75.2,
+      "cpu_percent": 59,
+      "memory_percent": 44,
+      "version": "1.0.0"
+    },
+    {
+      "name": "payment-api",
       "status": "healthy",
-      "latency_ms": 145,
-      "error_rate": 0.1,
-      "cpu_percent": 7,
-      "memory_percent": 24,
+      "latency_ms": 34,
+      "error_rate": 0.0,
+      "cpu_percent": 6,
+      "memory_percent": 17,
       "version": "3.2.0"
     },
     {
-      "name": "cdn-proxy",
+      "name": "message-queue",
       "status": "healthy",
-      "latency_ms": 74,
-      "error_rate": 0.8,
-      "cpu_percent": 30,
-      "memory_percent": 35,
+      "latency_ms": 75,
+      "error_rate": 0.3,
+      "cpu_percent": 39,
+      "memory_percent": 30,
+      "version": "4.1.0"
+    },
+    {
+      "name": "service-mesh",
+      "status": "healthy",
+      "latency_ms": 176,
+      "error_rate": 0.6,
+      "cpu_percent": 49,
+      "memory_percent": 53,
       "version": "4.1.0"
     }
   ],
   "recent_deployments": [
     {
-      "service": "inventory-service",
-      "version": "1.5.0",
-      "timestamp": "2026-03-26T17:22:00Z",
-      "deployer": "ci-bot"
+      "service": "order-service",
+      "version": "2.0.0",
+      "timestamp": "2026-03-26T14:03:00Z",
+      "deployer": "platform-team"
     },
     {
-      "service": "config-server",
-      "version": "3.2.0",
-      "timestamp": "2026-03-26T17:37:00Z",
+      "service": "message-queue",
+      "version": "4.1.0",
+      "timestamp": "2026-03-26T14:47:00Z",
       "deployer": "ml-team"
     },
     {
-      "service": "logging-pipeline",
-      "version": "2.0.0",
-      "timestamp": "2026-03-26T16:17:00Z",
-      "deployer": "ops-team"
+      "service": "service-mesh",
+      "version": "4.1.0",
+      "timestamp": "2026-03-26T14:55:00Z",
+      "deployer": "ml-team"
     }
   ],
   "logs": {
-    "inventory-service": [
+    "order-service": [
       {
-        "timestamp": "2026-03-26T18:16:00Z",
-        "service": "inventory-service",
+        "timestamp": "2026-03-26T15:39:00Z",
+        "service": "order-service",
         "level": "ERROR",
-        "message": "Replication lag at 108s - exceeds SLO of 5s"
+        "message": "c.a.s.db.HikariPool [pool-3-thread-13] - Connection is not available, request timed out after 5000ms. (total=64, active=64, idle=0, waiting=21)"
       },
       {
-        "timestamp": "2026-03-26T18:18:00Z",
-        "service": "inventory-service",
+        "timestamp": "2026-03-26T15:41:00Z",
+        "service": "order-service",
+        "level": "ERROR",
+        "message": "c.a.s.handler.RequestHandler [http-nio-8080-exec-1] - java.net.SocketTimeoutException: connect timed out to 10.138.230.217:5449"
+      },
+      {
+        "timestamp": "2026-03-26T15:43:00Z",
+        "service": "order-service",
         "level": "WARN",
-        "message": "Read replica inventory-service-replica-2 falling behind primary"
+        "message": "c.a.s.circuit.CircuitBreaker [cb-monitor-1] - Circuit breaker 'order-service-db' state: CLOSED -> OPEN (failures=302/100)"
       },
       {
-        "timestamp": "2026-03-26T18:20:00Z",
-        "service": "inventory-service",
+        "timestamp": "2026-03-26T15:45:00Z",
+        "service": "order-service",
         "level": "ERROR",
-        "message": "Schema migration v1.5.0 causing replication bottleneck"
+        "message": "c.a.s.handler.RequestHandler [http-nio-8080-exec-30] - java.sql.SQLTransientConnectionException: HikariPool-1 - Connection is not available, request timed out after 5000ms"
       },
       {
-        "timestamp": "2026-03-26T18:22:00Z",
-        "service": "inventory-service",
+        "timestamp": "2026-03-26T15:47:00Z",
+        "service": "order-service",
         "level": "INFO",
-        "message": "Attempting to pause non-critical replication streams"
+        "message": "c.a.s.db.HikariPool [pool-3-housekeeper] - HikariPool-1 - Pool stats (total=81, active=81, idle=0, waiting=13)"
       }
     ],
-    "auth-service": [
+    "email-service": [
       {
-        "timestamp": "2026-03-26T18:17:00Z",
-        "service": "auth-service",
-        "level": "WARN",
-        "message": "Inconsistent read from inventory-service: got stale version"
+        "timestamp": "2026-03-26T15:40:00Z",
+        "service": "email-service",
+        "level": "ERROR",
+        "message": "upstream connect error: connection refused to 10.145.165.177:8099, reset reason: remote reset"
       },
       {
-        "timestamp": "2026-03-26T18:22:00Z",
-        "service": "auth-service",
+        "timestamp": "2026-03-26T15:43:20Z",
+        "service": "email-service",
         "level": "ERROR",
-        "message": "Cache invalidation failed: stale data propagated from inventory-service"
-      }
-    ],
-    "internal-dns": [
-      {
-        "timestamp": "2026-03-26T18:17:00Z",
-        "service": "internal-dns",
-        "level": "WARN",
-        "message": "Inconsistent read from inventory-service: got stale version"
+        "message": "c.a.s.client.ServiceClient [http-5] - HTTP 503 from 10.145.165.177:8099 (latency=26039ms)"
       },
       {
-        "timestamp": "2026-03-26T18:22:00Z",
-        "service": "internal-dns",
-        "level": "ERROR",
-        "message": "Cache invalidation failed: stale data propagated from inventory-service"
+        "timestamp": "2026-03-26T15:46:40Z",
+        "service": "email-service",
+        "level": "WARN",
+        "message": "c.a.s.circuit.CircuitBreaker [cb-order-service] - state: CLOSED -> OPEN after 108 consecutive failures"
       }
     ],
-    "logging-pipeline": [
+    "session-store": [
       {
-        "timestamp": "2026-03-26T18:16:00Z",
-        "service": "logging-pipeline",
+        "timestamp": "2026-03-26T15:40:00Z",
+        "service": "session-store",
+        "level": "ERROR",
+        "message": "upstream connect error: connection refused to 10.145.165.177:8099, reset reason: remote reset"
+      },
+      {
+        "timestamp": "2026-03-26T15:43:20Z",
+        "service": "session-store",
+        "level": "ERROR",
+        "message": "c.a.s.client.ServiceClient [http-3] - HTTP 503 from 10.145.165.177:8099 (latency=20607ms)"
+      },
+      {
+        "timestamp": "2026-03-26T15:46:40Z",
+        "service": "session-store",
+        "level": "WARN",
+        "message": "c.a.s.circuit.CircuitBreaker [cb-order-service] - state: CLOSED -> OPEN after 155 consecutive failures"
+      }
+    ],
+    "payment-api": [
+      {
+        "timestamp": "2026-03-26T15:39:00Z",
+        "service": "payment-api",
+        "level": "WARN",
+        "message": "c.a.s.db.SlowQueryLog [query-monitor-1] - slow query: 2103ms SELECT * FROM audit_log WHERE created_at > '2026-03-25' (non-critical)"
+      }
+    ],
+    "message-queue": [
+      {
+        "timestamp": "2026-03-26T15:39:00Z",
+        "service": "message-queue",
         "level": "INFO",
-        "message": "Batch job completed: processed 25790 records"
-      }
-    ],
-    "config-server": [
-      {
-        "timestamp": "2026-03-26T18:16:00Z",
-        "service": "config-server",
-        "level": "WARN",
-        "message": "Slow query detected (non-critical): SELECT took 2.1s"
+        "message": "c.a.s.ml.ModelServer [model-serve-1] - inference latency p99=23ms, model=v4.2, batch_size=32"
       }
     ]
   },
   "metrics": {
-    "inventory-service:replication_lag_s": [
-      0.8,
-      1.8,
-      3.8,
-      8.0,
-      16.9,
-      35.9
+    "order-service:error_rate": [
+      1.9,
+      4.0,
+      8.6,
+      18.7,
+      40.4,
+      87.2
     ],
-    "inventory-service:error_rate": [
-      1.8,
-      1.8,
-      62.6,
-      62.6,
-      62.6
+    "order-service:latency_p99": [
+      1.4,
+      4.1,
+      11.6,
+      32.8,
+      93.3
     ],
-    "auth-service:error_rate": [
-      1.7,
-      1.7,
-      1.7,
-      1.7,
-      99.0,
-      99.0,
-      99.0,
-      99.0
+    "order-service:db_connections": [
+      0.0,
+      33.7,
+      55.6,
+      69.9,
+      79.2,
+      85.2,
+      89.2,
+      91.8
     ],
-    "internal-dns:error_rate": [
-      1.3,
-      1.3,
-      1.3,
-      1.3,
-      59.6,
-      59.6,
-      59.6,
-      59.6
+    "email-service:error_rate": [
+      1.0,
+      2.2,
+      4.8,
+      10.4,
+      22.5,
+      48.6
     ],
-    "logging-pipeline:cpu": [
-      34.6,
-      32.2,
-      36.9,
-      32.0,
-      42.1,
-      31.4
+    "session-store:error_rate": [
+      1.1,
+      3.2,
+      9.6,
+      28.4,
+      84.4
     ],
-    "config-server:cpu": [
-      36.4,
-      40.1,
-      44.1,
-      38.1,
-      34.4,
-      31.7
+    "payment-api:cpu": [
+      20.5,
+      21.0,
+      10.3,
+      26.5,
+      22.1,
+      27.4
+    ],
+    "message-queue:cpu": [
+      34.1,
+      33.3,
+      32.6,
+      27.2,
+      28.4,
+      30.3
     ]
   },
   "dependencies": {
-    "inventory-service": [
-      "inventory-service-db",
-      "inventory-service-store"
+    "order-service": [
+      "order-service-db",
+      "order-service-store"
     ],
-    "auth-service": [
-      "inventory-service",
-      "auth-service-db"
+    "email-service": [
+      "order-service",
+      "email-service-db"
     ],
-    "internal-dns": [
-      "inventory-service",
-      "internal-dns-db"
+    "session-store": [
+      "order-service",
+      "session-store-db"
     ],
-    "logging-pipeline": [
-      "logging-pipeline-db"
+    "payment-api": [
+      "payment-api-db"
     ],
-    "config-server": [
-      "config-server-db"
+    "message-queue": [
+      "message-queue-db"
     ],
-    "cdn-proxy": [
-      "cdn-proxy-db"
+    "service-mesh": [
+      "service-mesh-db"
     ]
   },
   "root_cause": {
-    "service": "inventory-service",
-    "description": "Database replication lag on inventory-service caused read replicas to serve stale data after 1.5.0 schema migration",
+    "service": "order-service",
+    "description": "DB connection pool exhaustion on order-service caused by connection leak in 2.0.0 deployment",
     "keywords": [
-      "replication",
-      "lag",
-      "stale",
-      "replica",
-      "schema",
-      "migration",
-      "database"
+      "connection pool",
+      "database",
+      "db",
+      "exhausted",
+      "leak",
+      "connection"
     ]
   },
   "valid_remediations": [
     {
-      "action": "rollback_deploy",
-      "service": "inventory-service"
+      "action": "restart_service",
+      "service": "order-service"
     },
     {
-      "action": "restart_service",
-      "service": "inventory-service"
+      "action": "rollback_deploy",
+      "service": "order-service"
     }
   ],
   "expected_diagnostics": [
     {
       "action_type": "query_logs",
       "params": {
-        "service": "inventory-service"
+        "service": "order-service"
       }
     },
     {
       "action_type": "check_metrics",
       "params": {
-        "service": "inventory-service"
+        "service": "order-service"
       }
     },
     {
       "action_type": "query_logs",
       "params": {
-        "service": "auth-service"
+        "service": "email-service"
       }
     },
     {
       "action_type": "query_logs",
       "params": {
-        "service": "internal-dns"
+        "service": "session-store"
       }
     }
   ],
   "grading_rubric": {
-    "triage_weight": 0.11,
+    "triage_weight": 0.08,
     "diagnostic_weight": 0.24,
-    "root_cause_weight": 0.31,
-    "remediation_weight": 0.18,
-    "efficiency_weight": 0.1,
+    "root_cause_weight": 0.29,
+    "remediation_weight": 0.21,
+    "efficiency_weight": 0.12,
     "documentation_weight": 0.06
   }
 }

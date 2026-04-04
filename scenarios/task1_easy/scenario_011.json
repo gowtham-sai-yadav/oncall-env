@@ -1,259 +1,260 @@
 {
   "incident_id": "INC-20260326-011",
   "difficulty": "easy",
-  "description": "SEV3 incident: Bad Config Rollout affecting billing-service. Cascading impact on logging-pipeline.",
+  "description": "SEV3 incident: Load Balancer Misconfiguration affecting cdn-proxy. Cascading impact on service-mesh.",
   "expected_severity": "SEV3",
   "initial_alerts": [
     {
       "alert_id": "alert-1101",
       "severity": "critical",
-      "service": "billing-service",
-      "message": "Error rate at 37.1% after config deployment",
-      "timestamp": "2026-03-26T11:01:05Z",
+      "service": "cdn-proxy",
+      "message": "Uneven traffic distribution - single backend receiving 100% traffic",
+      "timestamp": "2026-03-26T12:16:05Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-1102",
-      "severity": "warning",
-      "service": "billing-service",
-      "message": "Config refresh failed - serving with invalid config",
-      "timestamp": "2026-03-26T11:02:10Z",
+      "severity": "critical",
+      "service": "service-mesh",
+      "message": "Service overloaded - receiving all routed traffic",
+      "timestamp": "2026-03-26T12:17:10Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-1103",
       "severity": "warning",
-      "service": "logging-pipeline",
-      "message": "Upstream dependency billing-service returning errors",
-      "timestamp": "2026-03-26T11:03:15Z",
+      "service": "cdn-proxy",
+      "message": "Health check configuration mismatch detected",
+      "timestamp": "2026-03-26T12:18:15Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-1104",
       "severity": "critical",
-      "service": "logging-pipeline",
-      "message": "logging-pipeline error rate spiking - requests failing",
-      "timestamp": "2026-03-26T11:01:54Z",
+      "service": "service-mesh",
+      "message": "service-mesh error rate spiking - requests failing",
+      "timestamp": "2026-03-26T12:16:02Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-1105",
-      "severity": "warning",
-      "service": "order-service",
-      "message": "CPU usage at 66% - approaching threshold",
-      "timestamp": "2026-03-26T11:56:51Z",
+      "severity": "info",
+      "service": "analytics-service",
+      "message": "Canary deployment proceeding as expected",
+      "timestamp": "2026-03-26T12:11:12Z",
       "acknowledged": false,
       "silenced": false
     }
   ],
   "services": [
     {
-      "name": "billing-service",
-      "status": "degraded",
-      "latency_ms": 1392,
-      "error_rate": 29.3,
-      "cpu_percent": 43,
-      "memory_percent": 71,
-      "version": "2.0.0"
-    },
-    {
-      "name": "logging-pipeline",
+      "name": "cdn-proxy",
       "status": "down",
       "latency_ms": 0,
-      "error_rate": 72.4,
-      "cpu_percent": 79,
-      "memory_percent": 69,
-      "version": "1.1.0"
+      "error_rate": 86.2,
+      "cpu_percent": 78,
+      "memory_percent": 40,
+      "version": "1.0.0"
     },
     {
-      "name": "order-service",
-      "status": "healthy",
-      "latency_ms": 70,
-      "error_rate": 0.4,
-      "cpu_percent": 33,
-      "memory_percent": 35,
-      "version": "1.1.0"
-    },
-    {
-      "name": "metrics-collector",
-      "status": "healthy",
-      "latency_ms": 157,
-      "error_rate": 0.1,
-      "cpu_percent": 7,
-      "memory_percent": 23,
-      "version": "2.4.1"
+      "name": "service-mesh",
+      "status": "degraded",
+      "latency_ms": 4717,
+      "error_rate": 28.3,
+      "cpu_percent": 39,
+      "memory_percent": 30,
+      "version": "4.1.0"
     },
     {
       "name": "cache-layer",
       "status": "healthy",
-      "latency_ms": 40,
+      "latency_ms": 29,
       "error_rate": 0.2,
-      "cpu_percent": 24,
-      "memory_percent": 27,
+      "cpu_percent": 19,
+      "memory_percent": 22,
+      "version": "4.1.0"
+    },
+    {
+      "name": "analytics-service",
+      "status": "healthy",
+      "latency_ms": 23,
+      "error_rate": 0.2,
+      "cpu_percent": 46,
+      "memory_percent": 53,
       "version": "2.3.0"
     }
   ],
   "recent_deployments": [
     {
-      "service": "billing-service",
-      "version": "2.0.0",
-      "timestamp": "2026-03-26T10:08:00Z",
-      "deployer": "platform-team"
+      "service": "cdn-proxy",
+      "version": "1.0.0",
+      "timestamp": "2026-03-26T11:02:00Z",
+      "deployer": "infra-team"
     }
   ],
   "logs": {
-    "billing-service": [
+    "cdn-proxy": [
       {
-        "timestamp": "2026-03-26T11:00:00Z",
-        "service": "billing-service",
+        "timestamp": "2026-03-26T12:15:00Z",
+        "service": "cdn-proxy",
         "level": "ERROR",
-        "message": "Database connection failed: invalid connection string in config v2.0.0"
+        "message": "c.a.s.lb.HealthChecker [hc-monitor-1] - backend 10.237.78.212:8094 health check failed: HTTP 502 (expected 200)"
       },
       {
-        "timestamp": "2026-03-26T11:02:00Z",
-        "service": "billing-service",
-        "level": "ERROR",
-        "message": "Config validation skipped in deployment pipeline"
-      },
-      {
-        "timestamp": "2026-03-26T11:04:00Z",
-        "service": "billing-service",
-        "level": "FATAL",
-        "message": "Cannot initialize connection pool: malformed DSN"
-      },
-      {
-        "timestamp": "2026-03-26T11:06:00Z",
-        "service": "billing-service",
+        "timestamp": "2026-03-26T12:17:00Z",
+        "service": "cdn-proxy",
         "level": "WARN",
-        "message": "Rolling back to cached config from previous version"
+        "message": "c.a.s.lb.HealthChecker [hc-monitor-1] - backend 10.228.93.17:8094 health check failed: HTTP 404 (expected 200)"
+      },
+      {
+        "timestamp": "2026-03-26T12:19:00Z",
+        "service": "cdn-proxy",
+        "level": "ERROR",
+        "message": "c.a.s.lb.Router [routing-37] - all backends unhealthy for pool 'cdn-proxy-pool', routing to last-known-good 10.201.2.119:8094"
+      },
+      {
+        "timestamp": "2026-03-26T12:21:00Z",
+        "service": "cdn-proxy",
+        "level": "WARN",
+        "message": "c.a.s.lb.ConfigSync [config-watch-1] - pool 'cdn-proxy-pool' config version 1.0.0: health_check_path=/healthz, but backends serve /health"
       }
     ],
-    "logging-pipeline": [
+    "service-mesh": [
       {
-        "timestamp": "2026-03-26T11:01:00Z",
-        "service": "logging-pipeline",
+        "timestamp": "2026-03-26T12:16:00Z",
+        "service": "service-mesh",
         "level": "ERROR",
-        "message": "billing-service returning 500 for all requests"
+        "message": "c.a.s.handler.RequestHandler [http-nio-8080-exec-8] - request queue depth 25842: accepting requests but response time degraded (4585ms)"
       },
       {
-        "timestamp": "2026-03-26T11:06:00Z",
-        "service": "logging-pipeline",
+        "timestamp": "2026-03-26T12:21:00Z",
+        "service": "service-mesh",
         "level": "WARN",
-        "message": "Dependency billing-service health check failing"
+        "message": "c.a.s.handler.RequestHandler [http-nio-8080-exec-7] - thread pool 58/58 active, 19 requests queued"
       }
     ]
   },
   "metrics": {
-    "billing-service:error_rate": [
-      1.2,
-      1.2,
-      1.2,
-      1.2,
-      84.1,
-      84.1,
-      84.1,
-      84.1
+    "cdn-proxy:backend_health_pct": [
+      1.7,
+      1.7,
+      1.7,
+      67.7,
+      67.7,
+      67.7,
+      67.7
     ],
-    "billing-service:db_connections": [
-      0.8,
-      0.8,
-      0.8,
-      61.5,
-      61.5,
-      61.5
+    "cdn-proxy:error_rate": [
+      1.4,
+      1.4,
+      1.4,
+      54.6,
+      54.6,
+      54.6
     ],
-    "logging-pipeline:error_rate": [
-      0.7,
-      0.7,
-      0.7,
-      73.9,
-      73.9,
-      73.9,
-      73.9
+    "service-mesh:cpu_percent": [
+      0.0,
+      48.4,
+      71.3,
+      82.1,
+      87.2
     ],
-    "order-service:cpu": [
-      41.6,
-      35.7,
-      42.6,
-      38.9,
-      41.0,
-      38.0
+    "service-mesh:error_rate": [
+      1.8,
+      3.9,
+      8.4,
+      17.8,
+      37.9
     ],
-    "metrics-collector:cpu": [
-      44.7,
-      34.0,
-      40.4,
-      32.3,
-      39.2,
-      38.9
+    "cache-layer:cpu": [
+      36.7,
+      38.2,
+      29.6,
+      34.7,
+      36.2,
+      41.0
+    ],
+    "analytics-service:cpu": [
+      29.2,
+      30.2,
+      34.9,
+      31.9,
+      39.6,
+      25.9
     ]
   },
   "dependencies": {
-    "billing-service": [
-      "billing-service-db",
-      "billing-service-store"
+    "cdn-proxy": [
+      "cdn-proxy-db",
+      "cdn-proxy-store"
     ],
-    "logging-pipeline": [
-      "billing-service",
-      "logging-pipeline-db"
-    ],
-    "order-service": [
-      "billing-service",
-      "order-service-db"
-    ],
-    "metrics-collector": [
-      "metrics-collector-db"
+    "service-mesh": [
+      "cdn-proxy",
+      "service-mesh-db"
     ],
     "cache-layer": [
       "cache-layer-db"
+    ],
+    "analytics-service": [
+      "analytics-service-db"
     ]
   },
   "root_cause": {
-    "service": "billing-service",
-    "description": "Bad configuration rollout to billing-service in 2.0.0 - invalid database connection string causing all queries to fail",
+    "service": "cdn-proxy",
+    "description": "Load balancer misconfiguration on cdn-proxy routing all traffic to single unhealthy backend after 1.0.0 config change",
     "keywords": [
+      "load balancer",
+      "routing",
+      "misconfiguration",
       "config",
-      "configuration",
-      "rollout",
-      "invalid",
-      "connection string",
-      "misconfigured"
+      "backend",
+      "traffic"
     ]
   },
   "valid_remediations": [
     {
-      "action": "rollback_deploy",
-      "service": "billing-service"
+      "action": "update_config",
+      "service": "cdn-proxy"
     },
     {
-      "action": "update_config",
-      "service": "billing-service"
+      "action": "rollback_deploy",
+      "service": "cdn-proxy"
+    },
+    {
+      "action": "restart_service",
+      "service": "cdn-proxy"
     }
   ],
   "expected_diagnostics": [
     {
       "action_type": "query_logs",
       "params": {
-        "service": "billing-service"
+        "service": "cdn-proxy"
       }
     },
     {
       "action_type": "check_metrics",
       "params": {
-        "service": "billing-service"
+        "service": "cdn-proxy"
+      }
+    },
+    {
+      "action_type": "view_dependencies",
+      "params": {
+        "service_name": "service-mesh"
       }
     }
   ],
   "grading_rubric": {
-    "triage_weight": 0.27,
-    "diagnostic_weight": 0.23,
-    "root_cause_weight": 0.16,
+    "triage_weight": 0.32,
+    "diagnostic_weight": 0.2,
+    "root_cause_weight": 0.15,
     "remediation_weight": 0.16,
-    "efficiency_weight": 0.11,
-    "documentation_weight": 0.07
+    "efficiency_weight": 0.07,
+    "documentation_weight": 0.1
   }
 }

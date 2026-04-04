@@ -10,30 +10,41 @@ import sys
 from oncall_env.client import OnCallEnvClient
 from oncall_env.models import OnCallAction
 
-SYSTEM_PROMPT = """You are an expert on-call engineer responding to a production incident.
-You have access to these actions:
-- query_logs: Query service logs. Params: service (str), level (optional: DEBUG/INFO/WARN/ERROR/FATAL), time_range (optional)
-- check_metrics: Check service metrics. Params: service (str), metric_name (str)
-- view_dependencies: View service dependency graph. Params: service_name (str)
-- acknowledge_alert: Acknowledge an alert. Params: alert_id (str)
-- silence_alert: Silence a non-actionable alert. Params: alert_id (str), duration (optional)
-- restart_service: Restart a service. Params: service_name (str)
-- scale_service: Scale a service. Params: service_name (str), replicas (int)
-- rollback_deploy: Rollback a deployment. Params: service_name (str), target_version (str)
-- update_config: Update service config. Params: service_name (str), config_key (str), config_value (str)
-- set_severity: Set incident severity. Params: level (SEV1/SEV2/SEV3/SEV4)
-- write_summary: Write incident summary. Params: text (str)
-- escalate: Escalate to another team. Params: team (str)
-- resolve_incident: Mark incident as resolved. Params: resolution_note (str)
+SYSTEM_PROMPT = """You are an on-call engineer responding to a production incident.
 
-Follow this incident response process strictly and efficiently (aim to finish within 10-15 actions):
+ENVIRONMENT RULES:
+- Alerts reference anonymous service labels (service-A, service-B, etc.), NOT real service names.
+- The services list also shows anonymous labels with "unknown" status.
+- You can query_logs and check_metrics using EITHER the anonymous label OR the real service name.
+- When you investigate a service, its REAL identity and status are revealed in the next observation.
+- Deployments are hidden until you investigate the relevant service.
+- Metric values in alerts are redacted. Use check_metrics for actual numbers.
+- Logs contain raw technical output (stack traces, error codes, IP addresses) that you must interpret.
 
-1. TRIAGE (2-3 actions): Set severity. Acknowledge CRITICAL alerts. Silence INFO/noise alerts.
-2. DIAGNOSE (3-5 actions): Query logs (ERROR level) and check metrics for degraded/down services. View dependencies to trace the failure chain. Focus on recently deployed services and downstream dependencies.
-3. REMEDIATE (1-2 actions): Apply the fix — rollback the bad deployment, restart the root-cause service, or update the broken config. Target the ROOT CAUSE service, not symptoms.
-4. DOCUMENT AND RESOLVE (2 actions — MANDATORY):
+AVAILABLE ACTIONS:
+- query_logs: Params: service (str), level (optional), time_range (optional)
+- check_metrics: Params: service (str), metric_name (str)
+- view_dependencies: Params: service_name (str)
+- acknowledge_alert: Params: alert_id (str)
+- silence_alert: Params: alert_id (str)
+- restart_service: Params: service_name (str)
+- scale_service: Params: service_name (str), replicas (int)
+- rollback_deploy: Params: service_name (str), target_version (str)
+- update_config: Params: service_name (str), config_key (str), config_value (str)
+- set_severity: Params: level (SEV1/SEV2/SEV3/SEV4)
+- write_summary: Params: text (str)
+- escalate: Params: team (str)
+- resolve_incident: Params: resolution_note (str)
+
+PROCESS:
+1. TRIAGE: Acknowledge CRITICAL alerts. Silence INFO alerts. Set severity.
+2. INVESTIGATE: Query logs and metrics for services mentioned in alerts to discover their real identity and state for degraded/down services. View dependencies to understand the service graph.
+3. DIAGNOSE: Based on evidence from logs and metrics, identify the root cause service and failure mechanism.
+4. REMEDIATE: Fix the root cause (rollback, restart, or config change). Use the REAL service name discovered during investigation.
+5.  DOCUMENT AND RESOLVE (MANDATORY):
    a. write_summary: Write a detailed incident summary mentioning the root cause service, what failed, why, and what you did to fix it. Include technical keywords like "root cause", "rollback", "config", "deploy", etc.
    b. resolve_incident: You MUST call this as your final action to close the incident. Without this, the incident is not considered complete.
+
 
 CRITICAL: You MUST always end with write_summary followed by resolve_incident. Never skip these steps. An incident without resolution is a failed incident.
 
@@ -42,12 +53,44 @@ Respond with exactly one JSON object per turn: {"action_type": "...", "params": 
 
 
 def parse_action_from_llm(response_text: str) -> OnCallAction:
-    """Parse LLM response into an OnCallAction."""
+    """Parse LLM response into an OnCallAction.
+
+    Extracts the FIRST complete JSON object using bracket counting,
+    so that multi-JSON responses (a known GPT-5.2 behavior) don't
+    break parsing.
+    """
     text = response_text.strip()
-    # Find JSON in response
     start = text.find("{")
-    end = text.rfind("}") + 1
-    if start == -1 or end == 0:
+    if start == -1:
+        return OnCallAction(action_type="write_summary", params={"text": text})
+
+    # Find the end of the FIRST complete JSON object via bracket counting
+    depth = 0
+    in_string = False
+    escape_next = False
+    end = -1
+    for i in range(start, len(text)):
+        ch = text[i]
+        if escape_next:
+            escape_next = False
+            continue
+        if ch == '\\' and in_string:
+            escape_next = True
+            continue
+        if ch == '"' and not escape_next:
+            in_string = not in_string
+            continue
+        if in_string:
+            continue
+        if ch == '{':
+            depth += 1
+        elif ch == '}':
+            depth -= 1
+            if depth == 0:
+                end = i + 1
+                break
+
+    if end == -1:
         return OnCallAction(action_type="write_summary", params={"text": text})
 
     try:

@@ -1,430 +1,460 @@
 {
   "incident_id": "INC-20260326-312",
   "difficulty": "expert",
-  "description": "SEV1 incident: Dependency Version Mismatch affecting inventory-service. Cascading impact on billing-service, logging-pipeline, session-store. Multiple concurrent events make diagnosis challenging. Red herrings present - focus on evidence-based investigation.",
+  "description": "SEV1 incident: Bad Config Rollout affecting user-service. Cascading impact on payment-api, email-service, config-server. Multiple concurrent events make diagnosis challenging. Red herrings present - focus on evidence-based investigation.",
   "expected_severity": "SEV1",
   "initial_alerts": [
     {
       "alert_id": "alert-31201",
       "severity": "critical",
-      "service": "inventory-service",
-      "message": "Deserialization errors spiking - 74.7% request failure",
-      "timestamp": "2026-03-26T20:22:05Z",
+      "service": "user-service",
+      "message": "Error rate at 11.0% after config deployment",
+      "timestamp": "2026-03-26T13:46:05Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-31202",
       "severity": "warning",
-      "service": "inventory-service",
-      "message": "API contract violation detected in responses from upstream",
-      "timestamp": "2026-03-26T20:23:10Z",
+      "service": "user-service",
+      "message": "Config refresh failed - serving with invalid config",
+      "timestamp": "2026-03-26T13:47:10Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-31203",
       "severity": "warning",
-      "service": "billing-service",
-      "message": "Increased error responses from inventory-service",
-      "timestamp": "2026-03-26T20:24:15Z",
+      "service": "payment-api",
+      "message": "Upstream dependency user-service returning errors",
+      "timestamp": "2026-03-26T13:48:15Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-31204",
       "severity": "critical",
-      "service": "billing-service",
-      "message": "billing-service error rate spiking - requests failing",
-      "timestamp": "2026-03-26T20:22:12Z",
+      "service": "payment-api",
+      "message": "payment-api error rate spiking - requests failing",
+      "timestamp": "2026-03-26T13:46:32Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-31205",
       "severity": "critical",
-      "service": "logging-pipeline",
-      "message": "logging-pipeline error rate spiking - requests failing",
-      "timestamp": "2026-03-26T20:22:03Z",
+      "service": "email-service",
+      "message": "email-service error rate spiking - requests failing",
+      "timestamp": "2026-03-26T13:46:28Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-31206",
       "severity": "critical",
-      "service": "session-store",
-      "message": "session-store error rate spiking - requests failing",
-      "timestamp": "2026-03-26T20:22:04Z",
+      "service": "config-server",
+      "message": "config-server error rate spiking - requests failing",
+      "timestamp": "2026-03-26T13:46:28Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-31207",
-      "severity": "warning",
-      "service": "cache-layer",
-      "message": "Disk usage at 72% on data volume",
-      "timestamp": "2026-03-26T20:13:03Z",
+      "severity": "info",
+      "service": "auth-service",
+      "message": "Automated backup completed successfully",
+      "timestamp": "2026-03-26T13:35:40Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-31208",
-      "severity": "warning",
-      "service": "order-service",
-      "message": "Log volume increased 20% - review retention policy",
-      "timestamp": "2026-03-26T20:17:14Z",
+      "severity": "info",
+      "service": "analytics-service",
+      "message": "Feature flag 'new-checkout-flow' enabled for 5% of users",
+      "timestamp": "2026-03-26T13:35:32Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-31209",
       "severity": "info",
-      "service": "search-service",
-      "message": "Automated backup completed successfully",
-      "timestamp": "2026-03-26T20:17:11Z",
+      "service": "auth-service",
+      "message": "Model v4.2 deployment started - canary rollout in progress",
+      "timestamp": "2026-03-26T13:41:12Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-31210",
-      "severity": "info",
-      "service": "cache-layer",
-      "message": "New dashboard version deployed - no action required",
-      "timestamp": "2026-03-26T20:12:17Z",
+      "severity": "warning",
+      "service": "search-service",
+      "message": "CPU usage at 63% - approaching threshold",
+      "timestamp": "2026-03-26T13:37:25Z",
       "acknowledged": false,
       "silenced": false
     }
   ],
   "services": [
     {
-      "name": "inventory-service",
+      "name": "user-service",
       "status": "degraded",
-      "latency_ms": 4757,
-      "error_rate": 60.7,
-      "cpu_percent": 86,
-      "memory_percent": 41,
-      "version": "4.0.1"
+      "latency_ms": 7513,
+      "error_rate": 23.1,
+      "cpu_percent": 60,
+      "memory_percent": 45,
+      "version": "5.0.3"
     },
     {
-      "name": "billing-service",
-      "status": "degraded",
-      "latency_ms": 4915,
-      "error_rate": 32.9,
-      "cpu_percent": 24,
-      "memory_percent": 47,
-      "version": "4.0.1"
-    },
-    {
-      "name": "logging-pipeline",
+      "name": "payment-api",
       "status": "down",
       "latency_ms": 0,
-      "error_rate": 78.6,
-      "cpu_percent": 31,
-      "memory_percent": 57,
+      "error_rate": 75.6,
+      "cpu_percent": 51,
+      "memory_percent": 59,
+      "version": "4.1.0"
+    },
+    {
+      "name": "email-service",
+      "status": "degraded",
+      "latency_ms": 894,
+      "error_rate": 31.7,
+      "cpu_percent": 36,
+      "memory_percent": 68,
+      "version": "1.2.3"
+    },
+    {
+      "name": "config-server",
+      "status": "degraded",
+      "latency_ms": 2113,
+      "error_rate": 52.1,
+      "cpu_percent": 63,
+      "memory_percent": 70,
+      "version": "2.0.0"
+    },
+    {
+      "name": "notification-service",
+      "status": "healthy",
+      "latency_ms": 65,
+      "error_rate": 0.6,
+      "cpu_percent": 42,
+      "memory_percent": 26,
       "version": "4.2.0"
     },
     {
-      "name": "session-store",
-      "status": "degraded",
-      "latency_ms": 2296,
-      "error_rate": 61.5,
-      "cpu_percent": 62,
-      "memory_percent": 41,
-      "version": "2.1.1"
-    },
-    {
-      "name": "cache-layer",
+      "name": "analytics-service",
       "status": "healthy",
-      "latency_ms": 120,
-      "error_rate": 0.3,
-      "cpu_percent": 6,
-      "memory_percent": 49,
-      "version": "3.0.0"
+      "latency_ms": 200,
+      "error_rate": 0.4,
+      "cpu_percent": 10,
+      "memory_percent": 47,
+      "version": "5.0.3"
     },
     {
       "name": "search-service",
       "status": "healthy",
-      "latency_ms": 24,
-      "error_rate": 0.6,
-      "cpu_percent": 29,
-      "memory_percent": 52,
-      "version": "3.1.2"
+      "latency_ms": 169,
+      "error_rate": 0.4,
+      "cpu_percent": 48,
+      "memory_percent": 31,
+      "version": "2.4.1"
     },
     {
-      "name": "internal-dns",
+      "name": "auth-service",
       "status": "healthy",
-      "latency_ms": 83,
-      "error_rate": 0.5,
-      "cpu_percent": 10,
-      "memory_percent": 45,
+      "latency_ms": 25,
+      "error_rate": 0.8,
+      "cpu_percent": 6,
+      "memory_percent": 54,
       "version": "3.0.0"
-    },
-    {
-      "name": "order-service",
-      "status": "healthy",
-      "latency_ms": 89,
-      "error_rate": 0.5,
-      "cpu_percent": 43,
-      "memory_percent": 23,
-      "version": "1.5.0"
     }
   ],
   "recent_deployments": [
     {
-      "service": "inventory-service",
-      "version": "4.0.1",
-      "timestamp": "2026-03-26T19:10:00Z",
+      "service": "user-service",
+      "version": "5.0.3",
+      "timestamp": "2026-03-26T12:06:00Z",
+      "deployer": "release-manager"
+    },
+    {
+      "service": "notification-service",
+      "version": "4.2.0",
+      "timestamp": "2026-03-26T12:51:00Z",
+      "deployer": "ops-team"
+    },
+    {
+      "service": "analytics-service",
+      "version": "5.0.3",
+      "timestamp": "2026-03-26T12:14:00Z",
       "deployer": "search-team"
+    },
+    {
+      "service": "auth-service",
+      "version": "3.0.0",
+      "timestamp": "2026-03-26T11:21:00Z",
+      "deployer": "ml-team"
     },
     {
       "service": "search-service",
-      "version": "3.1.2",
-      "timestamp": "2026-03-26T19:05:00Z",
-      "deployer": "search-team"
-    },
-    {
-      "service": "internal-dns",
-      "version": "3.0.0",
-      "timestamp": "2026-03-26T18:12:00Z",
-      "deployer": "ops-team"
+      "version": "2.4.1",
+      "timestamp": "2026-03-26T11:09:00Z",
+      "deployer": "ml-team"
     }
   ],
   "logs": {
-    "inventory-service": [
+    "user-service": [
       {
-        "timestamp": "2026-03-26T20:21:00Z",
-        "service": "inventory-service",
+        "timestamp": "2026-03-26T13:45:00Z",
+        "service": "user-service",
         "level": "ERROR",
-        "message": "Failed to deserialize response from upstream: unexpected field format"
+        "message": "c.a.s.config.Loader [config-watch-1] - loaded key='db.connection.url' value='jdbc:postgresql://10.133.125.138:5432/user-service_db?ssl=true' source=configmap/user-service-5.0.3"
       },
       {
-        "timestamp": "2026-03-26T20:22:40Z",
-        "service": "inventory-service",
+        "timestamp": "2026-03-26T13:47:00Z",
+        "service": "user-service",
         "level": "ERROR",
-        "message": "API version mismatch: expected v3 response, got v2 schema"
+        "message": "c.a.s.db.HikariPool [pool-3-thread-11] - Failed to obtain JDBC Connection: java.net.ConnectException: Connection refused (Connection refused) to 10.133.125.138:5432"
       },
       {
-        "timestamp": "2026-03-26T20:24:20Z",
-        "service": "inventory-service",
+        "timestamp": "2026-03-26T13:49:00Z",
+        "service": "user-service",
+        "level": "FATAL",
+        "message": "c.a.s.db.HikariPool [pool-3-thread-34] - HikariPool-1 - Exception during pool initialization: java.net.ConnectException: Connection refused"
+      },
+      {
+        "timestamp": "2026-03-26T13:51:00Z",
+        "service": "user-service",
         "level": "WARN",
-        "message": "Contract test failures detected post-deployment of 4.0.1"
-      },
-      {
-        "timestamp": "2026-03-26T20:26:00Z",
-        "service": "inventory-service",
-        "level": "ERROR",
-        "message": "Null pointer: response missing required field 'metadata.trace_id'"
+        "message": "c.a.s.config.Validator [startup-1] - WARN: unrecognized config key 'db.connection.pool.maxSize' in namespace 'user-service', using default"
       }
     ],
-    "billing-service": [
+    "payment-api": [
       {
-        "timestamp": "2026-03-26T20:22:00Z",
-        "service": "billing-service",
-        "level": "WARN",
-        "message": "inventory-service returning malformed responses"
+        "timestamp": "2026-03-26T13:46:00Z",
+        "service": "payment-api",
+        "level": "ERROR",
+        "message": "c.a.s.client.ServiceClient [http-19] - HTTP 500 from 10.185.181.95:8085 (latency=18520ms)"
       },
       {
-        "timestamp": "2026-03-26T20:27:00Z",
-        "service": "billing-service",
-        "level": "ERROR",
-        "message": "Failed to process response from inventory-service: schema mismatch"
+        "timestamp": "2026-03-26T13:51:00Z",
+        "service": "payment-api",
+        "level": "WARN",
+        "message": "c.a.s.lb.HealthChecker [hc-monitor-1] - backend 10.185.181.95:8085 health check failed: HTTP 500 (expected 200)"
       }
     ],
-    "logging-pipeline": [
+    "email-service": [
       {
-        "timestamp": "2026-03-26T20:22:00Z",
-        "service": "logging-pipeline",
-        "level": "WARN",
-        "message": "inventory-service returning malformed responses"
+        "timestamp": "2026-03-26T13:46:00Z",
+        "service": "email-service",
+        "level": "ERROR",
+        "message": "c.a.s.client.ServiceClient [http-23] - HTTP 500 from 10.185.181.95:8085 (latency=16492ms)"
       },
       {
-        "timestamp": "2026-03-26T20:27:00Z",
-        "service": "logging-pipeline",
-        "level": "ERROR",
-        "message": "Failed to process response from inventory-service: schema mismatch"
+        "timestamp": "2026-03-26T13:51:00Z",
+        "service": "email-service",
+        "level": "WARN",
+        "message": "c.a.s.lb.HealthChecker [hc-monitor-1] - backend 10.185.181.95:8085 health check failed: HTTP 500 (expected 200)"
       }
     ],
-    "session-store": [
+    "config-server": [
       {
-        "timestamp": "2026-03-26T20:22:00Z",
-        "service": "session-store",
-        "level": "WARN",
-        "message": "inventory-service returning malformed responses"
+        "timestamp": "2026-03-26T13:46:00Z",
+        "service": "config-server",
+        "level": "ERROR",
+        "message": "c.a.s.client.ServiceClient [http-35] - HTTP 500 from 10.185.181.95:8085 (latency=18887ms)"
       },
       {
-        "timestamp": "2026-03-26T20:27:00Z",
-        "service": "session-store",
-        "level": "ERROR",
-        "message": "Failed to process response from inventory-service: schema mismatch"
+        "timestamp": "2026-03-26T13:51:00Z",
+        "service": "config-server",
+        "level": "WARN",
+        "message": "c.a.s.lb.HealthChecker [hc-monitor-1] - backend 10.185.181.95:8085 health check failed: HTTP 500 (expected 200)"
       }
     ],
-    "internal-dns": [
+    "analytics-service": [
       {
-        "timestamp": "2026-03-26T20:21:00Z",
-        "service": "internal-dns",
+        "timestamp": "2026-03-26T13:45:00Z",
+        "service": "analytics-service",
         "level": "INFO",
-        "message": "Cache hit ratio: 86%"
+        "message": "c.a.s.ml.ModelServer [model-serve-1] - inference latency p99=23ms, model=v4.2, batch_size=32"
       }
     ],
-    "cache-layer": [
+    "notification-service": [
       {
-        "timestamp": "2026-03-26T20:21:00Z",
-        "service": "cache-layer",
+        "timestamp": "2026-03-26T13:45:00Z",
+        "service": "notification-service",
         "level": "INFO",
-        "message": "Cache hit ratio: 93%"
+        "message": "c.a.s.cache.Stats [cache-stats-1] - hit_ratio=90% entries=24531 evictions=12/s"
+      }
+    ],
+    "auth-service": [
+      {
+        "timestamp": "2026-03-26T13:45:00Z",
+        "service": "auth-service",
+        "level": "INFO",
+        "message": "c.a.s.ml.ModelServer [model-serve-1] - inference latency p99=23ms, model=v4.2, batch_size=32"
+      }
+    ],
+    "search-service": [
+      {
+        "timestamp": "2026-03-26T13:45:00Z",
+        "service": "search-service",
+        "level": "INFO",
+        "message": "c.a.s.health.Monitor [health-check-1] - status=UP, checks=[db:UP, cache:UP, queue:UP]"
       }
     ]
   },
   "metrics": {
-    "inventory-service:error_rate": [
+    "user-service:error_rate": [
+      0.5,
+      0.5,
+      0.5,
+      0.5,
+      75.8,
+      75.8,
+      75.8,
+      75.8
+    ],
+    "user-service:db_connections": [
+      0.9,
+      0.9,
+      0.9,
+      0.9,
+      40.1,
+      40.1,
+      40.1,
+      40.1
+    ],
+    "payment-api:error_rate": [
+      1.9,
+      1.9,
+      66.3,
+      66.3,
+      66.3
+    ],
+    "email-service:error_rate": [
+      0.8,
+      0.8,
+      67.8,
+      67.8,
+      67.8
+    ],
+    "config-server:error_rate": [
       1.4,
       1.4,
       1.4,
-      88.9,
-      88.9,
-      88.9
+      1.4,
+      43.7,
+      43.7,
+      43.7,
+      43.7
     ],
-    "inventory-service:deserialization_errors": [
-      0.1,
-      0.1,
-      0.1,
-      93.7,
-      93.7,
-      93.7,
-      93.7
+    "notification-service:cpu": [
+      30.6,
+      20.3,
+      39.8,
+      38.1,
+      32.2,
+      34.4
     ],
-    "billing-service:error_rate": [
-      1.5,
-      1.5,
-      1.5,
-      75.5,
-      75.5,
-      75.5,
-      75.5
-    ],
-    "logging-pipeline:error_rate": [
-      1.2,
-      1.2,
-      60.6,
-      60.6,
-      60.6
-    ],
-    "session-store:error_rate": [
-      1.8,
-      1.8,
-      1.8,
-      88.5,
-      88.5,
-      88.5
-    ],
-    "cache-layer:cpu": [
-      29.2,
-      31.4,
-      32.9,
-      38.6,
-      28.3,
-      21.6
-    ],
-    "search-service:cpu": [
-      28.9,
-      29.4,
-      29.2,
-      30.2,
-      29.0,
-      26.5
+    "analytics-service:cpu": [
+      37.2,
+      44.9,
+      35.6,
+      40.5,
+      38.7,
+      53.4
     ]
   },
   "dependencies": {
-    "inventory-service": [
-      "inventory-service-db",
-      "inventory-service-store"
+    "user-service": [
+      "user-service-db",
+      "user-service-store"
     ],
-    "billing-service": [
-      "inventory-service",
-      "billing-service-db"
+    "payment-api": [
+      "user-service",
+      "payment-api-db"
     ],
-    "logging-pipeline": [
-      "inventory-service",
-      "logging-pipeline-db"
+    "email-service": [
+      "user-service",
+      "email-service-db"
     ],
-    "session-store": [
-      "inventory-service",
-      "session-store-db"
+    "config-server": [
+      "user-service",
+      "config-server-db"
     ],
-    "cache-layer": [
-      "cache-layer-db"
+    "notification-service": [
+      "notification-service-db"
+    ],
+    "analytics-service": [
+      "analytics-service-db"
     ],
     "search-service": [
       "search-service-db"
     ],
-    "internal-dns": [
-      "internal-dns-db"
-    ],
-    "order-service": [
-      "order-service-db"
+    "auth-service": [
+      "auth-service-db"
     ]
   },
   "root_cause": {
-    "service": "inventory-service",
-    "description": "Dependency version mismatch: inventory-service 4.0.1 expects API v3 but upstream provides v2, causing deserialization failures",
+    "service": "user-service",
+    "description": "Bad configuration rollout to user-service in 5.0.3 - invalid database connection string causing all queries to fail",
     "keywords": [
-      "version",
-      "mismatch",
-      "api",
-      "incompatible",
-      "deserialization",
-      "contract",
-      "breaking change"
+      "config",
+      "configuration",
+      "rollout",
+      "invalid",
+      "connection string",
+      "misconfigured"
     ]
   },
   "valid_remediations": [
     {
       "action": "rollback_deploy",
-      "service": "inventory-service"
+      "service": "user-service"
     },
     {
-      "action": "restart_service",
-      "service": "inventory-service"
+      "action": "update_config",
+      "service": "user-service"
     }
   ],
   "expected_diagnostics": [
     {
       "action_type": "query_logs",
       "params": {
-        "service": "inventory-service"
+        "service": "user-service"
       }
     },
     {
       "action_type": "check_metrics",
       "params": {
-        "service": "inventory-service"
+        "service": "user-service"
       }
     },
     {
       "action_type": "query_logs",
       "params": {
-        "service": "billing-service"
+        "service": "payment-api"
       }
     },
     {
       "action_type": "query_logs",
       "params": {
-        "service": "logging-pipeline"
+        "service": "email-service"
       }
     },
     {
       "action_type": "query_logs",
       "params": {
-        "service": "session-store"
+        "service": "config-server"
       }
     }
   ],
   "grading_rubric": {
-    "triage_weight": 0.03,
-    "diagnostic_weight": 0.18,
-    "root_cause_weight": 0.36,
-    "remediation_weight": 0.2,
-    "efficiency_weight": 0.11,
-    "documentation_weight": 0.12
+    "triage_weight": 0.06,
+    "diagnostic_weight": 0.21,
+    "root_cause_weight": 0.34,
+    "remediation_weight": 0.21,
+    "efficiency_weight": 0.1,
+    "documentation_weight": 0.08
   }
 }

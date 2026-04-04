@@ -73,25 +73,25 @@
   ],
   "logs": {
     "inventory-service": [
-      {"timestamp": "2026-03-26T14:50:00Z", "service": "inventory-service", "level": "WARN", "message": "Slow query detected: SELECT stock FROM items WHERE sku IN (...) took 4500ms"},
-      {"timestamp": "2026-03-26T14:52:00Z", "service": "inventory-service", "level": "ERROR", "message": "Connection to inventory-db timed out after 10000ms"},
-      {"timestamp": "2026-03-26T14:55:00Z", "service": "inventory-service", "level": "ERROR", "message": "inventory-db: max_connections (100) reached -- all connections in use"},
-      {"timestamp": "2026-03-26T14:58:00Z", "service": "inventory-service", "level": "FATAL", "message": "Cannot acquire DB connection -- returning 503 to callers"},
-      {"timestamp": "2026-03-26T15:00:00Z", "service": "inventory-service", "level": "ERROR", "message": "OOM killer invoked on inventory-db pod -- memory exceeded limit"}
+      {"timestamp": "2026-03-26T14:50:00Z", "service": "inventory-service", "level": "WARN", "message": "c.a.i.repo.StockRepository [db-pool-thread-9] - slow query: SELECT stock FROM items WHERE sku IN (?,?,?,...+247) elapsed=4500ms rows=250 plan=SeqScan on items (cost=0.00..18472.00)"},
+      {"timestamp": "2026-03-26T14:52:00Z", "service": "inventory-service", "level": "ERROR", "message": "c.a.i.db.PgConnectionPool [pool-1-thread-3] - java.net.SocketTimeoutException: connect timed out after 10000ms to 10.0.7.22:5432 (active=98, idle=0, pending=45)"},
+      {"timestamp": "2026-03-26T14:55:00Z", "service": "inventory-service", "level": "ERROR", "message": "c.a.i.db.PgConnectionPool [pool-1-thread-6] - FATAL: too many connections for role \"inventory_app\" at 10.0.7.22:5432 (max_connections=100, current=100)"},
+      {"timestamp": "2026-03-26T14:58:00Z", "service": "inventory-service", "level": "FATAL", "message": "c.a.i.handler.InventoryHandler [http-nio-8082-exec-55] - java.sql.SQLTransientConnectionException: PgPool-1 - Connection is not available, request timed out after 30000ms. (total=100, active=100, idle=0, waiting=312)"},
+      {"timestamp": "2026-03-26T15:00:00Z", "service": "inventory-service", "level": "ERROR", "message": "kernel: [14523.432] Killed process 2847 (java) total-vm:4194304kB anon-rss:2621440kB file-rss:0kB shmem-rss:0kB oom_score_adj:999 -- pod inventory-db-0 in namespace production"}
     ],
     "order-service": [
-      {"timestamp": "2026-03-26T15:00:05Z", "service": "order-service", "level": "ERROR", "message": "Inventory check failed for order ord-55100: upstream 503"},
-      {"timestamp": "2026-03-26T15:00:15Z", "service": "order-service", "level": "ERROR", "message": "Cannot validate stock levels -- inventory-service unavailable"},
-      {"timestamp": "2026-03-26T15:00:30Z", "service": "order-service", "level": "WARN", "message": "Falling back to cached inventory (stale 15min) for order processing"}
+      {"timestamp": "2026-03-26T15:00:05Z", "service": "order-service", "level": "ERROR", "message": "c.a.o.client.InventoryClient [http-nio-8081-exec-33] - upstream 10.0.8.14:8082 returned HTTP 503 (0.004s) for ord-55100"},
+      {"timestamp": "2026-03-26T15:00:15Z", "service": "order-service", "level": "ERROR", "message": "c.a.o.client.InventoryClient [http-nio-8081-exec-40] - upstream connect error: connection refused to 10.0.8.14:8082, reset reason: remote connection failure, retries=3"},
+      {"timestamp": "2026-03-26T15:00:30Z", "service": "order-service", "level": "WARN", "message": "c.a.o.cache.InventoryCache [order-worker-7] - serving from local cache: key=inventory:sku-batch-44 age=902s maxAge=300s stale=true items=1250"}
     ],
     "payment-api": [
-      {"timestamp": "2026-03-26T15:00:10Z", "service": "payment-api", "level": "ERROR", "message": "Order validation step failed -- cannot confirm order exists in order-service"},
-      {"timestamp": "2026-03-26T15:00:20Z", "service": "payment-api", "level": "ERROR", "message": "Transaction rollback for payment pay-88421: order not confirmed"}
+      {"timestamp": "2026-03-26T15:00:10Z", "service": "payment-api", "level": "ERROR", "message": "c.a.p.client.OrderClient [http-nio-8080-exec-28] - java.net.SocketTimeoutException: upstream 10.0.4.22:8081 read timed out after 5000ms (GET /api/orders/ord-55100/status)"},
+      {"timestamp": "2026-03-26T15:00:20Z", "service": "payment-api", "level": "ERROR", "message": "c.a.p.handler.TransactionHandler [http-nio-8080-exec-31] - rolling back txn pay-88421: java.lang.IllegalStateException: order confirmation not received within 10000ms from 10.0.4.22:8081"}
     ],
     "api-gateway": [
-      {"timestamp": "2026-03-26T15:00:00Z", "service": "api-gateway", "level": "ERROR", "message": "Upstream timeout: order-service did not respond within 5000ms"},
-      {"timestamp": "2026-03-26T15:00:10Z", "service": "api-gateway", "level": "WARN", "message": "Circuit breaker OPEN for order-service"},
-      {"timestamp": "2026-03-26T15:00:20Z", "service": "api-gateway", "level": "ERROR", "message": "Returning 503 to clients for /api/orders/* routes"}
+      {"timestamp": "2026-03-26T15:00:00Z", "service": "api-gateway", "level": "ERROR", "message": "c.a.g.proxy.UpstreamRouter [http-nio-9090-exec-19] - upstream 10.0.4.22:8081 timed out (5000ms), no response bytes received"},
+      {"timestamp": "2026-03-26T15:00:10Z", "service": "api-gateway", "level": "WARN", "message": "i.g.r.CircuitBreaker [cb-order-service] - state transition: CLOSED -> OPEN (failure_count=50, threshold=30, last_error=java.net.SocketTimeoutException)"},
+      {"timestamp": "2026-03-26T15:00:20Z", "service": "api-gateway", "level": "ERROR", "message": "c.a.g.proxy.UpstreamRouter [http-nio-9090-exec-25] - no healthy upstream for route=/api/orders/*, returning 503 to client 203.0.113.42"}
     ]
   },
   "metrics": {

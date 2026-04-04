@@ -81,21 +81,21 @@
   ],
   "logs": {
     "payment-api": [
-      {"timestamp": "2026-03-26T14:00:05Z", "service": "payment-api", "level": "ERROR", "message": "Connection pool exhausted - cannot acquire connection to payments-db"},
-      {"timestamp": "2026-03-26T14:00:08Z", "service": "payment-api", "level": "ERROR", "message": "Timeout waiting for DB connection after 5000ms"},
-      {"timestamp": "2026-03-26T14:00:12Z", "service": "payment-api", "level": "WARN", "message": "Circuit breaker OPEN for payments-db connections"},
-      {"timestamp": "2026-03-26T14:00:20Z", "service": "payment-api", "level": "ERROR", "message": "Failed to process payment txn-88291: DB connection unavailable"},
-      {"timestamp": "2026-03-26T14:00:25Z", "service": "payment-api", "level": "INFO", "message": "Retrying DB connection pool initialization"}
+      {"timestamp": "2026-03-26T14:00:05Z", "service": "payment-api", "level": "ERROR", "message": "c.a.p.db.HikariPool [pool-3-thread-7] - Connection is not available, request timed out after 30000ms. (total=50, active=50, idle=0, waiting=127)"},
+      {"timestamp": "2026-03-26T14:00:08Z", "service": "payment-api", "level": "ERROR", "message": "c.a.p.handler.PaymentHandler [http-nio-8080-exec-42] - java.sql.SQLTransientConnectionException: HikariPool-1 - Connection is not available, request timed out after 5000ms to 10.0.3.47:5432"},
+      {"timestamp": "2026-03-26T14:00:12Z", "service": "payment-api", "level": "WARN", "message": "i.g.r.CircuitBreaker [cb-payments-db] - state transition: CLOSED -> OPEN (failure_count=25, threshold=20, last_error=java.net.SocketTimeoutException)"},
+      {"timestamp": "2026-03-26T14:00:20Z", "service": "payment-api", "level": "ERROR", "message": "c.a.p.handler.PaymentHandler [http-nio-8080-exec-18] - txn-88291 failed: java.sql.SQLTransientConnectionException: HikariPool-1 - Connection is not available (total=50, active=50, idle=0, waiting=143)"},
+      {"timestamp": "2026-03-26T14:00:25Z", "service": "payment-api", "level": "INFO", "message": "c.a.p.db.HikariPool [HikariPool-1 housekeeper] - pool stats: total=50, active=50, idle=0, waiting=156; attempting pool restart to 10.0.3.47:5432"}
     ],
     "order-service": [
-      {"timestamp": "2026-03-26T14:00:35Z", "service": "order-service", "level": "ERROR", "message": "Payment API returned 503 for order ord-44210"},
-      {"timestamp": "2026-03-26T14:00:40Z", "service": "order-service", "level": "ERROR", "message": "Failed to complete checkout: upstream payment-api unavailable"},
-      {"timestamp": "2026-03-26T14:01:00Z", "service": "order-service", "level": "WARN", "message": "Fallback: queuing order for retry"},
-      {"timestamp": "2026-03-26T14:01:15Z", "service": "order-service", "level": "ERROR", "message": "Payment API returned 503 for order ord-44215"}
+      {"timestamp": "2026-03-26T14:00:35Z", "service": "order-service", "level": "ERROR", "message": "c.a.o.client.PaymentClient [http-nio-8081-exec-12] - upstream 10.0.2.31:8080 returned HTTP 503 (0.002s) for ord-44210"},
+      {"timestamp": "2026-03-26T14:00:40Z", "service": "order-service", "level": "ERROR", "message": "c.a.o.handler.CheckoutHandler [http-nio-8081-exec-15] - upstream connect error: connection refused to 10.0.2.31:8080, reset reason: remote connection failure"},
+      {"timestamp": "2026-03-26T14:01:00Z", "service": "order-service", "level": "WARN", "message": "c.a.o.queue.RetryQueue [retry-worker-1] - enqueuing failed request for async retry: orderId=ord-44212, attempts=0, backoff=5000ms"},
+      {"timestamp": "2026-03-26T14:01:15Z", "service": "order-service", "level": "ERROR", "message": "c.a.o.client.PaymentClient [http-nio-8081-exec-22] - upstream 10.0.2.31:8080 returned HTTP 503 (0.001s) for ord-44215"}
     ],
     "user-service": [
-      {"timestamp": "2026-03-26T14:00:00Z", "service": "user-service", "level": "INFO", "message": "Healthy - serving requests normally"},
-      {"timestamp": "2026-03-26T14:00:30Z", "service": "user-service", "level": "INFO", "message": "Cache hit ratio: 94%"}
+      {"timestamp": "2026-03-26T14:00:00Z", "service": "user-service", "level": "INFO", "message": "c.a.u.health.HealthCheck [health-check-1] - status=UP db_latency=2ms cache_latency=1ms active_connections=12/50"},
+      {"timestamp": "2026-03-26T14:00:30Z", "service": "user-service", "level": "INFO", "message": "c.a.u.cache.RedisCache [cache-stats-1] - hits=14210 misses=852 ratio=94.3% evictions=0 pool=10.0.5.12:6379"}
     ]
   },
   "metrics": {

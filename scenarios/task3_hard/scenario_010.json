@@ -1,42 +1,42 @@
 {
   "incident_id": "INC-20260326-210",
   "difficulty": "hard",
-  "description": "SEV1 incident: Load Balancer Misconfiguration affecting logging-pipeline. Cascading impact on internal-dns, payment-api, email-service. Multiple concurrent events make diagnosis challenging.",
+  "description": "SEV1 incident: TLS Certificate Expiry affecting inventory-service. Cascading impact on logging-pipeline, payment-api. Multiple concurrent events make diagnosis challenging.",
   "expected_severity": "SEV1",
   "initial_alerts": [
     {
       "alert_id": "alert-21001",
       "severity": "critical",
-      "service": "logging-pipeline",
-      "message": "Uneven traffic distribution - single backend receiving 100% traffic",
-      "timestamp": "2026-03-26T10:29:05Z",
+      "service": "inventory-service",
+      "message": "TLS certificate expired - all HTTPS connections failing",
+      "timestamp": "2026-03-26T17:23:05Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-21002",
       "severity": "critical",
-      "service": "internal-dns",
-      "message": "Service overloaded - receiving all routed traffic",
-      "timestamp": "2026-03-26T10:30:10Z",
+      "service": "logging-pipeline",
+      "message": "Connection refused: TLS handshake failure with inventory-service",
+      "timestamp": "2026-03-26T17:24:10Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-21003",
       "severity": "warning",
-      "service": "logging-pipeline",
-      "message": "Health check configuration mismatch detected",
-      "timestamp": "2026-03-26T10:31:15Z",
+      "service": "inventory-service",
+      "message": "Certificate validity: EXPIRED since 2026-03-26T15:00:00Z",
+      "timestamp": "2026-03-26T17:25:15Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-21004",
       "severity": "critical",
-      "service": "internal-dns",
-      "message": "internal-dns error rate spiking - requests failing",
-      "timestamp": "2026-03-26T10:29:03Z",
+      "service": "logging-pipeline",
+      "message": "logging-pipeline error rate spiking - requests failing",
+      "timestamp": "2026-03-26T17:23:37Z",
       "acknowledged": false,
       "silenced": false
     },
@@ -45,337 +45,288 @@
       "severity": "critical",
       "service": "payment-api",
       "message": "payment-api error rate spiking - requests failing",
-      "timestamp": "2026-03-26T10:29:34Z",
+      "timestamp": "2026-03-26T17:23:07Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-21006",
-      "severity": "warning",
-      "service": "metrics-collector",
-      "message": "Log volume increased 20% - review retention policy",
-      "timestamp": "2026-03-26T10:26:08Z",
+      "severity": "info",
+      "service": "internal-dns",
+      "message": "Feature flag 'new-checkout-flow' enabled for 5% of users",
+      "timestamp": "2026-03-26T17:12:23Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-21007",
       "severity": "info",
-      "service": "metrics-collector",
-      "message": "SSL certificate renewal scheduled for next week",
-      "timestamp": "2026-03-26T10:23:31Z",
+      "service": "config-server",
+      "message": "Model v4.2 deployment started - canary rollout in progress",
+      "timestamp": "2026-03-26T17:21:48Z",
       "acknowledged": false,
       "silenced": false
     }
   ],
   "services": [
     {
-      "name": "logging-pipeline",
+      "name": "inventory-service",
       "status": "degraded",
-      "latency_ms": 1580,
-      "error_rate": 24.7,
-      "cpu_percent": 86,
-      "memory_percent": 75,
-      "version": "1.0.0"
+      "latency_ms": 2025,
+      "error_rate": 28.9,
+      "cpu_percent": 94,
+      "memory_percent": 70,
+      "version": "4.2.0"
     },
     {
-      "name": "internal-dns",
+      "name": "logging-pipeline",
       "status": "degraded",
-      "latency_ms": 2109,
-      "error_rate": 40.2,
-      "cpu_percent": 54,
-      "memory_percent": 49,
-      "version": "4.2.0"
+      "latency_ms": 1840,
+      "error_rate": 58.3,
+      "cpu_percent": 31,
+      "memory_percent": 47,
+      "version": "2.1.1"
     },
     {
       "name": "payment-api",
       "status": "degraded",
-      "latency_ms": 4782,
-      "error_rate": 13.8,
-      "cpu_percent": 71,
-      "memory_percent": 32,
-      "version": "1.5.0"
+      "latency_ms": 2498,
+      "error_rate": 40.5,
+      "cpu_percent": 31,
+      "memory_percent": 59,
+      "version": "1.2.3"
     },
     {
-      "name": "email-service",
-      "status": "degraded",
-      "latency_ms": 3582,
-      "error_rate": 45.6,
-      "cpu_percent": 24,
-      "memory_percent": 37,
-      "version": "5.0.3"
-    },
-    {
-      "name": "session-store",
+      "name": "internal-dns",
       "status": "healthy",
-      "latency_ms": 165,
-      "error_rate": 0.7,
-      "cpu_percent": 33,
-      "memory_percent": 35,
-      "version": "1.0.0"
+      "latency_ms": 41,
+      "error_rate": 0.1,
+      "cpu_percent": 31,
+      "memory_percent": 42,
+      "version": "1.1.0"
     },
     {
-      "name": "metrics-collector",
+      "name": "cache-layer",
       "status": "healthy",
-      "latency_ms": 197,
-      "error_rate": 1.0,
-      "cpu_percent": 41,
-      "memory_percent": 38,
-      "version": "2.3.0"
-    },
-    {
-      "name": "user-service",
-      "status": "healthy",
-      "latency_ms": 192,
-      "error_rate": 0.8,
-      "cpu_percent": 9,
-      "memory_percent": 20,
+      "latency_ms": 110,
+      "error_rate": 0.6,
+      "cpu_percent": 15,
+      "memory_percent": 50,
       "version": "3.2.0"
+    },
+    {
+      "name": "config-server",
+      "status": "healthy",
+      "latency_ms": 54,
+      "error_rate": 0.1,
+      "cpu_percent": 12,
+      "memory_percent": 50,
+      "version": "2.1.1"
     }
   ],
   "recent_deployments": [
     {
-      "service": "logging-pipeline",
-      "version": "1.0.0",
-      "timestamp": "2026-03-26T09:19:00Z",
-      "deployer": "search-team"
+      "service": "inventory-service",
+      "version": "4.2.0",
+      "timestamp": "2026-03-26T16:37:00Z",
+      "deployer": "ops-team"
     },
     {
-      "service": "metrics-collector",
-      "version": "2.3.0",
-      "timestamp": "2026-03-26T08:12:00Z",
+      "service": "cache-layer",
+      "version": "3.2.0",
+      "timestamp": "2026-03-26T16:40:00Z",
       "deployer": "ml-team"
     },
     {
-      "service": "session-store",
-      "version": "1.0.0",
-      "timestamp": "2026-03-26T07:11:00Z",
-      "deployer": "dev-team"
+      "service": "internal-dns",
+      "version": "1.1.0",
+      "timestamp": "2026-03-26T16:41:00Z",
+      "deployer": "search-team"
     }
   ],
   "logs": {
-    "logging-pipeline": [
+    "inventory-service": [
       {
-        "timestamp": "2026-03-26T10:28:00Z",
-        "service": "logging-pipeline",
+        "timestamp": "2026-03-26T17:22:00Z",
+        "service": "inventory-service",
         "level": "ERROR",
-        "message": "Backend pool misconfigured: only 1 of 3 backends active"
+        "message": "c.a.s.tls.CertValidator [tls-handshake-10] - peer certificate rejected: notAfter=2026-03-26T15:00:00Z (expired 18 hours ago)"
       },
       {
-        "timestamp": "2026-03-26T10:29:25Z",
-        "service": "logging-pipeline",
-        "level": "WARN",
-        "message": "Health check endpoint changed in 1.0.0 but LB config not updated"
-      },
-      {
-        "timestamp": "2026-03-26T10:30:50Z",
-        "service": "logging-pipeline",
+        "timestamp": "2026-03-26T17:23:25Z",
+        "service": "inventory-service",
         "level": "ERROR",
-        "message": "All traffic routed to internal-dns: other backends marked unhealthy"
+        "message": "c.a.s.tls.CertValidator [tls-handshake-25] - CERTIFICATE_VERIFY_FAILED: unable to get local issuer certificate (depth=1, CN=*.inventory-service.internal)"
       },
       {
-        "timestamp": "2026-03-26T10:32:15Z",
-        "service": "logging-pipeline",
+        "timestamp": "2026-03-26T17:24:50Z",
+        "service": "inventory-service",
         "level": "WARN",
-        "message": "Backend internal-dns reporting 503: overloaded from traffic spike"
+        "message": "c.a.s.tls.AutoRenew [cert-renew-1] - ACME challenge failed: timeout connecting to ca.internal:443 after 30000ms"
+      },
+      {
+        "timestamp": "2026-03-26T17:26:15Z",
+        "service": "inventory-service",
+        "level": "ERROR",
+        "message": "c.a.s.tls.CertValidator [tls-handshake-12] - javax.net.ssl.SSLHandshakeException: PKIX path validation failed: java.security.cert.CertPathValidatorException: validity check failed"
       }
     ],
-    "internal-dns": [
+    "logging-pipeline": [
       {
-        "timestamp": "2026-03-26T10:29:00Z",
-        "service": "internal-dns",
+        "timestamp": "2026-03-26T17:23:00Z",
+        "service": "logging-pipeline",
         "level": "ERROR",
-        "message": "Request rate 10x normal - possible routing issue"
+        "message": "c.a.s.client.ServiceClient [http-14] - javax.net.ssl.SSLHandshakeException connecting to 10.40.216.217:8087: peer not authenticated"
       },
       {
-        "timestamp": "2026-03-26T10:34:00Z",
-        "service": "internal-dns",
+        "timestamp": "2026-03-26T17:28:00Z",
+        "service": "logging-pipeline",
         "level": "WARN",
-        "message": "Thread pool exhausted from unexpected traffic volume"
+        "message": "c.a.s.client.ServiceClient [http-39] - TLS handshake failed to 10.40.216.217:8087, falling back to cached response (age=10382s)"
       }
     ],
     "payment-api": [
       {
-        "timestamp": "2026-03-26T10:29:00Z",
+        "timestamp": "2026-03-26T17:23:00Z",
         "service": "payment-api",
         "level": "ERROR",
-        "message": "Request rate 10x normal - possible routing issue"
+        "message": "c.a.s.client.ServiceClient [http-25] - javax.net.ssl.SSLHandshakeException connecting to 10.40.216.217:8087: peer not authenticated"
       },
       {
-        "timestamp": "2026-03-26T10:34:00Z",
+        "timestamp": "2026-03-26T17:28:00Z",
         "service": "payment-api",
         "level": "WARN",
-        "message": "Thread pool exhausted from unexpected traffic volume"
+        "message": "c.a.s.client.ServiceClient [http-8] - TLS handshake failed to 10.40.216.217:8087, falling back to cached response (age=55361s)"
       }
     ],
-    "email-service": [
+    "internal-dns": [
       {
-        "timestamp": "2026-03-26T10:29:00Z",
-        "service": "email-service",
-        "level": "ERROR",
-        "message": "Request rate 10x normal - possible routing issue"
-      },
+        "timestamp": "2026-03-26T17:22:00Z",
+        "service": "internal-dns",
+        "level": "INFO",
+        "message": "c.a.s.health.Monitor [health-check-1] - status=UP, checks=[db:UP, cache:UP, queue:UP]"
+      }
+    ],
+    "config-server": [
       {
-        "timestamp": "2026-03-26T10:34:00Z",
-        "service": "email-service",
+        "timestamp": "2026-03-26T17:22:00Z",
+        "service": "config-server",
         "level": "WARN",
-        "message": "Thread pool exhausted from unexpected traffic volume"
-      }
-    ],
-    "session-store": [
-      {
-        "timestamp": "2026-03-26T10:28:00Z",
-        "service": "session-store",
-        "level": "INFO",
-        "message": "Cache hit ratio: 87%"
-      }
-    ],
-    "metrics-collector": [
-      {
-        "timestamp": "2026-03-26T10:28:00Z",
-        "service": "metrics-collector",
-        "level": "INFO",
-        "message": "Batch job completed: processed 17160 records"
+        "message": "c.a.s.db.SlowQueryLog [query-monitor-1] - slow query: 2103ms SELECT * FROM audit_log WHERE created_at > '2026-03-25' (non-critical)"
       }
     ]
   },
   "metrics": {
-    "logging-pipeline:backend_health_pct": [
-      0.5,
-      0.5,
-      0.5,
-      64.4,
-      64.4,
-      64.4
+    "inventory-service:tls_errors": [
+      0.9,
+      0.9,
+      0.9,
+      93.2,
+      93.2,
+      93.2,
+      93.2
+    ],
+    "inventory-service:error_rate": [
+      0.8,
+      0.8,
+      0.8,
+      0.8,
+      76.1,
+      76.1,
+      76.1,
+      76.1
     ],
     "logging-pipeline:error_rate": [
-      1.6,
-      1.6,
-      1.6,
-      66.7,
-      66.7,
-      66.7
-    ],
-    "internal-dns:cpu_percent": [
-      0.0,
-      41.2,
-      63.8,
-      76.2,
-      83.0,
-      86.7
-    ],
-    "internal-dns:error_rate": [
-      0.9,
-      1.8,
-      3.6,
-      7.3,
-      14.9,
-      30.4
-    ],
-    "payment-api:cpu_percent": [
-      0.0,
-      38.9,
-      60.3,
-      72.0,
-      78.5,
-      82.0
+      1.4,
+      1.4,
+      1.4,
+      87.7,
+      87.7,
+      87.7
     ],
     "payment-api:error_rate": [
-      0.2,
-      0.5,
-      1.3,
-      3.2,
-      7.7,
-      18.6,
-      45.1
+      0.1,
+      0.1,
+      79.4,
+      79.4,
+      79.4
     ],
-    "email-service:cpu_percent": [
-      0.0,
-      43.8,
-      64.5,
-      74.3,
-      78.9
+    "internal-dns:cpu": [
+      27.4,
+      22.8,
+      23.1,
+      23.3,
+      14.5,
+      29.6
     ],
-    "email-service:error_rate": [
-      0.2,
-      0.6,
-      1.6,
-      4.2,
-      11.3,
-      30.4,
-      81.3
-    ],
-    "session-store:cpu": [
-      24.2,
-      40.0,
-      23.9,
-      22.0,
-      18.1,
-      18.8
-    ],
-    "metrics-collector:cpu": [
-      40.3,
-      23.5,
-      34.3,
-      38.8,
-      31.6,
-      27.6
+    "cache-layer:cpu": [
+      59.9,
+      60.7,
+      47.9,
+      41.7,
+      47.6,
+      48.9
     ]
   },
   "dependencies": {
-    "logging-pipeline": [
-      "logging-pipeline-db",
-      "logging-pipeline-store"
+    "inventory-service": [
+      "inventory-service-db",
+      "inventory-service-store"
     ],
-    "internal-dns": [
-      "logging-pipeline",
-      "internal-dns-db"
+    "logging-pipeline": [
+      "inventory-service",
+      "logging-pipeline-db"
     ],
     "payment-api": [
-      "logging-pipeline",
+      "inventory-service",
       "payment-api-db"
     ],
-    "email-service": [
-      "logging-pipeline",
-      "email-service-db"
+    "internal-dns": [
+      "internal-dns-db"
     ],
-    "session-store": [
-      "session-store-db"
+    "cache-layer": [
+      "cache-layer-db"
     ],
-    "metrics-collector": [
-      "metrics-collector-db"
-    ],
-    "user-service": [
-      "user-service-db"
+    "config-server": [
+      "config-server-db"
     ]
   },
   "root_cause": {
-    "service": "logging-pipeline",
-    "description": "Load balancer misconfiguration on logging-pipeline routing all traffic to single unhealthy backend after 1.0.0 config change",
+    "service": "inventory-service",
+    "description": "TLS certificate expired on inventory-service causing all HTTPS connections to fail",
     "keywords": [
-      "load balancer",
-      "routing",
-      "misconfiguration",
-      "config",
-      "backend",
-      "traffic"
+      "tls",
+      "certificate",
+      "expired",
+      "ssl",
+      "https",
+      "cert",
+      "x509"
     ]
   },
   "valid_remediations": [
     {
-      "action": "update_config",
-      "service": "logging-pipeline"
-    },
-    {
-      "action": "rollback_deploy",
-      "service": "logging-pipeline"
-    },
-    {
       "action": "restart_service",
-      "service": "logging-pipeline"
+      "service": "inventory-service"
+    },
+    {
+      "action": "update_config",
+      "service": "inventory-service"
     }
   ],
   "expected_diagnostics": [
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "inventory-service"
+      }
+    },
+    {
+      "action_type": "check_metrics",
+      "params": {
+        "service": "inventory-service"
+      }
+    },
     {
       "action_type": "query_logs",
       "params": {
@@ -383,24 +334,18 @@
       }
     },
     {
-      "action_type": "check_metrics",
+      "action_type": "query_logs",
       "params": {
-        "service": "logging-pipeline"
-      }
-    },
-    {
-      "action_type": "view_dependencies",
-      "params": {
-        "service_name": "internal-dns"
+        "service": "payment-api"
       }
     }
   ],
   "grading_rubric": {
     "triage_weight": 0.09,
-    "diagnostic_weight": 0.26,
-    "root_cause_weight": 0.33,
-    "remediation_weight": 0.19,
-    "efficiency_weight": 0.09,
-    "documentation_weight": 0.04
+    "diagnostic_weight": 0.24,
+    "root_cause_weight": 0.29,
+    "remediation_weight": 0.2,
+    "efficiency_weight": 0.11,
+    "documentation_weight": 0.07
   }
 }

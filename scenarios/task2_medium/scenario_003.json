@@ -1,288 +1,300 @@
 {
   "incident_id": "INC-20260326-103",
   "difficulty": "medium",
-  "description": "SEV2 incident: Replication Lag affecting payment-api. Cascading impact on billing-service.",
+  "description": "SEV2 incident: Connection Pool Exhaustion affecting search-service. Cascading impact on order-service.",
   "expected_severity": "SEV2",
   "initial_alerts": [
     {
       "alert_id": "alert-10301",
       "severity": "critical",
-      "service": "payment-api",
-      "message": "Data inconsistency detected - read replicas 44s behind primary",
-      "timestamp": "2026-03-26T16:19:05Z",
+      "service": "search-service",
+      "message": "Error rate exceeded 5% threshold - currently at 32.0%",
+      "timestamp": "2026-03-26T09:11:05Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-10302",
-      "severity": "warning",
-      "service": "payment-api",
-      "message": "Replication lag exceeding 30s threshold",
-      "timestamp": "2026-03-26T16:20:10Z",
+      "severity": "critical",
+      "service": "search-service",
+      "message": "P99 latency > 2000ms (currently 1673ms)",
+      "timestamp": "2026-03-26T09:12:10Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-10303",
       "severity": "warning",
-      "service": "billing-service",
-      "message": "Stale data returned for user queries",
-      "timestamp": "2026-03-26T16:21:15Z",
+      "service": "order-service",
+      "message": "Increased 4xx responses from downstream dependency",
+      "timestamp": "2026-03-26T09:13:15Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-10304",
       "severity": "critical",
-      "service": "billing-service",
-      "message": "billing-service error rate spiking - requests failing",
-      "timestamp": "2026-03-26T16:19:06Z",
+      "service": "order-service",
+      "message": "order-service error rate spiking - requests failing",
+      "timestamp": "2026-03-26T09:11:06Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-10305",
       "severity": "info",
-      "service": "order-service",
-      "message": "New dashboard version deployed - no action required",
-      "timestamp": "2026-03-26T16:11:05Z",
+      "service": "service-mesh",
+      "message": "Feature flag 'new-checkout-flow' enabled for 5% of users",
+      "timestamp": "2026-03-26T09:01:20Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-10306",
       "severity": "info",
-      "service": "user-service",
-      "message": "SSL certificate renewal scheduled for next week",
-      "timestamp": "2026-03-26T16:10:26Z",
+      "service": "service-mesh",
+      "message": "Model v4.2 deployment started - canary rollout in progress",
+      "timestamp": "2026-03-26T09:02:48Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-10307",
       "severity": "info",
-      "service": "order-service",
+      "service": "service-mesh",
       "message": "Scheduled maintenance window starting in 2 hours",
-      "timestamp": "2026-03-26T16:10:33Z",
+      "timestamp": "2026-03-26T09:01:44Z",
       "acknowledged": false,
       "silenced": false
     }
   ],
   "services": [
     {
-      "name": "payment-api",
-      "status": "degraded",
-      "latency_ms": 5143,
-      "error_rate": 56.4,
-      "cpu_percent": 57,
-      "memory_percent": 59,
-      "version": "4.0.1"
-    },
-    {
-      "name": "billing-service",
-      "status": "degraded",
-      "latency_ms": 4512,
-      "error_rate": 32.1,
-      "cpu_percent": 77,
-      "memory_percent": 70,
-      "version": "2.1.1"
-    },
-    {
       "name": "search-service",
-      "status": "healthy",
-      "latency_ms": 86,
-      "error_rate": 0.3,
-      "cpu_percent": 35,
-      "memory_percent": 50,
-      "version": "4.2.0"
+      "status": "degraded",
+      "latency_ms": 3927,
+      "error_rate": 66.8,
+      "cpu_percent": 96,
+      "memory_percent": 80,
+      "version": "2.3.0"
     },
     {
       "name": "order-service",
-      "status": "healthy",
-      "latency_ms": 186,
-      "error_rate": 0.5,
-      "cpu_percent": 13,
-      "memory_percent": 25,
-      "version": "4.1.0"
+      "status": "degraded",
+      "latency_ms": 3334,
+      "error_rate": 62.2,
+      "cpu_percent": 70,
+      "memory_percent": 69,
+      "version": "3.0.0"
     },
     {
-      "name": "cdn-proxy",
+      "name": "metrics-collector",
       "status": "healthy",
-      "latency_ms": 125,
-      "error_rate": 0.1,
-      "cpu_percent": 46,
-      "memory_percent": 51,
-      "version": "3.2.0"
-    },
-    {
-      "name": "user-service",
-      "status": "healthy",
-      "latency_ms": 110,
+      "latency_ms": 31,
       "error_rate": 0.6,
-      "cpu_percent": 41,
-      "memory_percent": 46,
+      "cpu_percent": 47,
+      "memory_percent": 40,
       "version": "1.1.0"
+    },
+    {
+      "name": "internal-dns",
+      "status": "healthy",
+      "latency_ms": 63,
+      "error_rate": 0.5,
+      "cpu_percent": 38,
+      "memory_percent": 54,
+      "version": "4.2.0"
+    },
+    {
+      "name": "inventory-service",
+      "status": "healthy",
+      "latency_ms": 129,
+      "error_rate": 0.1,
+      "cpu_percent": 39,
+      "memory_percent": 30,
+      "version": "1.0.0"
+    },
+    {
+      "name": "service-mesh",
+      "status": "healthy",
+      "latency_ms": 177,
+      "error_rate": 0.4,
+      "cpu_percent": 30,
+      "memory_percent": 50,
+      "version": "1.5.0"
     }
   ],
   "recent_deployments": [
     {
-      "service": "payment-api",
-      "version": "4.0.1",
-      "timestamp": "2026-03-26T15:48:00Z",
-      "deployer": "sre-bot"
+      "service": "search-service",
+      "version": "2.3.0",
+      "timestamp": "2026-03-26T08:30:00Z",
+      "deployer": "ops-team"
     }
   ],
   "logs": {
-    "payment-api": [
+    "search-service": [
       {
-        "timestamp": "2026-03-26T16:18:00Z",
-        "service": "payment-api",
+        "timestamp": "2026-03-26T09:10:00Z",
+        "service": "search-service",
         "level": "ERROR",
-        "message": "Replication lag at 59s - exceeds SLO of 5s"
+        "message": "c.a.s.db.HikariPool [pool-3-thread-43] - Connection is not available, request timed out after 5000ms. (total=82, active=82, idle=0, waiting=50)"
       },
       {
-        "timestamp": "2026-03-26T16:20:30Z",
-        "service": "payment-api",
+        "timestamp": "2026-03-26T09:12:30Z",
+        "service": "search-service",
+        "level": "ERROR",
+        "message": "c.a.s.handler.RequestHandler [http-nio-8080-exec-45] - java.net.SocketTimeoutException: connect timed out to 10.16.76.38:5433"
+      },
+      {
+        "timestamp": "2026-03-26T09:15:00Z",
+        "service": "search-service",
         "level": "WARN",
-        "message": "Read replica payment-api-replica-2 falling behind primary"
+        "message": "c.a.s.circuit.CircuitBreaker [cb-monitor-1] - Circuit breaker 'search-service-db' state: CLOSED -> OPEN (failures=483/100)"
       },
       {
-        "timestamp": "2026-03-26T16:23:00Z",
-        "service": "payment-api",
+        "timestamp": "2026-03-26T09:17:30Z",
+        "service": "search-service",
         "level": "ERROR",
-        "message": "Schema migration v4.0.1 causing replication bottleneck"
-      },
-      {
-        "timestamp": "2026-03-26T16:25:30Z",
-        "service": "payment-api",
-        "level": "INFO",
-        "message": "Attempting to pause non-critical replication streams"
+        "message": "c.a.s.handler.RequestHandler [http-nio-8080-exec-35] - java.sql.SQLTransientConnectionException: HikariPool-1 - Connection is not available, request timed out after 5000ms"
       }
     ],
-    "billing-service": [
+    "order-service": [
       {
-        "timestamp": "2026-03-26T16:19:00Z",
-        "service": "billing-service",
-        "level": "WARN",
-        "message": "Inconsistent read from payment-api: got stale version"
+        "timestamp": "2026-03-26T09:11:00Z",
+        "service": "order-service",
+        "level": "ERROR",
+        "message": "upstream connect error: connection refused to 10.95.72.132:8085, reset reason: remote reset"
       },
       {
-        "timestamp": "2026-03-26T16:24:00Z",
-        "service": "billing-service",
+        "timestamp": "2026-03-26T09:16:00Z",
+        "service": "order-service",
         "level": "ERROR",
-        "message": "Cache invalidation failed: stale data propagated from payment-api"
+        "message": "c.a.s.client.ServiceClient [http-2] - HTTP 503 from 10.95.72.132:8085 (latency=12564ms)"
       }
     ]
   },
   "metrics": {
-    "payment-api:replication_lag_s": [
-      1.3,
-      2.7,
-      5.6,
-      12.0,
-      25.4,
-      53.8
-    ],
-    "payment-api:error_rate": [
+    "search-service:error_rate": [
+      0.3,
       1.1,
-      1.1,
-      1.1,
-      81.9,
-      81.9,
-      81.9
+      3.7,
+      12.4,
+      41.3
     ],
-    "billing-service:error_rate": [
-      1.7,
-      1.7,
-      1.7,
-      84.6,
-      84.6,
-      84.6,
-      84.6
+    "search-service:latency_p99": [
+      0.9,
+      2.3,
+      5.9,
+      15.1,
+      38.8,
+      99.8
     ],
-    "search-service:cpu": [
-      23.6,
-      31.8,
-      19.3,
-      30.1,
-      16.8,
-      21.4
+    "search-service:db_connections": [
+      0.0,
+      51.4,
+      75.6,
+      87.1,
+      92.5
     ],
-    "order-service:cpu": [
-      23.2,
-      17.0,
-      20.8,
-      25.8,
-      26.5,
-      23.2
+    "order-service:error_rate": [
+      0.3,
+      0.6,
+      1.5,
+      3.4,
+      7.9,
+      18.1,
+      41.6,
+      95.6
+    ],
+    "metrics-collector:cpu": [
+      29.4,
+      38.6,
+      27.1,
+      33.8,
+      32.2,
+      33.3
+    ],
+    "internal-dns:cpu": [
+      44.1,
+      42.5,
+      46.0,
+      55.0,
+      49.1,
+      53.7
     ]
   },
   "dependencies": {
-    "payment-api": [
-      "payment-api-db",
-      "payment-api-store"
-    ],
-    "billing-service": [
-      "payment-api",
-      "billing-service-db"
-    ],
     "search-service": [
-      "payment-api",
-      "search-service-db"
+      "search-service-db",
+      "search-service-store"
     ],
     "order-service": [
+      "search-service",
       "order-service-db"
     ],
-    "cdn-proxy": [
-      "cdn-proxy-db"
+    "metrics-collector": [
+      "search-service",
+      "metrics-collector-db"
     ],
-    "user-service": [
-      "user-service-db"
+    "internal-dns": [
+      "internal-dns-db"
+    ],
+    "inventory-service": [
+      "inventory-service-db"
+    ],
+    "service-mesh": [
+      "service-mesh-db"
     ]
   },
   "root_cause": {
-    "service": "payment-api",
-    "description": "Database replication lag on payment-api caused read replicas to serve stale data after 4.0.1 schema migration",
+    "service": "search-service",
+    "description": "DB connection pool exhaustion on search-service caused by connection leak in 2.3.0 deployment",
     "keywords": [
-      "replication",
-      "lag",
-      "stale",
-      "replica",
-      "schema",
-      "migration",
-      "database"
+      "connection pool",
+      "database",
+      "db",
+      "exhausted",
+      "leak",
+      "connection"
     ]
   },
   "valid_remediations": [
     {
-      "action": "rollback_deploy",
-      "service": "payment-api"
+      "action": "restart_service",
+      "service": "search-service"
     },
     {
-      "action": "restart_service",
-      "service": "payment-api"
+      "action": "rollback_deploy",
+      "service": "search-service"
     }
   ],
   "expected_diagnostics": [
     {
       "action_type": "query_logs",
       "params": {
-        "service": "payment-api"
+        "service": "search-service"
       }
     },
     {
       "action_type": "check_metrics",
       "params": {
-        "service": "payment-api"
+        "service": "search-service"
+      }
+    },
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "order-service"
       }
     }
   ],
   "grading_rubric": {
-    "triage_weight": 0.21,
-    "diagnostic_weight": 0.25,
+    "triage_weight": 0.18,
+    "diagnostic_weight": 0.26,
     "root_cause_weight": 0.19,
-    "remediation_weight": 0.19,
-    "efficiency_weight": 0.12,
-    "documentation_weight": 0.04
+    "remediation_weight": 0.21,
+    "efficiency_weight": 0.13,
+    "documentation_weight": 0.03
   }
 }

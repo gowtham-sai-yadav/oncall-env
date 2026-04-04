@@ -1,302 +1,286 @@
 {
   "incident_id": "INC-20260326-106",
   "difficulty": "medium",
-  "description": "SEV2 incident: CPU Spin Loop affecting analytics-service. Cascading impact on payment-api, logging-pipeline.",
+  "description": "SEV2 incident: Memory Leak (OOM) affecting payment-api. Cascading impact on internal-dns.",
   "expected_severity": "SEV2",
   "initial_alerts": [
     {
       "alert_id": "alert-10601",
       "severity": "critical",
-      "service": "analytics-service",
-      "message": "CPU usage at 97% - all cores saturated",
-      "timestamp": "2026-03-26T08:10:05Z",
+      "service": "payment-api",
+      "message": "Memory usage at 88% - OOM kill imminent",
+      "timestamp": "2026-03-26T21:10:05Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-10602",
       "severity": "critical",
-      "service": "analytics-service",
-      "message": "Service unresponsive - health check failures",
-      "timestamp": "2026-03-26T08:11:10Z",
+      "service": "payment-api",
+      "message": "Service restarts detected - 13 OOM kills in last 10 minutes",
+      "timestamp": "2026-03-26T21:11:10Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-10603",
       "severity": "warning",
-      "service": "payment-api",
-      "message": "Timeout errors from analytics-service increasing",
-      "timestamp": "2026-03-26T08:12:15Z",
+      "service": "internal-dns",
+      "message": "Elevated error rate due to payment-api instability",
+      "timestamp": "2026-03-26T21:12:15Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-10604",
       "severity": "critical",
-      "service": "payment-api",
-      "message": "payment-api error rate spiking - requests failing",
-      "timestamp": "2026-03-26T08:10:26Z",
+      "service": "internal-dns",
+      "message": "internal-dns error rate spiking - requests failing",
+      "timestamp": "2026-03-26T21:10:06Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-10605",
-      "severity": "critical",
-      "service": "logging-pipeline",
-      "message": "logging-pipeline error rate spiking - requests failing",
-      "timestamp": "2026-03-26T08:10:36Z",
+      "severity": "warning",
+      "service": "session-store",
+      "message": "Disk usage at 72% on data volume",
+      "timestamp": "2026-03-26T21:06:13Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-10606",
       "severity": "info",
-      "service": "user-service",
-      "message": "Elasticsearch reindex started - expected temporary latency increase",
-      "timestamp": "2026-03-26T08:05:52Z",
+      "service": "inventory-service",
+      "message": "Feature flag 'new-checkout-flow' enabled for 5% of users",
+      "timestamp": "2026-03-26T21:04:54Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-10607",
-      "severity": "info",
-      "service": "internal-dns",
-      "message": "Scheduled maintenance window starting in 2 hours",
-      "timestamp": "2026-03-26T08:03:17Z",
+      "severity": "warning",
+      "service": "session-store",
+      "message": "CPU usage at 60% - approaching threshold",
+      "timestamp": "2026-03-26T21:08:19Z",
       "acknowledged": false,
       "silenced": false
     }
   ],
   "services": [
     {
-      "name": "analytics-service",
+      "name": "payment-api",
       "status": "down",
       "latency_ms": 0,
-      "error_rate": 97.7,
-      "cpu_percent": 64,
-      "memory_percent": 66,
-      "version": "2.0.0"
-    },
-    {
-      "name": "payment-api",
-      "status": "degraded",
-      "latency_ms": 4514,
-      "error_rate": 26.8,
-      "cpu_percent": 66,
-      "memory_percent": 50,
-      "version": "4.1.0"
-    },
-    {
-      "name": "logging-pipeline",
-      "status": "degraded",
-      "latency_ms": 4377,
-      "error_rate": 41.3,
-      "cpu_percent": 33,
-      "memory_percent": 58,
-      "version": "5.0.3"
-    },
-    {
-      "name": "user-service",
-      "status": "healthy",
-      "latency_ms": 80,
-      "error_rate": 0.6,
-      "cpu_percent": 6,
-      "memory_percent": 31,
+      "error_rate": 78.1,
+      "cpu_percent": 48,
+      "memory_percent": 59,
       "version": "2.3.0"
     },
     {
       "name": "internal-dns",
+      "status": "degraded",
+      "latency_ms": 3203,
+      "error_rate": 67.3,
+      "cpu_percent": 60,
+      "memory_percent": 54,
+      "version": "3.0.0"
+    },
+    {
+      "name": "auth-service",
       "status": "healthy",
-      "latency_ms": 113,
-      "error_rate": 0.2,
+      "latency_ms": 89,
+      "error_rate": 0.3,
+      "cpu_percent": 32,
+      "memory_percent": 41,
+      "version": "3.1.2"
+    },
+    {
+      "name": "session-store",
+      "status": "healthy",
+      "latency_ms": 31,
+      "error_rate": 0.6,
       "cpu_percent": 15,
-      "memory_percent": 38,
-      "version": "3.2.0"
+      "memory_percent": 26,
+      "version": "4.0.1"
+    },
+    {
+      "name": "inventory-service",
+      "status": "healthy",
+      "latency_ms": 41,
+      "error_rate": 0.2,
+      "cpu_percent": 18,
+      "memory_percent": 41,
+      "version": "5.0.3"
     }
   ],
   "recent_deployments": [
     {
-      "service": "analytics-service",
-      "version": "2.0.0",
-      "timestamp": "2026-03-26T07:39:00Z",
-      "deployer": "release-manager"
+      "service": "payment-api",
+      "version": "2.3.0",
+      "timestamp": "2026-03-26T20:42:00Z",
+      "deployer": "ci-bot"
     }
   ],
   "logs": {
-    "analytics-service": [
-      {
-        "timestamp": "2026-03-26T08:09:00Z",
-        "service": "analytics-service",
-        "level": "WARN",
-        "message": "CPU usage at 94% - throttling requests"
-      },
-      {
-        "timestamp": "2026-03-26T08:10:40Z",
-        "service": "analytics-service",
-        "level": "ERROR",
-        "message": "Worker thread pool exhausted - all threads blocked"
-      },
-      {
-        "timestamp": "2026-03-26T08:12:20Z",
-        "service": "analytics-service",
-        "level": "ERROR",
-        "message": "Health check timeout after 5s - service appears hung"
-      },
-      {
-        "timestamp": "2026-03-26T08:14:00Z",
-        "service": "analytics-service",
-        "level": "WARN",
-        "message": "Error handler retry loop detected: 4289 retries in 10s"
-      }
-    ],
     "payment-api": [
       {
-        "timestamp": "2026-03-26T08:10:00Z",
-        "service": "payment-api",
-        "level": "ERROR",
-        "message": "analytics-service health check failed: timeout after 10s"
-      },
-      {
-        "timestamp": "2026-03-26T08:15:00Z",
+        "timestamp": "2026-03-26T21:09:00Z",
         "service": "payment-api",
         "level": "WARN",
-        "message": "Load balancer removed analytics-service from pool"
+        "message": "GC overhead: pause=3711ms heap=6770M/8319M eden=0B survivor=94M old=4102M"
+      },
+      {
+        "timestamp": "2026-03-26T21:11:30Z",
+        "service": "payment-api",
+        "level": "ERROR",
+        "message": "kernel: [2655.111363] Out of memory: Killed process 22338 (payment-api) total-vm:14484038kB anon-rss:5747475kB oom_score_adj:999"
+      },
+      {
+        "timestamp": "2026-03-26T21:14:00Z",
+        "service": "payment-api",
+        "level": "WARN",
+        "message": "c.a.s.cache.Manager [cache-evictor-1] - heap pressure: 85% used, eviction rate: 1251/s"
+      },
+      {
+        "timestamp": "2026-03-26T21:16:30Z",
+        "service": "payment-api",
+        "level": "WARN",
+        "message": "c.a.s.gc.Monitor [gc-monitor-1] - Full GC #156: 4924ms pause, freed 462M, heap 5467M/6402M"
       }
     ],
-    "logging-pipeline": [
+    "internal-dns": [
       {
-        "timestamp": "2026-03-26T08:10:00Z",
-        "service": "logging-pipeline",
+        "timestamp": "2026-03-26T21:10:00Z",
+        "service": "internal-dns",
         "level": "ERROR",
-        "message": "analytics-service health check failed: timeout after 10s"
+        "message": "upstream connect error: connection refused to 10.241.111.91:8089, reset reason: connection failure"
       },
       {
-        "timestamp": "2026-03-26T08:15:00Z",
-        "service": "logging-pipeline",
+        "timestamp": "2026-03-26T21:15:00Z",
+        "service": "internal-dns",
         "level": "WARN",
-        "message": "Load balancer removed analytics-service from pool"
+        "message": "c.a.s.client.ServiceClient [http-42] - HTTP 503 from 10.241.111.91:8089 (latency=5438ms), retrying in 1000ms"
       }
     ]
   },
   "metrics": {
-    "analytics-service:cpu_percent": [
+    "payment-api:memory_percent": [
       0.0,
-      44.0,
-      64.7,
-      74.5,
-      79.2
-    ],
-    "analytics-service:latency_p99": [
-      1.1,
-      2.0,
-      3.9,
-      7.3,
-      13.8,
-      26.0,
-      49.1,
-      92.8
+      32.9,
+      54.3,
+      68.2,
+      77.3,
+      83.2,
+      87.1,
+      89.6
     ],
     "payment-api:error_rate": [
-      2.0,
-      2.0,
-      58.8,
-      58.8,
-      58.8
+      1.6,
+      1.6,
+      1.6,
+      61.8,
+      61.8,
+      61.8,
+      61.8
     ],
-    "logging-pipeline:error_rate": [
-      0.7,
-      0.7,
-      46.0,
-      46.0,
-      46.0
+    "payment-api:restarts": [
+      1.8,
+      1.8,
+      1.8,
+      56.4,
+      56.4,
+      56.4
     ],
-    "user-service:cpu": [
-      44.3,
-      36.6,
-      39.3,
-      40.7,
-      45.4,
-      42.4
+    "internal-dns:error_rate": [
+      1.3,
+      1.3,
+      1.3,
+      99.0,
+      99.0,
+      99.0
     ],
-    "internal-dns:cpu": [
-      21.7,
-      26.9,
-      19.7,
-      27.8,
-      23.9,
-      27.8
+    "auth-service:cpu": [
+      16.6,
+      22.9,
+      21.9,
+      27.4,
+      20.3,
+      26.4
+    ],
+    "session-store:cpu": [
+      11.1,
+      20.5,
+      17.8,
+      23.5,
+      18.7,
+      15.4
     ]
   },
   "dependencies": {
-    "analytics-service": [
-      "analytics-service-db",
-      "analytics-service-store"
-    ],
     "payment-api": [
-      "analytics-service",
-      "payment-api-db"
-    ],
-    "logging-pipeline": [
-      "analytics-service",
-      "logging-pipeline-db"
-    ],
-    "user-service": [
-      "user-service-db"
+      "payment-api-db",
+      "payment-api-store"
     ],
     "internal-dns": [
+      "payment-api",
       "internal-dns-db"
+    ],
+    "auth-service": [
+      "payment-api",
+      "auth-service-db"
+    ],
+    "session-store": [
+      "session-store-db"
+    ],
+    "inventory-service": [
+      "inventory-service-db"
     ]
   },
   "root_cause": {
-    "service": "analytics-service",
-    "description": "CPU spin loop in analytics-service 2.0.0 caused by infinite retry loop in error handler",
+    "service": "payment-api",
+    "description": "Memory leak in payment-api 2.3.0 causing OOM kills - unbounded cache growth in request handler",
     "keywords": [
-      "cpu",
-      "spin",
-      "loop",
-      "100%",
-      "retry",
-      "infinite",
-      "hang"
+      "memory",
+      "leak",
+      "OOM",
+      "out of memory",
+      "heap",
+      "cache",
+      "growth"
     ]
   },
   "valid_remediations": [
     {
       "action": "restart_service",
-      "service": "analytics-service"
+      "service": "payment-api"
     },
     {
       "action": "rollback_deploy",
-      "service": "analytics-service"
+      "service": "payment-api"
     }
   ],
   "expected_diagnostics": [
     {
       "action_type": "query_logs",
       "params": {
-        "service": "analytics-service"
+        "service": "payment-api"
       }
     },
     {
       "action_type": "check_metrics",
-      "params": {
-        "service": "analytics-service"
-      }
-    },
-    {
-      "action_type": "query_logs",
       "params": {
         "service": "payment-api"
       }
     }
   ],
   "grading_rubric": {
-    "triage_weight": 0.21,
+    "triage_weight": 0.23,
     "diagnostic_weight": 0.25,
-    "root_cause_weight": 0.18,
-    "remediation_weight": 0.2,
+    "root_cause_weight": 0.21,
+    "remediation_weight": 0.18,
     "efficiency_weight": 0.08,
-    "documentation_weight": 0.08
+    "documentation_weight": 0.05
   }
 }

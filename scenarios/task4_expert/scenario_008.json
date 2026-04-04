@@ -1,469 +1,416 @@
 {
   "incident_id": "INC-20260326-308",
   "difficulty": "expert",
-  "description": "SEV1 incident: DNS Resolution Failure affecting logging-pipeline. Cascading impact on payment-api, inventory-service, notification-service, billing-service. Multiple concurrent events make diagnosis challenging. Red herrings present - focus on evidence-based investigation.",
+  "description": "SEV1 incident: GC Pause Storm affecting payment-api. Cascading impact on api-gateway, search-service, message-queue. Multiple concurrent events make diagnosis challenging. Red herrings present - focus on evidence-based investigation.",
   "expected_severity": "SEV1",
   "initial_alerts": [
     {
       "alert_id": "alert-30801",
       "severity": "critical",
-      "service": "logging-pipeline",
-      "message": "DNS query failure rate at 36.2% - resolution failing",
-      "timestamp": "2026-03-26T18:43:05Z",
+      "service": "payment-api",
+      "message": "P99 latency spiked to 3470ms - GC pauses detected",
+      "timestamp": "2026-03-26T15:28:05Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-30802",
-      "severity": "critical",
+      "severity": "warning",
       "service": "payment-api",
-      "message": "Service connectivity lost - DNS resolution failed",
-      "timestamp": "2026-03-26T18:44:10Z",
+      "message": "GC pause time exceeding 2s per cycle",
+      "timestamp": "2026-03-26T15:29:10Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-30803",
       "severity": "warning",
-      "service": "logging-pipeline",
-      "message": "DNS resolution latency increased to 1297ms",
-      "timestamp": "2026-03-26T18:45:15Z",
+      "service": "api-gateway",
+      "message": "Intermittent timeouts from payment-api",
+      "timestamp": "2026-03-26T15:30:15Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-30804",
       "severity": "critical",
-      "service": "payment-api",
-      "message": "payment-api error rate spiking - requests failing",
-      "timestamp": "2026-03-26T18:43:45Z",
+      "service": "api-gateway",
+      "message": "api-gateway error rate spiking - requests failing",
+      "timestamp": "2026-03-26T15:28:48Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-30805",
       "severity": "critical",
-      "service": "inventory-service",
-      "message": "inventory-service error rate spiking - requests failing",
-      "timestamp": "2026-03-26T18:43:24Z",
+      "service": "search-service",
+      "message": "search-service error rate spiking - requests failing",
+      "timestamp": "2026-03-26T15:28:18Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-30806",
       "severity": "critical",
-      "service": "notification-service",
-      "message": "notification-service error rate spiking - requests failing",
-      "timestamp": "2026-03-26T18:43:57Z",
+      "service": "message-queue",
+      "message": "message-queue error rate spiking - requests failing",
+      "timestamp": "2026-03-26T15:28:10Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-30807",
-      "severity": "critical",
-      "service": "billing-service",
-      "message": "billing-service error rate spiking - requests failing",
-      "timestamp": "2026-03-26T18:43:07Z",
+      "severity": "info",
+      "service": "cache-layer",
+      "message": "Scheduled maintenance window starting in 2 hours",
+      "timestamp": "2026-03-26T15:21:17Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-30808",
       "severity": "info",
-      "service": "order-service",
-      "message": "SSL certificate renewal scheduled for next week",
-      "timestamp": "2026-03-26T18:33:19Z",
+      "service": "cache-layer",
+      "message": "Feature flag 'new-checkout-flow' enabled for 5% of users",
+      "timestamp": "2026-03-26T15:26:16Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-30809",
       "severity": "info",
-      "service": "api-gateway",
-      "message": "Elasticsearch reindex started - expected temporary latency increase",
-      "timestamp": "2026-03-26T18:32:46Z",
-      "acknowledged": false,
-      "silenced": false
-    },
-    {
-      "alert_id": "alert-30810",
-      "severity": "warning",
-      "service": "api-gateway",
-      "message": "Memory usage at 68% - within normal range but trending up",
-      "timestamp": "2026-03-26T18:34:17Z",
-      "acknowledged": false,
-      "silenced": false
-    },
-    {
-      "alert_id": "alert-30811",
-      "severity": "info",
-      "service": "api-gateway",
-      "message": "Model v4.2 deployment started - canary rollout in progress",
-      "timestamp": "2026-03-26T18:34:24Z",
-      "acknowledged": false,
-      "silenced": false
-    },
-    {
-      "alert_id": "alert-30812",
-      "severity": "info",
-      "service": "order-service",
-      "message": "Feature flag 'new-checkout-flow' enabled for 5% of users",
-      "timestamp": "2026-03-26T18:35:57Z",
+      "service": "user-service",
+      "message": "New dashboard version deployed - no action required",
+      "timestamp": "2026-03-26T15:24:23Z",
       "acknowledged": false,
       "silenced": false
     }
   ],
   "services": [
     {
-      "name": "logging-pipeline",
-      "status": "down",
-      "latency_ms": 0,
-      "error_rate": 78.2,
-      "cpu_percent": 48,
-      "memory_percent": 43,
-      "version": "3.2.0"
-    },
-    {
       "name": "payment-api",
-      "status": "down",
-      "latency_ms": 0,
-      "error_rate": 75.3,
-      "cpu_percent": 39,
-      "memory_percent": 60,
-      "version": "2.3.0"
-    },
-    {
-      "name": "inventory-service",
-      "status": "down",
-      "latency_ms": 0,
-      "error_rate": 76.1,
-      "cpu_percent": 27,
-      "memory_percent": 32,
-      "version": "4.0.1"
-    },
-    {
-      "name": "notification-service",
       "status": "degraded",
-      "latency_ms": 4646,
-      "error_rate": 54.2,
-      "cpu_percent": 21,
-      "memory_percent": 58,
-      "version": "3.1.2"
-    },
-    {
-      "name": "billing-service",
-      "status": "degraded",
-      "latency_ms": 3581,
-      "error_rate": 29.5,
-      "cpu_percent": 31,
-      "memory_percent": 68,
-      "version": "2.0.0"
-    },
-    {
-      "name": "order-service",
-      "status": "healthy",
-      "latency_ms": 137,
-      "error_rate": 0.2,
-      "cpu_percent": 24,
-      "memory_percent": 20,
-      "version": "1.2.3"
+      "latency_ms": 7704,
+      "error_rate": 15.8,
+      "cpu_percent": 50,
+      "memory_percent": 46,
+      "version": "2.4.1"
     },
     {
       "name": "api-gateway",
-      "status": "healthy",
-      "latency_ms": 137,
-      "error_rate": 0.3,
-      "cpu_percent": 5,
-      "memory_percent": 27,
+      "status": "degraded",
+      "latency_ms": 4198,
+      "error_rate": 43.9,
+      "cpu_percent": 53,
+      "memory_percent": 58,
+      "version": "3.2.0"
+    },
+    {
+      "name": "search-service",
+      "status": "degraded",
+      "latency_ms": 4847,
+      "error_rate": 22.8,
+      "cpu_percent": 37,
+      "memory_percent": 31,
       "version": "2.4.1"
+    },
+    {
+      "name": "message-queue",
+      "status": "degraded",
+      "latency_ms": 4577,
+      "error_rate": 20.1,
+      "cpu_percent": 52,
+      "memory_percent": 35,
+      "version": "1.5.0"
+    },
+    {
+      "name": "user-service",
+      "status": "healthy",
+      "latency_ms": 40,
+      "error_rate": 0.2,
+      "cpu_percent": 25,
+      "memory_percent": 49,
+      "version": "2.4.1"
+    },
+    {
+      "name": "service-mesh",
+      "status": "healthy",
+      "latency_ms": 45,
+      "error_rate": 0.7,
+      "cpu_percent": 23,
+      "memory_percent": 45,
+      "version": "2.3.0"
+    },
+    {
+      "name": "cache-layer",
+      "status": "healthy",
+      "latency_ms": 152,
+      "error_rate": 1.0,
+      "cpu_percent": 28,
+      "memory_percent": 54,
+      "version": "4.2.0"
     }
   ],
   "recent_deployments": [
     {
-      "service": "logging-pipeline",
-      "version": "3.2.0",
-      "timestamp": "2026-03-26T17:10:00Z",
+      "service": "payment-api",
+      "version": "2.4.1",
+      "timestamp": "2026-03-26T14:52:00Z",
       "deployer": "infra-team"
     },
     {
-      "service": "api-gateway",
-      "version": "2.4.1",
-      "timestamp": "2026-03-26T17:36:00Z",
-      "deployer": "ml-team"
+      "service": "service-mesh",
+      "version": "2.3.0",
+      "timestamp": "2026-03-26T12:31:00Z",
+      "deployer": "search-team"
     },
     {
-      "service": "order-service",
-      "version": "1.2.3",
-      "timestamp": "2026-03-26T15:06:00Z",
+      "service": "cache-layer",
+      "version": "4.2.0",
+      "timestamp": "2026-03-26T13:22:00Z",
       "deployer": "search-team"
     }
   ],
   "logs": {
-    "logging-pipeline": [
-      {
-        "timestamp": "2026-03-26T18:42:00Z",
-        "service": "logging-pipeline",
-        "level": "ERROR",
-        "message": "SERVFAIL for payment-api.internal: zone file contains invalid A record"
-      },
-      {
-        "timestamp": "2026-03-26T18:43:40Z",
-        "service": "logging-pipeline",
-        "level": "ERROR",
-        "message": "NXDOMAIN for payment-api-db.internal: record missing from 3.2.0 zone file"
-      },
-      {
-        "timestamp": "2026-03-26T18:45:20Z",
-        "service": "logging-pipeline",
-        "level": "ERROR",
-        "message": "SERVFAIL rate increasing: 37.9% of queries failing"
-      },
-      {
-        "timestamp": "2026-03-26T18:47:00Z",
-        "service": "logging-pipeline",
-        "level": "FATAL",
-        "message": "Multiple critical DNS records missing/corrupted after 3.2.0 zone migration"
-      }
-    ],
     "payment-api": [
       {
-        "timestamp": "2026-03-26T18:43:00Z",
+        "timestamp": "2026-03-26T15:27:00Z",
+        "service": "payment-api",
+        "level": "WARN",
+        "message": "GC overhead: pause=1529ms heap=8908M/10923M eden=0B survivor=34M old=4377M"
+      },
+      {
+        "timestamp": "2026-03-26T15:29:00Z",
         "service": "payment-api",
         "level": "ERROR",
-        "message": "Cannot resolve payment-api-db.internal.internal - DNS lookup failed"
+        "message": "c.a.s.gc.Monitor [gc-monitor-1] - Full GC #53: 3802ms pause, freed 294M, heap 3844M/4544M"
       },
       {
-        "timestamp": "2026-03-26T18:48:00Z",
+        "timestamp": "2026-03-26T15:31:00Z",
         "service": "payment-api",
-        "level": "FATAL",
-        "message": "Database connection pool empty: all connections failed DNS resolution"
-      }
-    ],
-    "inventory-service": [
-      {
-        "timestamp": "2026-03-26T18:43:00Z",
-        "service": "inventory-service",
-        "level": "ERROR",
-        "message": "Cannot resolve inventory-service-db.internal.internal - DNS lookup failed"
+        "level": "WARN",
+        "message": "c.a.s.gc.Monitor [gc-monitor-1] - GC overhead 95% in last 60s, effective throughput 45%"
       },
       {
-        "timestamp": "2026-03-26T18:46:20Z",
-        "service": "inventory-service",
-        "level": "FATAL",
-        "message": "Database connection pool empty: all connections failed DNS resolution"
-      },
-      {
-        "timestamp": "2026-03-26T18:49:40Z",
-        "service": "inventory-service",
-        "level": "FATAL",
-        "message": "Service degraded: critical dependency unreachable via DNS"
-      }
-    ],
-    "notification-service": [
-      {
-        "timestamp": "2026-03-26T18:43:00Z",
-        "service": "notification-service",
-        "level": "ERROR",
-        "message": "Cannot resolve notification-service-db.internal.internal - DNS lookup failed"
-      },
-      {
-        "timestamp": "2026-03-26T18:46:20Z",
-        "service": "notification-service",
-        "level": "FATAL",
-        "message": "Database connection pool empty: all connections failed DNS resolution"
-      },
-      {
-        "timestamp": "2026-03-26T18:49:40Z",
-        "service": "notification-service",
-        "level": "FATAL",
-        "message": "Service degraded: critical dependency unreachable via DNS"
-      }
-    ],
-    "billing-service": [
-      {
-        "timestamp": "2026-03-26T18:43:00Z",
-        "service": "billing-service",
-        "level": "ERROR",
-        "message": "Cannot resolve billing-service-db.internal.internal - DNS lookup failed"
-      },
-      {
-        "timestamp": "2026-03-26T18:46:20Z",
-        "service": "billing-service",
-        "level": "FATAL",
-        "message": "Database connection pool empty: all connections failed DNS resolution"
-      },
-      {
-        "timestamp": "2026-03-26T18:49:40Z",
-        "service": "billing-service",
-        "level": "FATAL",
-        "message": "Service degraded: critical dependency unreachable via DNS"
-      }
-    ],
-    "order-service": [
-      {
-        "timestamp": "2026-03-26T18:42:00Z",
-        "service": "order-service",
+        "timestamp": "2026-03-26T15:33:00Z",
+        "service": "payment-api",
         "level": "INFO",
-        "message": "Scheduled reindex 40% complete - elevated latency expected"
+        "message": "c.a.s.gc.Monitor [gc-monitor-1] - CMS concurrent-mark: 3670ms, heap 93% occupied"
       }
     ],
     "api-gateway": [
       {
-        "timestamp": "2026-03-26T18:42:00Z",
+        "timestamp": "2026-03-26T15:28:00Z",
         "service": "api-gateway",
+        "level": "WARN",
+        "message": "c.a.s.client.ServiceClient [http-30] - HTTP 200 from 10.14.85.39:8086 (latency=9366ms) SLOW"
+      },
+      {
+        "timestamp": "2026-03-26T15:33:00Z",
+        "service": "api-gateway",
+        "level": "ERROR",
+        "message": "c.a.s.client.ServiceClient [http-41] - HTTP 504 from 10.14.85.39:8086 (latency=30001ms)"
+      }
+    ],
+    "search-service": [
+      {
+        "timestamp": "2026-03-26T15:28:00Z",
+        "service": "search-service",
+        "level": "WARN",
+        "message": "c.a.s.client.ServiceClient [http-15] - HTTP 200 from 10.14.85.39:8086 (latency=28992ms) SLOW"
+      },
+      {
+        "timestamp": "2026-03-26T15:33:00Z",
+        "service": "search-service",
+        "level": "ERROR",
+        "message": "c.a.s.client.ServiceClient [http-8] - HTTP 504 from 10.14.85.39:8086 (latency=30001ms)"
+      }
+    ],
+    "message-queue": [
+      {
+        "timestamp": "2026-03-26T15:28:00Z",
+        "service": "message-queue",
+        "level": "WARN",
+        "message": "c.a.s.client.ServiceClient [http-10] - HTTP 200 from 10.14.85.39:8086 (latency=3599ms) SLOW"
+      },
+      {
+        "timestamp": "2026-03-26T15:33:00Z",
+        "service": "message-queue",
+        "level": "ERROR",
+        "message": "c.a.s.client.ServiceClient [http-14] - HTTP 504 from 10.14.85.39:8086 (latency=30001ms)"
+      }
+    ],
+    "user-service": [
+      {
+        "timestamp": "2026-03-26T15:27:00Z",
+        "service": "user-service",
         "level": "INFO",
-        "message": "Model serving normally - no dependency issues"
+        "message": "c.a.s.search.Indexer [reindex-pool-1] - reindex progress: 40% (12403/31008 docs), est. remaining: 340s"
+      }
+    ],
+    "service-mesh": [
+      {
+        "timestamp": "2026-03-26T15:27:00Z",
+        "service": "service-mesh",
+        "level": "INFO",
+        "message": "c.a.s.batch.Executor [batch-pool-3] - job 'daily-reconcile' completed: 49347 records processed in 142s"
       }
     ]
   },
   "metrics": {
-    "logging-pipeline:query_failure_rate": [
-      0.4,
-      1.3,
-      4.8,
-      17.5,
-      63.7
-    ],
-    "logging-pipeline:resolution_latency_ms": [
-      0.7,
-      1.8,
-      4.6,
-      11.6,
-      29.6,
-      75.1
-    ],
-    "payment-api:error_rate": [
-      0.6,
-      0.6,
-      0.6,
-      94.5,
-      94.5,
-      94.5
-    ],
-    "inventory-service:error_rate": [
-      0.1,
-      0.1,
-      0.1,
-      57.2,
-      57.2,
-      57.2,
-      57.2
-    ],
-    "notification-service:error_rate": [
-      1.5,
-      1.5,
-      1.5,
-      70.7,
-      70.7,
-      70.7
-    ],
-    "billing-service:error_rate": [
+    "payment-api:gc_pause_ms": [
       0.3,
-      0.3,
-      0.3,
-      72.6,
-      72.6,
-      72.6
-    ],
-    "order-service:cpu": [
-      48.6,
-      32.2,
-      35.7,
-      43.7,
-      45.9,
-      42.4
-    ],
-    "api-gateway:cpu": [
+      1.0,
+      2.8,
+      8.3,
       24.7,
-      24.7,
-      30.4,
-      29.5,
-      27.2,
-      32.8
+      72.9
+    ],
+    "payment-api:latency_p99": [
+      0.3,
+      0.6,
+      1.2,
+      2.5,
+      5.3,
+      11.3,
+      24.0,
+      51.0
+    ],
+    "payment-api:memory_percent": [
+      0.0,
+      45.7,
+      67.4,
+      77.6,
+      82.4
+    ],
+    "api-gateway:error_rate": [
+      0.9,
+      0.9,
+      0.9,
+      46.9,
+      46.9,
+      46.9,
+      46.9
+    ],
+    "search-service:error_rate": [
+      1.9,
+      1.9,
+      1.9,
+      46.2,
+      46.2,
+      46.2,
+      46.2
+    ],
+    "message-queue:error_rate": [
+      0.6,
+      0.6,
+      0.6,
+      87.6,
+      87.6,
+      87.6
+    ],
+    "user-service:cpu": [
+      44.4,
+      47.4,
+      46.5,
+      44.7,
+      38.4,
+      41.6
+    ],
+    "service-mesh:cpu": [
+      38.0,
+      38.7,
+      42.4,
+      36.6,
+      44.6,
+      37.4
     ]
   },
   "dependencies": {
-    "logging-pipeline": [],
     "payment-api": [
-      "payment-api-db.internal",
-      "logging-pipeline"
-    ],
-    "inventory-service": [
-      "inventory-service-db.internal",
-      "logging-pipeline"
-    ],
-    "notification-service": [
-      "notification-service-db.internal",
-      "logging-pipeline"
-    ],
-    "billing-service": [
-      "billing-service-db.internal",
-      "logging-pipeline"
-    ],
-    "order-service": [
-      "order-service-db.internal",
-      "logging-pipeline"
+      "payment-api-db",
+      "payment-api-store"
     ],
     "api-gateway": [
-      "api-gateway-db.internal",
-      "logging-pipeline"
+      "payment-api",
+      "api-gateway-db"
+    ],
+    "search-service": [
+      "payment-api",
+      "search-service-db"
+    ],
+    "message-queue": [
+      "payment-api",
+      "message-queue-db"
+    ],
+    "user-service": [
+      "user-service-db"
+    ],
+    "service-mesh": [
+      "service-mesh-db"
+    ],
+    "cache-layer": [
+      "cache-layer-db"
     ]
   },
   "root_cause": {
-    "service": "logging-pipeline",
-    "description": "DNS resolution failure on logging-pipeline after 3.2.0 deployment corrupted zone file records",
+    "service": "payment-api",
+    "description": "GC pause storm in payment-api 2.4.1 due to excessive object allocation in batch processor",
     "keywords": [
-      "dns",
-      "resolution",
-      "zone",
-      "corrupted",
-      "SERVFAIL",
-      "NXDOMAIN",
-      "zone file"
+      "gc",
+      "garbage collection",
+      "pause",
+      "stop-the-world",
+      "allocation",
+      "heap"
     ]
   },
   "valid_remediations": [
     {
-      "action": "rollback_deploy",
-      "service": "logging-pipeline"
+      "action": "restart_service",
+      "service": "payment-api"
     },
     {
-      "action": "restart_service",
-      "service": "logging-pipeline"
+      "action": "rollback_deploy",
+      "service": "payment-api"
+    },
+    {
+      "action": "scale_service",
+      "service": "payment-api"
     }
   ],
   "expected_diagnostics": [
     {
       "action_type": "query_logs",
       "params": {
-        "service": "logging-pipeline"
+        "service": "payment-api"
       }
     },
     {
       "action_type": "check_metrics",
       "params": {
-        "service": "logging-pipeline"
-      }
-    },
-    {
-      "action_type": "view_dependencies",
-      "params": {
-        "service_name": "payment-api"
+        "service": "payment-api"
       }
     },
     {
       "action_type": "query_logs",
       "params": {
-        "service": "payment-api"
+        "service": "api-gateway"
+      }
+    },
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "search-service"
       }
     }
   ],
   "grading_rubric": {
-    "triage_weight": 0.04,
-    "diagnostic_weight": 0.21,
-    "root_cause_weight": 0.35,
+    "triage_weight": 0.06,
+    "diagnostic_weight": 0.17,
+    "root_cause_weight": 0.34,
     "remediation_weight": 0.21,
-    "efficiency_weight": 0.1,
-    "documentation_weight": 0.09
+    "efficiency_weight": 0.09,
+    "documentation_weight": 0.13
   }
 }

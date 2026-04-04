@@ -120,19 +120,19 @@
         "timestamp": "2026-03-26T14:05:00Z",
         "service": "billing-service",
         "level": "ERROR",
-        "message": "Connection pool exhausted - cannot acquire connection to billing-service-db"
+        "message": "c.a.b.db.HikariPool [pool-2-thread-4] - Connection is not available, request timed out after 30000ms. (total=40, active=40, idle=0, waiting=89)"
       },
       {
         "timestamp": "2026-03-26T14:08:20Z",
         "service": "billing-service",
         "level": "ERROR",
-        "message": "Timeout waiting for DB connection after 5000ms"
+        "message": "c.a.b.handler.InvoiceHandler [http-nio-8080-exec-31] - java.sql.SQLTransientConnectionException: HikariPool-1 - Connection is not available, request timed out after 5000ms to 10.0.6.18:5432"
       },
       {
         "timestamp": "2026-03-26T14:11:40Z",
         "service": "billing-service",
         "level": "WARN",
-        "message": "Circuit breaker OPEN for billing-service-db connections"
+        "message": "i.g.r.CircuitBreaker [cb-billing-db] - state transition: CLOSED -> OPEN (failure_count=30, threshold=25, last_error=java.net.SocketTimeoutException: connect timed out to 10.0.6.18:5432)"
       }
     ],
     "api-gateway": [
@@ -140,19 +140,19 @@
         "timestamp": "2026-03-26T14:06:00Z",
         "service": "api-gateway",
         "level": "ERROR",
-        "message": "billing-service returned 503 for request req-19876"
+        "message": "c.a.g.proxy.UpstreamRouter [http-nio-9090-exec-8] - upstream 10.0.4.55:8080 returned HTTP 503 (0.003s) for req-19876"
       },
       {
         "timestamp": "2026-03-26T14:09:20Z",
         "service": "api-gateway",
         "level": "ERROR",
-        "message": "Failed to complete operation: upstream billing-service unavailable"
+        "message": "c.a.g.proxy.UpstreamRouter [http-nio-9090-exec-14] - upstream connect error: connection refused to 10.0.4.55:8080, reset reason: remote connection failure"
       },
       {
         "timestamp": "2026-03-26T14:12:40Z",
         "service": "api-gateway",
         "level": "WARN",
-        "message": "Fallback: queuing request for retry"
+        "message": "c.a.g.queue.RetryQueue [retry-worker-2] - enqueuing failed request for async retry: requestId=req-20012, attempts=0, backoff=5000ms"
       }
     ]
   },

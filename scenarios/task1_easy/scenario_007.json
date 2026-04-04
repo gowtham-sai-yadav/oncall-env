@@ -1,269 +1,255 @@
 {
   "incident_id": "INC-20260326-007",
   "difficulty": "easy",
-  "description": "SEV3 incident: GC Pause Storm affecting order-service. Cascading impact on auth-service.",
+  "description": "SEV3 incident: CPU Spin Loop affecting payment-api. Cascading impact on billing-service.",
   "expected_severity": "SEV3",
   "initial_alerts": [
     {
       "alert_id": "alert-701",
       "severity": "critical",
-      "service": "order-service",
-      "message": "P99 latency spiked to 6065ms - GC pauses detected",
-      "timestamp": "2026-03-26T18:38:05Z",
+      "service": "payment-api",
+      "message": "CPU usage at 94% - all cores saturated",
+      "timestamp": "2026-03-26T17:12:05Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-702",
-      "severity": "warning",
-      "service": "order-service",
-      "message": "GC pause time exceeding 2s per cycle",
-      "timestamp": "2026-03-26T18:39:10Z",
+      "severity": "critical",
+      "service": "payment-api",
+      "message": "Service unresponsive - health check failures",
+      "timestamp": "2026-03-26T17:13:10Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-703",
       "severity": "warning",
-      "service": "auth-service",
-      "message": "Intermittent timeouts from order-service",
-      "timestamp": "2026-03-26T18:40:15Z",
+      "service": "billing-service",
+      "message": "Timeout errors from payment-api increasing",
+      "timestamp": "2026-03-26T17:14:15Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-704",
       "severity": "critical",
-      "service": "auth-service",
-      "message": "auth-service error rate spiking - requests failing",
-      "timestamp": "2026-03-26T18:38:14Z",
+      "service": "billing-service",
+      "message": "billing-service error rate spiking - requests failing",
+      "timestamp": "2026-03-26T17:12:39Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-705",
       "severity": "info",
+      "service": "email-service",
+      "message": "Model v4.2 deployment started - canary rollout in progress",
+      "timestamp": "2026-03-26T17:03:52Z",
+      "acknowledged": false,
+      "silenced": false
+    },
+    {
+      "alert_id": "alert-706",
+      "severity": "info",
       "service": "metrics-collector",
-      "message": "SSL certificate renewal scheduled for next week",
-      "timestamp": "2026-03-26T18:34:44Z",
+      "message": "Feature flag 'new-checkout-flow' enabled for 5% of users",
+      "timestamp": "2026-03-26T17:01:55Z",
       "acknowledged": false,
       "silenced": false
     }
   ],
   "services": [
     {
-      "name": "order-service",
+      "name": "payment-api",
       "status": "degraded",
-      "latency_ms": 2418,
-      "error_rate": 66.3,
-      "cpu_percent": 90,
-      "memory_percent": 92,
-      "version": "2.3.0"
+      "latency_ms": 1203,
+      "error_rate": 37.6,
+      "cpu_percent": 50,
+      "memory_percent": 72,
+      "version": "4.0.1"
     },
     {
-      "name": "auth-service",
+      "name": "billing-service",
       "status": "degraded",
-      "latency_ms": 4951,
-      "error_rate": 12.1,
-      "cpu_percent": 51,
-      "memory_percent": 62,
+      "latency_ms": 3399,
+      "error_rate": 50.9,
+      "cpu_percent": 61,
+      "memory_percent": 51,
+      "version": "5.0.3"
+    },
+    {
+      "name": "email-service",
+      "status": "healthy",
+      "latency_ms": 174,
+      "error_rate": 0.6,
+      "cpu_percent": 35,
+      "memory_percent": 42,
       "version": "1.2.3"
     },
     {
       "name": "metrics-collector",
       "status": "healthy",
-      "latency_ms": 90,
-      "error_rate": 0.7,
-      "cpu_percent": 9,
-      "memory_percent": 26,
-      "version": "2.1.1"
-    },
-    {
-      "name": "api-gateway",
-      "status": "healthy",
-      "latency_ms": 134,
-      "error_rate": 0.6,
+      "latency_ms": 66,
+      "error_rate": 0.9,
       "cpu_percent": 11,
-      "memory_percent": 40,
-      "version": "2.4.1"
-    },
-    {
-      "name": "logging-pipeline",
-      "status": "healthy",
-      "latency_ms": 103,
-      "error_rate": 0.1,
-      "cpu_percent": 30,
-      "memory_percent": 35,
-      "version": "3.1.2"
+      "memory_percent": 15,
+      "version": "3.0.0"
     }
   ],
   "recent_deployments": [
     {
-      "service": "order-service",
-      "version": "2.3.0",
-      "timestamp": "2026-03-26T17:40:00Z",
-      "deployer": "platform-team"
+      "service": "payment-api",
+      "version": "4.0.1",
+      "timestamp": "2026-03-26T16:01:00Z",
+      "deployer": "dev-team"
     }
   ],
   "logs": {
-    "order-service": [
+    "payment-api": [
       {
-        "timestamp": "2026-03-26T18:37:00Z",
-        "service": "order-service",
+        "timestamp": "2026-03-26T17:11:00Z",
+        "service": "payment-api",
         "level": "WARN",
-        "message": "GC pause duration: 3317ms (threshold: 500ms)"
+        "message": "c.a.s.retry.ExponentialBackoff [retry-pool-9] - attempt 3/20 for operation 'api.call' (elapsed: 25981ms)"
       },
       {
-        "timestamp": "2026-03-26T18:40:20Z",
-        "service": "order-service",
+        "timestamp": "2026-03-26T17:13:30Z",
+        "service": "payment-api",
         "level": "ERROR",
-        "message": "Stop-the-world GC: 2471ms - request processing halted"
+        "message": "c.a.s.monitor.ThreadDump [watchdog-1] - thread 'http-nio-8080-exec-29' in RUNNABLE state for 518s, stack: c.a.s.handler.RequestHandler.processRetry(line:245)"
       },
       {
-        "timestamp": "2026-03-26T18:43:40Z",
-        "service": "order-service",
+        "timestamp": "2026-03-26T17:16:00Z",
+        "service": "payment-api",
+        "level": "ERROR",
+        "message": "c.a.s.monitor.ThreadDump [watchdog-1] - 25/31 threads in RUNNABLE state, CPU 90%"
+      },
+      {
+        "timestamp": "2026-03-26T17:18:30Z",
+        "service": "payment-api",
         "level": "WARN",
-        "message": "Heap occupancy at 97% - frequent full GC cycles"
+        "message": "c.a.s.retry.ExponentialBackoff [retry-pool-34] - attempt 20/20 for operation 'payment.charge' (elapsed: 215186ms), max retries exhausted"
       }
     ],
-    "auth-service": [
+    "billing-service": [
       {
-        "timestamp": "2026-03-26T18:38:00Z",
-        "service": "auth-service",
-        "level": "WARN",
-        "message": "Intermittent timeout from order-service: latency spike detected"
+        "timestamp": "2026-03-26T17:12:00Z",
+        "service": "billing-service",
+        "level": "ERROR",
+        "message": "c.a.s.client.ServiceClient [http-45] - HTTP 504 from 10.164.110.182:8094 (latency=10003ms)"
       },
       {
-        "timestamp": "2026-03-26T18:43:00Z",
-        "service": "auth-service",
-        "level": "ERROR",
-        "message": "Request to order-service timed out during GC pause"
+        "timestamp": "2026-03-26T17:17:00Z",
+        "service": "billing-service",
+        "level": "WARN",
+        "message": "c.a.s.lb.HealthChecker [hc-monitor-1] - backend 10.164.110.182:8094 health check failed: timeout after 5000ms"
       }
     ]
   },
   "metrics": {
-    "order-service:gc_pause_ms": [
-      1.0,
-      1.8,
-      3.0,
-      5.3,
-      9.1,
-      15.7,
-      27.1,
-      46.9
-    ],
-    "order-service:latency_p99": [
-      1.8,
-      3.0,
-      5.1,
-      8.6,
-      14.6,
-      24.8,
-      42.2,
-      71.7
-    ],
-    "order-service:memory_percent": [
+    "payment-api:cpu_percent": [
       0.0,
-      33.4,
-      55.1,
-      69.3,
-      78.5,
-      84.5,
-      88.4,
-      91.0
+      32.3,
+      51.8,
+      63.7,
+      70.9,
+      75.3,
+      77.9
     ],
-    "auth-service:error_rate": [
+    "payment-api:latency_p99": [
       2.0,
-      2.0,
-      2.0,
-      74.9,
-      74.9,
-      74.9,
-      74.9
+      4.8,
+      11.7,
+      28.2,
+      68.3
+    ],
+    "billing-service:error_rate": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      79.4,
+      79.4,
+      79.4,
+      79.4
+    ],
+    "email-service:cpu": [
+      36.2,
+      35.5,
+      36.7,
+      41.7,
+      41.0,
+      37.9
     ],
     "metrics-collector:cpu": [
-      18.8,
-      12.9,
-      24.7,
-      20.5,
-      25.0,
-      21.9
-    ],
-    "api-gateway:cpu": [
-      19.3,
-      27.6,
-      22.3,
-      25.9,
-      30.0,
-      31.7
+      22.8,
+      23.4,
+      19.1,
+      19.5,
+      19.9,
+      28.3
     ]
   },
   "dependencies": {
-    "order-service": [
-      "order-service-db",
-      "order-service-store"
+    "payment-api": [
+      "payment-api-db",
+      "payment-api-store"
     ],
-    "auth-service": [
-      "order-service",
-      "auth-service-db"
+    "billing-service": [
+      "payment-api",
+      "billing-service-db"
+    ],
+    "email-service": [
+      "email-service-db"
     ],
     "metrics-collector": [
-      "order-service",
       "metrics-collector-db"
-    ],
-    "api-gateway": [
-      "api-gateway-db"
-    ],
-    "logging-pipeline": [
-      "logging-pipeline-db"
     ]
   },
   "root_cause": {
-    "service": "order-service",
-    "description": "GC pause storm in order-service 2.3.0 due to excessive object allocation in batch processor",
+    "service": "payment-api",
+    "description": "CPU spin loop in payment-api 4.0.1 caused by infinite retry loop in error handler",
     "keywords": [
-      "gc",
-      "garbage collection",
-      "pause",
-      "stop-the-world",
-      "allocation",
-      "heap"
+      "cpu",
+      "spin",
+      "loop",
+      "100%",
+      "retry",
+      "infinite",
+      "hang"
     ]
   },
   "valid_remediations": [
     {
       "action": "restart_service",
-      "service": "order-service"
+      "service": "payment-api"
     },
     {
       "action": "rollback_deploy",
-      "service": "order-service"
-    },
-    {
-      "action": "scale_service",
-      "service": "order-service"
+      "service": "payment-api"
     }
   ],
   "expected_diagnostics": [
     {
       "action_type": "query_logs",
       "params": {
-        "service": "order-service"
+        "service": "payment-api"
       }
     },
     {
       "action_type": "check_metrics",
       "params": {
-        "service": "order-service"
+        "service": "payment-api"
       }
     }
   ],
   "grading_rubric": {
-    "triage_weight": 0.33,
-    "diagnostic_weight": 0.18,
-    "root_cause_weight": 0.14,
-    "remediation_weight": 0.17,
-    "efficiency_weight": 0.09,
-    "documentation_weight": 0.09
+    "triage_weight": 0.28,
+    "diagnostic_weight": 0.19,
+    "root_cause_weight": 0.15,
+    "remediation_weight": 0.16,
+    "efficiency_weight": 0.12,
+    "documentation_weight": 0.1
   }
 }

@@ -1,322 +1,305 @@
 {
   "incident_id": "INC-20260326-107",
   "difficulty": "medium",
-  "description": "SEV2 incident: GC Pause Storm affecting order-service. Cascading impact on inventory-service, payment-api.",
+  "description": "SEV2 incident: CPU Spin Loop affecting analytics-service. Cascading impact on payment-api, logging-pipeline.",
   "expected_severity": "SEV2",
   "initial_alerts": [
     {
       "alert_id": "alert-10701",
       "severity": "critical",
-      "service": "order-service",
-      "message": "P99 latency spiked to 7727ms - GC pauses detected",
-      "timestamp": "2026-03-26T19:06:05Z",
+      "service": "analytics-service",
+      "message": "CPU usage at 97% - all cores saturated",
+      "timestamp": "2026-03-26T08:10:05Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-10702",
-      "severity": "warning",
-      "service": "order-service",
-      "message": "GC pause time exceeding 2s per cycle",
-      "timestamp": "2026-03-26T19:07:10Z",
+      "severity": "critical",
+      "service": "analytics-service",
+      "message": "Service unresponsive - health check failures",
+      "timestamp": "2026-03-26T08:11:10Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-10703",
       "severity": "warning",
-      "service": "inventory-service",
-      "message": "Intermittent timeouts from order-service",
-      "timestamp": "2026-03-26T19:08:15Z",
+      "service": "payment-api",
+      "message": "Timeout errors from analytics-service increasing",
+      "timestamp": "2026-03-26T08:12:15Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-10704",
       "severity": "critical",
-      "service": "inventory-service",
-      "message": "inventory-service error rate spiking - requests failing",
-      "timestamp": "2026-03-26T19:06:13Z",
+      "service": "payment-api",
+      "message": "payment-api error rate spiking - requests failing",
+      "timestamp": "2026-03-26T08:10:26Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-10705",
       "severity": "critical",
-      "service": "payment-api",
-      "message": "payment-api error rate spiking - requests failing",
-      "timestamp": "2026-03-26T19:06:07Z",
+      "service": "logging-pipeline",
+      "message": "logging-pipeline error rate spiking - requests failing",
+      "timestamp": "2026-03-26T08:10:36Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-10706",
       "severity": "info",
-      "service": "service-mesh",
-      "message": "Automated backup completed successfully",
-      "timestamp": "2026-03-26T19:04:48Z",
+      "service": "user-service",
+      "message": "Elasticsearch reindex started - expected temporary latency increase",
+      "timestamp": "2026-03-26T08:05:52Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-10707",
       "severity": "info",
-      "service": "service-mesh",
-      "message": "New dashboard version deployed - no action required",
-      "timestamp": "2026-03-26T19:58:16Z",
+      "service": "internal-dns",
+      "message": "Scheduled maintenance window starting in 2 hours",
+      "timestamp": "2026-03-26T08:03:17Z",
       "acknowledged": false,
       "silenced": false
     }
   ],
   "services": [
     {
-      "name": "order-service",
-      "status": "degraded",
-      "latency_ms": 7905,
-      "error_rate": 68.6,
-      "cpu_percent": 88,
-      "memory_percent": 68,
-      "version": "3.1.2"
-    },
-    {
-      "name": "inventory-service",
+      "name": "analytics-service",
       "status": "down",
       "latency_ms": 0,
-      "error_rate": 75.6,
-      "cpu_percent": 53,
-      "memory_percent": 67,
-      "version": "4.1.0"
+      "error_rate": 97.7,
+      "cpu_percent": 64,
+      "memory_percent": 66,
+      "version": "2.0.0"
     },
     {
       "name": "payment-api",
       "status": "degraded",
-      "latency_ms": 644,
-      "error_rate": 25.1,
-      "cpu_percent": 80,
-      "memory_percent": 36,
-      "version": "2.4.1"
-    },
-    {
-      "name": "cache-layer",
-      "status": "healthy",
-      "latency_ms": 75,
-      "error_rate": 0.7,
-      "cpu_percent": 22,
-      "memory_percent": 53,
-      "version": "2.0.0"
+      "latency_ms": 4514,
+      "error_rate": 26.8,
+      "cpu_percent": 66,
+      "memory_percent": 50,
+      "version": "4.1.0"
     },
     {
       "name": "logging-pipeline",
-      "status": "healthy",
-      "latency_ms": 37,
-      "error_rate": 0.4,
-      "cpu_percent": 17,
-      "memory_percent": 44,
-      "version": "1.1.0"
+      "status": "degraded",
+      "latency_ms": 4377,
+      "error_rate": 41.3,
+      "cpu_percent": 33,
+      "memory_percent": 58,
+      "version": "5.0.3"
     },
     {
-      "name": "service-mesh",
+      "name": "user-service",
       "status": "healthy",
-      "latency_ms": 154,
-      "error_rate": 0.9,
+      "latency_ms": 80,
+      "error_rate": 0.6,
+      "cpu_percent": 6,
+      "memory_percent": 31,
+      "version": "2.3.0"
+    },
+    {
+      "name": "internal-dns",
+      "status": "healthy",
+      "latency_ms": 113,
+      "error_rate": 0.2,
       "cpu_percent": 15,
-      "memory_percent": 37,
-      "version": "2.1.1"
+      "memory_percent": 38,
+      "version": "3.2.0"
     }
   ],
   "recent_deployments": [
     {
-      "service": "order-service",
-      "version": "3.1.2",
-      "timestamp": "2026-03-26T18:30:00Z",
+      "service": "analytics-service",
+      "version": "2.0.0",
+      "timestamp": "2026-03-26T07:39:00Z",
       "deployer": "release-manager"
     }
   ],
   "logs": {
-    "order-service": [
+    "analytics-service": [
       {
-        "timestamp": "2026-03-26T19:05:00Z",
-        "service": "order-service",
+        "timestamp": "2026-03-26T08:09:00Z",
+        "service": "analytics-service",
         "level": "WARN",
-        "message": "GC pause duration: 4638ms (threshold: 500ms)"
+        "message": "c.a.s.retry.ExponentialBackoff [retry-pool-19] - attempt 17/5 for operation 'cache.get' (elapsed: 35681ms)"
       },
       {
-        "timestamp": "2026-03-26T19:07:00Z",
-        "service": "order-service",
+        "timestamp": "2026-03-26T08:10:40Z",
+        "service": "analytics-service",
         "level": "ERROR",
-        "message": "Stop-the-world GC: 3786ms - request processing halted"
+        "message": "c.a.s.monitor.ThreadDump [watchdog-1] - thread 'http-nio-8080-exec-13' in RUNNABLE state for 454s, stack: c.a.s.handler.RequestHandler.processRetry(line:376)"
       },
       {
-        "timestamp": "2026-03-26T19:09:00Z",
-        "service": "order-service",
-        "level": "WARN",
-        "message": "Heap occupancy at 92% - frequent full GC cycles"
-      },
-      {
-        "timestamp": "2026-03-26T19:11:00Z",
-        "service": "order-service",
-        "level": "INFO",
-        "message": "GC tuning: concurrent mark phase taking 4894ms"
-      }
-    ],
-    "inventory-service": [
-      {
-        "timestamp": "2026-03-26T19:06:00Z",
-        "service": "inventory-service",
-        "level": "WARN",
-        "message": "Intermittent timeout from order-service: latency spike detected"
-      },
-      {
-        "timestamp": "2026-03-26T19:11:00Z",
-        "service": "inventory-service",
+        "timestamp": "2026-03-26T08:12:20Z",
+        "service": "analytics-service",
         "level": "ERROR",
-        "message": "Request to order-service timed out during GC pause"
+        "message": "c.a.s.monitor.ThreadDump [watchdog-1] - 58/86 threads in RUNNABLE state, CPU 94%"
+      },
+      {
+        "timestamp": "2026-03-26T08:14:00Z",
+        "service": "analytics-service",
+        "level": "WARN",
+        "message": "c.a.s.retry.ExponentialBackoff [retry-pool-27] - attempt 20/20 for operation 'db.query' (elapsed: 291075ms), max retries exhausted"
       }
     ],
     "payment-api": [
       {
-        "timestamp": "2026-03-26T19:06:00Z",
-        "service": "payment-api",
-        "level": "WARN",
-        "message": "Intermittent timeout from order-service: latency spike detected"
-      },
-      {
-        "timestamp": "2026-03-26T19:11:00Z",
+        "timestamp": "2026-03-26T08:10:00Z",
         "service": "payment-api",
         "level": "ERROR",
-        "message": "Request to order-service timed out during GC pause"
+        "message": "c.a.s.client.ServiceClient [http-17] - HTTP 504 from 10.135.206.252:8085 (latency=10003ms)"
+      },
+      {
+        "timestamp": "2026-03-26T08:15:00Z",
+        "service": "payment-api",
+        "level": "WARN",
+        "message": "c.a.s.lb.HealthChecker [hc-monitor-1] - backend 10.135.206.252:8085 health check failed: timeout after 5000ms"
+      }
+    ],
+    "logging-pipeline": [
+      {
+        "timestamp": "2026-03-26T08:10:00Z",
+        "service": "logging-pipeline",
+        "level": "ERROR",
+        "message": "c.a.s.client.ServiceClient [http-42] - HTTP 504 from 10.135.206.252:8085 (latency=10003ms)"
+      },
+      {
+        "timestamp": "2026-03-26T08:15:00Z",
+        "service": "logging-pipeline",
+        "level": "WARN",
+        "message": "c.a.s.lb.HealthChecker [hc-monitor-1] - backend 10.135.206.252:8085 health check failed: timeout after 5000ms"
       }
     ]
   },
   "metrics": {
-    "order-service:gc_pause_ms": [
-      0.8,
-      1.9,
-      4.5,
-      11.0,
-      26.9,
-      65.5
-    ],
-    "order-service:latency_p99": [
-      0.6,
-      1.5,
-      3.4,
-      7.8,
-      18.1,
-      41.6
-    ],
-    "order-service:memory_percent": [
+    "analytics-service:cpu_percent": [
       0.0,
-      27.9,
-      46.1,
-      57.9,
-      65.6,
-      70.6,
-      73.9,
-      76.0
+      32.0,
+      52.9,
+      66.5,
+      75.3,
+      81.1,
+      84.9,
+      87.3
     ],
-    "inventory-service:error_rate": [
-      1.5,
-      1.5,
-      72.1,
-      72.1,
-      72.1
+    "analytics-service:latency_p99": [
+      1.1,
+      1.9,
+      3.3,
+      5.6,
+      9.5,
+      16.1,
+      27.3,
+      46.3
     ],
     "payment-api:error_rate": [
-      1.7,
-      1.7,
-      1.7,
-      74.1,
-      74.1,
-      74.1,
-      74.1
+      1.4,
+      1.4,
+      73.0,
+      73.0,
+      73.0
     ],
-    "cache-layer:cpu": [
-      38.7,
-      45.5,
-      37.5,
-      42.3,
-      45.8,
-      39.3
+    "logging-pipeline:error_rate": [
+      0.0,
+      0.0,
+      74.5,
+      74.5,
+      74.5
     ],
-    "logging-pipeline:cpu": [
-      45.6,
-      46.4,
-      36.8,
-      48.5,
-      32.9,
-      48.9
+    "user-service:cpu": [
+      32.4,
+      31.3,
+      37.0,
+      41.4,
+      33.5,
+      41.5
+    ],
+    "internal-dns:cpu": [
+      21.9,
+      25.0,
+      23.7,
+      19.5,
+      23.1,
+      27.7
     ]
   },
   "dependencies": {
-    "order-service": [
-      "order-service-db",
-      "order-service-store"
-    ],
-    "inventory-service": [
-      "order-service",
-      "inventory-service-db"
+    "analytics-service": [
+      "analytics-service-db",
+      "analytics-service-store"
     ],
     "payment-api": [
-      "order-service",
+      "analytics-service",
       "payment-api-db"
     ],
-    "cache-layer": [
-      "cache-layer-db"
-    ],
     "logging-pipeline": [
+      "analytics-service",
       "logging-pipeline-db"
     ],
-    "service-mesh": [
-      "service-mesh-db"
+    "user-service": [
+      "user-service-db"
+    ],
+    "internal-dns": [
+      "internal-dns-db"
     ]
   },
   "root_cause": {
-    "service": "order-service",
-    "description": "GC pause storm in order-service 3.1.2 due to excessive object allocation in batch processor",
+    "service": "analytics-service",
+    "description": "CPU spin loop in analytics-service 2.0.0 caused by infinite retry loop in error handler",
     "keywords": [
-      "gc",
-      "garbage collection",
-      "pause",
-      "stop-the-world",
-      "allocation",
-      "heap"
+      "cpu",
+      "spin",
+      "loop",
+      "100%",
+      "retry",
+      "infinite",
+      "hang"
     ]
   },
   "valid_remediations": [
     {
       "action": "restart_service",
-      "service": "order-service"
+      "service": "analytics-service"
     },
     {
       "action": "rollback_deploy",
-      "service": "order-service"
-    },
-    {
-      "action": "scale_service",
-      "service": "order-service"
+      "service": "analytics-service"
     }
   ],
   "expected_diagnostics": [
     {
       "action_type": "query_logs",
       "params": {
-        "service": "order-service"
+        "service": "analytics-service"
       }
     },
     {
       "action_type": "check_metrics",
       "params": {
-        "service": "order-service"
+        "service": "analytics-service"
+      }
+    },
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "payment-api"
       }
     }
   ],
   "grading_rubric": {
-    "triage_weight": 0.22,
-    "diagnostic_weight": 0.26,
-    "root_cause_weight": 0.18,
-    "remediation_weight": 0.17,
-    "efficiency_weight": 0.09,
-    "documentation_weight": 0.08
+    "triage_weight": 0.16,
+    "diagnostic_weight": 0.27,
+    "root_cause_weight": 0.22,
+    "remediation_weight": 0.19,
+    "efficiency_weight": 0.11,
+    "documentation_weight": 0.05
   }
 }

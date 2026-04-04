@@ -1,420 +1,349 @@
 {
   "incident_id": "INC-20260326-208",
   "difficulty": "hard",
-  "description": "SEV1 incident: DNS Resolution Failure affecting cdn-proxy. Cascading impact on internal-dns, cache-layer, service-mesh. Multiple concurrent events make diagnosis challenging.",
+  "description": "SEV1 incident: GC Pause Storm affecting order-service. Cascading impact on session-store, notification-service. Multiple concurrent events make diagnosis challenging.",
   "expected_severity": "SEV1",
   "initial_alerts": [
     {
       "alert_id": "alert-20801",
       "severity": "critical",
-      "service": "cdn-proxy",
-      "message": "DNS query failure rate at 66.3% - resolution failing",
-      "timestamp": "2026-03-26T19:29:05Z",
+      "service": "order-service",
+      "message": "P99 latency spiked to 1912ms - GC pauses detected",
+      "timestamp": "2026-03-26T13:51:05Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-20802",
-      "severity": "critical",
-      "service": "internal-dns",
-      "message": "Service connectivity lost - DNS resolution failed",
-      "timestamp": "2026-03-26T19:30:10Z",
+      "severity": "warning",
+      "service": "order-service",
+      "message": "GC pause time exceeding 2s per cycle",
+      "timestamp": "2026-03-26T13:52:10Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-20803",
       "severity": "warning",
-      "service": "cdn-proxy",
-      "message": "DNS resolution latency increased to 4773ms",
-      "timestamp": "2026-03-26T19:31:15Z",
+      "service": "session-store",
+      "message": "Intermittent timeouts from order-service",
+      "timestamp": "2026-03-26T13:53:15Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-20804",
       "severity": "critical",
-      "service": "internal-dns",
-      "message": "internal-dns error rate spiking - requests failing",
-      "timestamp": "2026-03-26T19:29:15Z",
+      "service": "session-store",
+      "message": "session-store error rate spiking - requests failing",
+      "timestamp": "2026-03-26T13:51:28Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-20805",
       "severity": "critical",
-      "service": "cache-layer",
-      "message": "cache-layer error rate spiking - requests failing",
-      "timestamp": "2026-03-26T19:29:53Z",
+      "service": "notification-service",
+      "message": "notification-service error rate spiking - requests failing",
+      "timestamp": "2026-03-26T13:51:27Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-20806",
-      "severity": "critical",
-      "service": "service-mesh",
-      "message": "service-mesh error rate spiking - requests failing",
-      "timestamp": "2026-03-26T19:29:48Z",
+      "severity": "warning",
+      "service": "cache-layer",
+      "message": "Memory usage at 68% - within normal range but trending up",
+      "timestamp": "2026-03-26T13:46:48Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-20807",
       "severity": "info",
-      "service": "order-service",
-      "message": "New dashboard version deployed - no action required",
-      "timestamp": "2026-03-26T19:26:19Z",
-      "acknowledged": false,
-      "silenced": false
-    },
-    {
-      "alert_id": "alert-20808",
-      "severity": "warning",
-      "service": "user-service",
-      "message": "Log volume increased 20% - review retention policy",
-      "timestamp": "2026-03-26T19:26:30Z",
-      "acknowledged": false,
-      "silenced": false
-    },
-    {
-      "alert_id": "alert-20809",
-      "severity": "warning",
-      "service": "user-service",
-      "message": "Memory usage at 68% - within normal range but trending up",
-      "timestamp": "2026-03-26T19:19:02Z",
-      "acknowledged": false,
-      "silenced": false
-    },
-    {
-      "alert_id": "alert-20810",
-      "severity": "warning",
-      "service": "user-service",
-      "message": "Disk usage at 72% on data volume",
-      "timestamp": "2026-03-26T19:22:39Z",
+      "service": "api-gateway",
+      "message": "Automated backup completed successfully",
+      "timestamp": "2026-03-26T13:49:58Z",
       "acknowledged": false,
       "silenced": false
     }
   ],
   "services": [
     {
-      "name": "cdn-proxy",
-      "status": "degraded",
-      "latency_ms": 4117,
-      "error_rate": 54.4,
-      "cpu_percent": 95,
-      "memory_percent": 83,
-      "version": "2.3.0"
+      "name": "order-service",
+      "status": "down",
+      "latency_ms": 0,
+      "error_rate": 75.7,
+      "cpu_percent": 76,
+      "memory_percent": 47,
+      "version": "4.2.0"
     },
     {
-      "name": "internal-dns",
+      "name": "session-store",
       "status": "degraded",
-      "latency_ms": 4140,
-      "error_rate": 24.6,
-      "cpu_percent": 22,
-      "memory_percent": 46,
-      "version": "4.0.1"
+      "latency_ms": 3102,
+      "error_rate": 57.3,
+      "cpu_percent": 76,
+      "memory_percent": 50,
+      "version": "2.1.1"
+    },
+    {
+      "name": "notification-service",
+      "status": "down",
+      "latency_ms": 0,
+      "error_rate": 70.8,
+      "cpu_percent": 74,
+      "memory_percent": 48,
+      "version": "5.0.3"
+    },
+    {
+      "name": "config-server",
+      "status": "healthy",
+      "latency_ms": 108,
+      "error_rate": 0.2,
+      "cpu_percent": 37,
+      "memory_percent": 22,
+      "version": "5.0.3"
+    },
+    {
+      "name": "api-gateway",
+      "status": "healthy",
+      "latency_ms": 186,
+      "error_rate": 0.6,
+      "cpu_percent": 31,
+      "memory_percent": 37,
+      "version": "5.0.3"
     },
     {
       "name": "cache-layer",
-      "status": "degraded",
-      "latency_ms": 4960,
-      "error_rate": 34.1,
-      "cpu_percent": 28,
-      "memory_percent": 32,
-      "version": "3.2.0"
-    },
-    {
-      "name": "service-mesh",
-      "status": "down",
-      "latency_ms": 0,
-      "error_rate": 71.4,
-      "cpu_percent": 65,
-      "memory_percent": 50,
-      "version": "3.2.0"
-    },
-    {
-      "name": "order-service",
       "status": "healthy",
-      "latency_ms": 137,
-      "error_rate": 0.4,
-      "cpu_percent": 15,
-      "memory_percent": 22,
-      "version": "1.5.0"
-    },
-    {
-      "name": "user-service",
-      "status": "healthy",
-      "latency_ms": 171,
-      "error_rate": 0.9,
-      "cpu_percent": 34,
-      "memory_percent": 25,
-      "version": "3.1.2"
-    },
-    {
-      "name": "email-service",
-      "status": "healthy",
-      "latency_ms": 120,
-      "error_rate": 0.5,
-      "cpu_percent": 14,
+      "latency_ms": 101,
+      "error_rate": 0.7,
+      "cpu_percent": 30,
       "memory_percent": 53,
-      "version": "4.2.0"
+      "version": "2.1.1"
     }
   ],
   "recent_deployments": [
     {
-      "service": "cdn-proxy",
-      "version": "2.3.0",
-      "timestamp": "2026-03-26T18:50:00Z",
-      "deployer": "ci-bot"
+      "service": "order-service",
+      "version": "4.2.0",
+      "timestamp": "2026-03-26T12:13:00Z",
+      "deployer": "infra-team"
     },
     {
-      "service": "email-service",
-      "version": "4.2.0",
-      "timestamp": "2026-03-26T16:36:00Z",
-      "deployer": "ml-team"
+      "service": "config-server",
+      "version": "5.0.3",
+      "timestamp": "2026-03-26T11:22:00Z",
+      "deployer": "dev-team"
     }
   ],
   "logs": {
-    "cdn-proxy": [
+    "order-service": [
       {
-        "timestamp": "2026-03-26T19:28:00Z",
-        "service": "cdn-proxy",
+        "timestamp": "2026-03-26T13:50:00Z",
+        "service": "order-service",
+        "level": "WARN",
+        "message": "GC overhead: pause=3934ms heap=11652M/13149M eden=0B survivor=153M old=10308M"
+      },
+      {
+        "timestamp": "2026-03-26T13:51:15Z",
+        "service": "order-service",
         "level": "ERROR",
-        "message": "SERVFAIL for internal-dns.internal: zone file contains invalid A record"
+        "message": "c.a.s.gc.Monitor [gc-monitor-1] - Full GC #183: 731ms pause, freed 286M, heap 5209M/6311M"
       },
       {
-        "timestamp": "2026-03-26T19:29:15Z",
-        "service": "cdn-proxy",
-        "level": "ERROR",
-        "message": "NXDOMAIN for internal-dns-db.internal: record missing from 2.3.0 zone file"
+        "timestamp": "2026-03-26T13:52:30Z",
+        "service": "order-service",
+        "level": "WARN",
+        "message": "c.a.s.gc.Monitor [gc-monitor-1] - GC overhead 45% in last 60s, effective throughput 42%"
       },
       {
-        "timestamp": "2026-03-26T19:30:30Z",
-        "service": "cdn-proxy",
-        "level": "ERROR",
-        "message": "SERVFAIL rate increasing: 56.8% of queries failing"
-      },
-      {
-        "timestamp": "2026-03-26T19:31:45Z",
-        "service": "cdn-proxy",
-        "level": "FATAL",
-        "message": "Multiple critical DNS records missing/corrupted after 2.3.0 zone migration"
-      }
-    ],
-    "internal-dns": [
-      {
-        "timestamp": "2026-03-26T19:29:00Z",
-        "service": "internal-dns",
-        "level": "ERROR",
-        "message": "Cannot resolve internal-dns-db.internal.internal - DNS lookup failed"
-      },
-      {
-        "timestamp": "2026-03-26T19:32:20Z",
-        "service": "internal-dns",
-        "level": "FATAL",
-        "message": "Database connection pool empty: all connections failed DNS resolution"
-      },
-      {
-        "timestamp": "2026-03-26T19:35:40Z",
-        "service": "internal-dns",
-        "level": "FATAL",
-        "message": "Service degraded: critical dependency unreachable via DNS"
-      }
-    ],
-    "cache-layer": [
-      {
-        "timestamp": "2026-03-26T19:29:00Z",
-        "service": "cache-layer",
-        "level": "ERROR",
-        "message": "Cannot resolve cache-layer-db.internal.internal - DNS lookup failed"
-      },
-      {
-        "timestamp": "2026-03-26T19:32:20Z",
-        "service": "cache-layer",
-        "level": "FATAL",
-        "message": "Database connection pool empty: all connections failed DNS resolution"
-      },
-      {
-        "timestamp": "2026-03-26T19:35:40Z",
-        "service": "cache-layer",
-        "level": "FATAL",
-        "message": "Service degraded: critical dependency unreachable via DNS"
-      }
-    ],
-    "service-mesh": [
-      {
-        "timestamp": "2026-03-26T19:29:00Z",
-        "service": "service-mesh",
-        "level": "ERROR",
-        "message": "Cannot resolve service-mesh-db.internal.internal - DNS lookup failed"
-      },
-      {
-        "timestamp": "2026-03-26T19:32:20Z",
-        "service": "service-mesh",
-        "level": "FATAL",
-        "message": "Database connection pool empty: all connections failed DNS resolution"
-      },
-      {
-        "timestamp": "2026-03-26T19:35:40Z",
-        "service": "service-mesh",
-        "level": "FATAL",
-        "message": "Service degraded: critical dependency unreachable via DNS"
-      }
-    ],
-    "email-service": [
-      {
-        "timestamp": "2026-03-26T19:28:00Z",
-        "service": "email-service",
+        "timestamp": "2026-03-26T13:53:45Z",
+        "service": "order-service",
         "level": "INFO",
-        "message": "Cache hit ratio: 86%"
+        "message": "c.a.s.gc.Monitor [gc-monitor-1] - CMS concurrent-mark: 1016ms, heap 94% occupied"
+      }
+    ],
+    "session-store": [
+      {
+        "timestamp": "2026-03-26T13:51:00Z",
+        "service": "session-store",
+        "level": "WARN",
+        "message": "c.a.s.client.ServiceClient [http-36] - HTTP 200 from 10.247.154.5:8088 (latency=25530ms) SLOW"
+      },
+      {
+        "timestamp": "2026-03-26T13:56:00Z",
+        "service": "session-store",
+        "level": "ERROR",
+        "message": "c.a.s.client.ServiceClient [http-24] - HTTP 504 from 10.247.154.5:8088 (latency=30001ms)"
+      }
+    ],
+    "notification-service": [
+      {
+        "timestamp": "2026-03-26T13:51:00Z",
+        "service": "notification-service",
+        "level": "WARN",
+        "message": "c.a.s.client.ServiceClient [http-19] - HTTP 200 from 10.247.154.5:8088 (latency=25244ms) SLOW"
+      },
+      {
+        "timestamp": "2026-03-26T13:56:00Z",
+        "service": "notification-service",
+        "level": "ERROR",
+        "message": "c.a.s.client.ServiceClient [http-38] - HTTP 504 from 10.247.154.5:8088 (latency=30001ms)"
+      }
+    ],
+    "config-server": [
+      {
+        "timestamp": "2026-03-26T13:50:00Z",
+        "service": "config-server",
+        "level": "INFO",
+        "message": "c.a.s.health.Monitor [health-check-1] - status=UP, checks=[db:UP, cache:UP, queue:UP]"
       }
     ]
   },
   "metrics": {
-    "cdn-proxy:query_failure_rate": [
-      0.3,
-      1.0,
-      3.2,
-      10.0,
-      30.9,
-      96.0
+    "order-service:gc_pause_ms": [
+      1.4,
+      2.6,
+      4.9,
+      9.2,
+      17.4,
+      32.9,
+      62.2
     ],
-    "cdn-proxy:resolution_latency_ms": [
-      0.5,
-      0.9,
-      1.7,
+    "order-service:latency_p99": [
+      0.4,
+      1.1,
       3.0,
-      5.3,
-      9.5,
-      17.0,
-      30.3
+      8.1,
+      22.4,
+      61.7
     ],
-    "internal-dns:error_rate": [
-      1.6,
-      1.6,
-      1.6,
-      42.4,
-      42.4,
-      42.4,
-      42.4
+    "order-service:memory_percent": [
+      0.0,
+      34.9,
+      56.0,
+      68.8,
+      76.6,
+      81.3,
+      84.2
     ],
-    "cache-layer:error_rate": [
-      0.1,
-      0.1,
-      0.1,
-      49.8,
-      49.8,
-      49.8
+    "session-store:error_rate": [
+      1.7,
+      1.7,
+      1.7,
+      81.3,
+      81.3,
+      81.3,
+      81.3
     ],
-    "service-mesh:error_rate": [
+    "notification-service:error_rate": [
       0.3,
       0.3,
       0.3,
-      0.3,
-      57.8,
-      57.8,
-      57.8,
-      57.8
+      88.6,
+      88.6,
+      88.6
     ],
-    "order-service:cpu": [
-      38.0,
-      41.7,
-      27.2,
-      26.3,
-      35.9,
-      43.7
+    "config-server:cpu": [
+      34.2,
+      31.9,
+      41.8,
+      38.3,
+      27.6,
+      42.9
     ],
-    "user-service:cpu": [
-      49.6,
-      37.4,
-      42.5,
-      42.4,
-      45.8,
-      36.6
+    "api-gateway:cpu": [
+      46.4,
+      43.3,
+      54.0,
+      44.9,
+      45.9,
+      39.0
     ]
   },
   "dependencies": {
-    "cdn-proxy": [],
-    "internal-dns": [
-      "internal-dns-db.internal",
-      "cdn-proxy"
+    "order-service": [
+      "order-service-db",
+      "order-service-store"
+    ],
+    "session-store": [
+      "order-service",
+      "session-store-db"
+    ],
+    "notification-service": [
+      "order-service",
+      "notification-service-db"
+    ],
+    "config-server": [
+      "config-server-db"
+    ],
+    "api-gateway": [
+      "api-gateway-db"
     ],
     "cache-layer": [
-      "cache-layer-db.internal",
-      "cdn-proxy"
-    ],
-    "service-mesh": [
-      "service-mesh-db.internal",
-      "cdn-proxy"
-    ],
-    "order-service": [
-      "order-service-db.internal",
-      "cdn-proxy"
-    ],
-    "user-service": [
-      "user-service-db.internal",
-      "cdn-proxy"
-    ],
-    "email-service": [
-      "email-service-db.internal",
-      "cdn-proxy"
+      "cache-layer-db"
     ]
   },
   "root_cause": {
-    "service": "cdn-proxy",
-    "description": "DNS resolution failure on cdn-proxy after 2.3.0 deployment corrupted zone file records",
+    "service": "order-service",
+    "description": "GC pause storm in order-service 4.2.0 due to excessive object allocation in batch processor",
     "keywords": [
-      "dns",
-      "resolution",
-      "zone",
-      "corrupted",
-      "SERVFAIL",
-      "NXDOMAIN",
-      "zone file"
+      "gc",
+      "garbage collection",
+      "pause",
+      "stop-the-world",
+      "allocation",
+      "heap"
     ]
   },
   "valid_remediations": [
     {
-      "action": "rollback_deploy",
-      "service": "cdn-proxy"
+      "action": "restart_service",
+      "service": "order-service"
     },
     {
-      "action": "restart_service",
-      "service": "cdn-proxy"
+      "action": "rollback_deploy",
+      "service": "order-service"
+    },
+    {
+      "action": "scale_service",
+      "service": "order-service"
     }
   ],
   "expected_diagnostics": [
     {
       "action_type": "query_logs",
       "params": {
-        "service": "cdn-proxy"
+        "service": "order-service"
       }
     },
     {
       "action_type": "check_metrics",
       "params": {
-        "service": "cdn-proxy"
-      }
-    },
-    {
-      "action_type": "view_dependencies",
-      "params": {
-        "service_name": "internal-dns"
+        "service": "order-service"
       }
     },
     {
       "action_type": "query_logs",
       "params": {
-        "service": "internal-dns"
+        "service": "session-store"
+      }
+    },
+    {
+      "action_type": "query_logs",
+      "params": {
+        "service": "notification-service"
       }
     }
   ],
   "grading_rubric": {
-    "triage_weight": 0.09,
-    "diagnostic_weight": 0.25,
-    "root_cause_weight": 0.3,
-    "remediation_weight": 0.17,
-    "efficiency_weight": 0.11,
-    "documentation_weight": 0.08
+    "triage_weight": 0.07,
+    "diagnostic_weight": 0.28,
+    "root_cause_weight": 0.31,
+    "remediation_weight": 0.19,
+    "efficiency_weight": 0.08,
+    "documentation_weight": 0.07
   }
 }

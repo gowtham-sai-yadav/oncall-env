@@ -1,254 +1,255 @@
 {
   "incident_id": "INC-20260326-009",
   "difficulty": "easy",
-  "description": "SEV3 incident: TLS Certificate Expiry affecting billing-service. Cascading impact on analytics-service.",
+  "description": "SEV3 incident: DNS Resolution Failure affecting logging-pipeline. Cascading impact on session-store.",
   "expected_severity": "SEV3",
   "initial_alerts": [
     {
       "alert_id": "alert-901",
       "severity": "critical",
-      "service": "billing-service",
-      "message": "TLS certificate expired - all HTTPS connections failing",
-      "timestamp": "2026-03-26T18:12:05Z",
+      "service": "logging-pipeline",
+      "message": "DNS query failure rate at 67.5% - resolution failing",
+      "timestamp": "2026-03-26T13:27:05Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-902",
       "severity": "critical",
-      "service": "analytics-service",
-      "message": "Connection refused: TLS handshake failure with billing-service",
-      "timestamp": "2026-03-26T18:13:10Z",
+      "service": "session-store",
+      "message": "Service connectivity lost - DNS resolution failed",
+      "timestamp": "2026-03-26T13:28:10Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-903",
       "severity": "warning",
-      "service": "billing-service",
-      "message": "Certificate validity: EXPIRED since 2026-03-26T16:00:00Z",
-      "timestamp": "2026-03-26T18:14:15Z",
+      "service": "logging-pipeline",
+      "message": "DNS resolution latency increased to 3377ms",
+      "timestamp": "2026-03-26T13:29:15Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-904",
       "severity": "critical",
-      "service": "analytics-service",
-      "message": "analytics-service error rate spiking - requests failing",
-      "timestamp": "2026-03-26T18:12:56Z",
+      "service": "session-store",
+      "message": "session-store error rate spiking - requests failing",
+      "timestamp": "2026-03-26T13:27:04Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-905",
       "severity": "warning",
-      "service": "internal-dns",
-      "message": "CPU usage at 65% - approaching threshold",
-      "timestamp": "2026-03-26T18:08:38Z",
-      "acknowledged": false,
-      "silenced": false
-    },
-    {
-      "alert_id": "alert-906",
-      "severity": "info",
-      "service": "message-queue",
-      "message": "Canary deployment proceeding as expected",
-      "timestamp": "2026-03-26T18:07:54Z",
+      "service": "cdn-proxy",
+      "message": "CPU usage at 75% - approaching threshold",
+      "timestamp": "2026-03-26T13:22:31Z",
       "acknowledged": false,
       "silenced": false
     }
   ],
   "services": [
     {
-      "name": "billing-service",
+      "name": "logging-pipeline",
       "status": "down",
       "latency_ms": 0,
-      "error_rate": 83.6,
-      "cpu_percent": 75,
-      "memory_percent": 64,
-      "version": "2.0.0"
+      "error_rate": 85.9,
+      "cpu_percent": 81,
+      "memory_percent": 59,
+      "version": "2.3.0"
     },
     {
-      "name": "analytics-service",
+      "name": "session-store",
       "status": "degraded",
-      "latency_ms": 2978,
-      "error_rate": 58.9,
-      "cpu_percent": 20,
-      "memory_percent": 46,
-      "version": "1.2.3"
-    },
-    {
-      "name": "message-queue",
-      "status": "healthy",
-      "latency_ms": 109,
-      "error_rate": 0.9,
-      "cpu_percent": 6,
-      "memory_percent": 26,
-      "version": "3.1.2"
+      "latency_ms": 2354,
+      "error_rate": 35.6,
+      "cpu_percent": 55,
+      "memory_percent": 59,
+      "version": "2.0.0"
     },
     {
       "name": "internal-dns",
       "status": "healthy",
-      "latency_ms": 54,
-      "error_rate": 0.9,
-      "cpu_percent": 23,
-      "memory_percent": 46,
-      "version": "3.2.0"
+      "latency_ms": 150,
+      "error_rate": 1.0,
+      "cpu_percent": 17,
+      "memory_percent": 52,
+      "version": "2.1.1"
+    },
+    {
+      "name": "cdn-proxy",
+      "status": "healthy",
+      "latency_ms": 172,
+      "error_rate": 0.3,
+      "cpu_percent": 26,
+      "memory_percent": 54,
+      "version": "2.4.1"
     }
   ],
   "recent_deployments": [
     {
-      "service": "billing-service",
-      "version": "2.0.0",
-      "timestamp": "2026-03-26T17:09:00Z",
-      "deployer": "dev-team"
+      "service": "logging-pipeline",
+      "version": "2.3.0",
+      "timestamp": "2026-03-26T12:39:00Z",
+      "deployer": "ops-team"
     }
   ],
   "logs": {
-    "billing-service": [
+    "logging-pipeline": [
       {
-        "timestamp": "2026-03-26T18:11:00Z",
-        "service": "billing-service",
+        "timestamp": "2026-03-26T13:26:00Z",
+        "service": "logging-pipeline",
         "level": "ERROR",
-        "message": "TLS handshake failed: certificate expired at 2026-03-26T16:00:00Z"
+        "message": "c.a.s.dns.Resolver [dns-cache-1] - lookup 'session-store.internal' on 10.227.232.215:53: SERVFAIL (rcode=2)"
       },
       {
-        "timestamp": "2026-03-26T18:13:00Z",
-        "service": "billing-service",
+        "timestamp": "2026-03-26T13:28:30Z",
+        "service": "logging-pipeline",
         "level": "ERROR",
-        "message": "x509: certificate has expired or is not yet valid"
+        "message": "c.a.s.dns.Resolver [dns-cache-1] - lookup 'session-store-db.internal' on 10.227.232.215:53: NXDOMAIN (rcode=3)"
       },
       {
-        "timestamp": "2026-03-26T18:15:00Z",
-        "service": "billing-service",
-        "level": "WARN",
-        "message": "Auto-renewal of TLS cert failed: ACME challenge timeout"
+        "timestamp": "2026-03-26T13:31:00Z",
+        "service": "logging-pipeline",
+        "level": "ERROR",
+        "message": "c.a.s.dns.Resolver [dns-cache-1] - 1102 SERVFAIL responses in last 60s from 10.227.232.215:53"
       },
       {
-        "timestamp": "2026-03-26T18:17:00Z",
-        "service": "billing-service",
-        "level": "ERROR",
-        "message": "All incoming HTTPS connections rejected: invalid certificate"
+        "timestamp": "2026-03-26T13:33:30Z",
+        "service": "logging-pipeline",
+        "level": "FATAL",
+        "message": "c.a.s.dns.ZoneLoader [zone-sync-1] - zone file checksum mismatch after 2.3.0 sync: expected sha256:021b5e97, got sha256:056d458f"
       }
     ],
-    "analytics-service": [
+    "session-store": [
       {
-        "timestamp": "2026-03-26T18:12:00Z",
-        "service": "analytics-service",
+        "timestamp": "2026-03-26T13:27:00Z",
+        "service": "session-store",
         "level": "ERROR",
-        "message": "TLS handshake failed connecting to billing-service: certificate expired"
+        "message": "c.a.s.net.ConnectionFactory [conn-pool-8] - java.net.UnknownHostException: session-store-db.internal.internal: Name or service not known"
       },
       {
-        "timestamp": "2026-03-26T18:17:00Z",
-        "service": "analytics-service",
-        "level": "WARN",
-        "message": "Falling back to cached data - billing-service unreachable"
+        "timestamp": "2026-03-26T13:30:20Z",
+        "service": "session-store",
+        "level": "FATAL",
+        "message": "c.a.s.db.HikariPool [pool-3-housekeeper] - HikariPool-1 - Failed to validate connection: java.net.UnknownHostException: session-store-db.internal"
+      },
+      {
+        "timestamp": "2026-03-26T13:33:40Z",
+        "service": "session-store",
+        "level": "FATAL",
+        "message": "c.a.s.net.ConnectionFactory [conn-pool-15] - java.net.UnknownHostException: logging-pipeline.internal: Name or service not known"
       }
     ]
   },
   "metrics": {
-    "billing-service:tls_errors": [
-      0.3,
-      0.3,
-      0.3,
-      95.2,
-      95.2,
-      95.2
+    "logging-pipeline:query_failure_rate": [
+      0.9,
+      2.2,
+      5.5,
+      13.5,
+      33.3,
+      82.4
     ],
-    "billing-service:error_rate": [
-      0.8,
-      0.8,
-      0.8,
-      74.8,
-      74.8,
-      74.8
+    "logging-pipeline:resolution_latency_ms": [
+      0.5,
+      1.1,
+      2.9,
+      7.1,
+      17.8,
+      44.6
     ],
-    "analytics-service:error_rate": [
-      1.0,
-      1.0,
-      1.0,
-      58.9,
-      58.9,
-      58.9,
-      58.9
-    ],
-    "message-queue:cpu": [
-      26.8,
-      41.5,
-      27.2,
-      41.5,
-      38.6,
-      37.5
+    "session-store:error_rate": [
+      0.7,
+      0.7,
+      0.7,
+      80.5,
+      80.5,
+      80.5
     ],
     "internal-dns:cpu": [
-      35.0,
-      37.6,
-      31.5,
-      31.4,
-      29.5,
-      30.3
+      20.6,
+      16.2,
+      27.7,
+      19.9,
+      31.7,
+      20.8
+    ],
+    "cdn-proxy:cpu": [
+      20.7,
+      27.9,
+      21.6,
+      22.3,
+      18.0,
+      15.3
     ]
   },
   "dependencies": {
-    "billing-service": [
-      "billing-service-db",
-      "billing-service-store"
-    ],
-    "analytics-service": [
-      "billing-service",
-      "analytics-service-db"
-    ],
-    "message-queue": [
-      "message-queue-db"
+    "logging-pipeline": [],
+    "session-store": [
+      "session-store-db.internal",
+      "logging-pipeline"
     ],
     "internal-dns": [
-      "internal-dns-db"
+      "internal-dns-db.internal",
+      "logging-pipeline"
+    ],
+    "cdn-proxy": [
+      "cdn-proxy-db.internal",
+      "logging-pipeline"
     ]
   },
   "root_cause": {
-    "service": "billing-service",
-    "description": "TLS certificate expired on billing-service causing all HTTPS connections to fail",
+    "service": "logging-pipeline",
+    "description": "DNS resolution failure on logging-pipeline after 2.3.0 deployment corrupted zone file records",
     "keywords": [
-      "tls",
-      "certificate",
-      "expired",
-      "ssl",
-      "https",
-      "cert",
-      "x509"
+      "dns",
+      "resolution",
+      "zone",
+      "corrupted",
+      "SERVFAIL",
+      "NXDOMAIN",
+      "zone file"
     ]
   },
   "valid_remediations": [
     {
-      "action": "restart_service",
-      "service": "billing-service"
+      "action": "rollback_deploy",
+      "service": "logging-pipeline"
     },
     {
-      "action": "update_config",
-      "service": "billing-service"
+      "action": "restart_service",
+      "service": "logging-pipeline"
     }
   ],
   "expected_diagnostics": [
     {
       "action_type": "query_logs",
       "params": {
-        "service": "billing-service"
+        "service": "logging-pipeline"
       }
     },
     {
       "action_type": "check_metrics",
       "params": {
-        "service": "billing-service"
+        "service": "logging-pipeline"
+      }
+    },
+    {
+      "action_type": "view_dependencies",
+      "params": {
+        "service_name": "session-store"
       }
     }
   ],
   "grading_rubric": {
-    "triage_weight": 0.28,
-    "diagnostic_weight": 0.22,
+    "triage_weight": 0.31,
+    "diagnostic_weight": 0.19,
     "root_cause_weight": 0.12,
-    "remediation_weight": 0.16,
-    "efficiency_weight": 0.12,
+    "remediation_weight": 0.17,
+    "efficiency_weight": 0.11,
     "documentation_weight": 0.1
   }
 }

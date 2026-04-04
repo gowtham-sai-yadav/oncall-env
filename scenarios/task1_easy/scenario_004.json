@@ -1,51 +1,51 @@
 {
   "incident_id": "INC-20260326-004",
   "difficulty": "easy",
-  "description": "SEV3 incident: Deadlock Storm affecting order-service. Cascading impact on search-service.",
+  "description": "SEV3 incident: Replication Lag affecting order-service. Cascading impact on notification-service.",
   "expected_severity": "SEV3",
   "initial_alerts": [
     {
       "alert_id": "alert-401",
       "severity": "critical",
       "service": "order-service",
-      "message": "Transaction deadlocks spiking - 164/min detected",
-      "timestamp": "2026-03-26T15:22:05Z",
+      "message": "Data inconsistency detected - read replicas 40s behind primary",
+      "timestamp": "2026-03-26T11:02:05Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-402",
-      "severity": "critical",
+      "severity": "warning",
       "service": "order-service",
-      "message": "Request queue depth exceeding 500 - requests backing up",
-      "timestamp": "2026-03-26T15:23:10Z",
+      "message": "Replication lag exceeding 30s threshold",
+      "timestamp": "2026-03-26T11:03:10Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-403",
       "severity": "warning",
-      "service": "search-service",
-      "message": "Upstream order-service response time degraded",
-      "timestamp": "2026-03-26T15:24:15Z",
+      "service": "notification-service",
+      "message": "Stale data returned for user queries",
+      "timestamp": "2026-03-26T11:04:15Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-404",
       "severity": "critical",
-      "service": "search-service",
-      "message": "search-service error rate spiking - requests failing",
-      "timestamp": "2026-03-26T15:22:54Z",
+      "service": "notification-service",
+      "message": "notification-service error rate spiking - requests failing",
+      "timestamp": "2026-03-26T11:02:10Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-405",
       "severity": "info",
-      "service": "notification-service",
-      "message": "New dashboard version deployed - no action required",
-      "timestamp": "2026-03-26T15:20:40Z",
+      "service": "inventory-service",
+      "message": "SSL certificate renewal scheduled for next week",
+      "timestamp": "2026-03-26T11:54:28Z",
       "acknowledged": false,
       "silenced": false
     }
@@ -53,141 +53,134 @@
   "services": [
     {
       "name": "order-service",
-      "status": "degraded",
-      "latency_ms": 2931,
-      "error_rate": 38.3,
-      "cpu_percent": 40,
-      "memory_percent": 67,
-      "version": "5.0.3"
-    },
-    {
-      "name": "search-service",
-      "status": "degraded",
-      "latency_ms": 3725,
-      "error_rate": 33.2,
-      "cpu_percent": 72,
-      "memory_percent": 65,
-      "version": "4.2.0"
+      "status": "down",
+      "latency_ms": 0,
+      "error_rate": 95.1,
+      "cpu_percent": 41,
+      "memory_percent": 93,
+      "version": "2.1.1"
     },
     {
       "name": "notification-service",
+      "status": "degraded",
+      "latency_ms": 2514,
+      "error_rate": 33.3,
+      "cpu_percent": 26,
+      "memory_percent": 50,
+      "version": "4.0.1"
+    },
+    {
+      "name": "analytics-service",
       "status": "healthy",
-      "latency_ms": 165,
-      "error_rate": 0.3,
-      "cpu_percent": 37,
-      "memory_percent": 45,
+      "latency_ms": 150,
+      "error_rate": 0.1,
+      "cpu_percent": 35,
+      "memory_percent": 43,
       "version": "2.3.0"
     },
     {
-      "name": "config-server",
+      "name": "inventory-service",
       "status": "healthy",
-      "latency_ms": 171,
-      "error_rate": 0.1,
-      "cpu_percent": 8,
-      "memory_percent": 47,
-      "version": "4.2.0"
+      "latency_ms": 110,
+      "error_rate": 0.3,
+      "cpu_percent": 38,
+      "memory_percent": 24,
+      "version": "2.0.0"
     }
   ],
   "recent_deployments": [
     {
       "service": "order-service",
-      "version": "5.0.3",
-      "timestamp": "2026-03-26T14:13:00Z",
-      "deployer": "infra-team"
+      "version": "2.1.1",
+      "timestamp": "2026-03-26T10:09:00Z",
+      "deployer": "release-manager"
     }
   ],
   "logs": {
     "order-service": [
       {
-        "timestamp": "2026-03-26T15:21:00Z",
+        "timestamp": "2026-03-26T11:01:00Z",
         "service": "order-service",
         "level": "ERROR",
-        "message": "Deadlock detected: txn-13649 waiting for lock held by txn-38234"
+        "message": "c.a.s.db.ReplicaMonitor [replica-health-1] - replica 10.77.222.56:5442 lag: 119s (threshold: 5s)"
       },
       {
-        "timestamp": "2026-03-26T15:23:00Z",
-        "service": "order-service",
-        "level": "ERROR",
-        "message": "Transaction aborted after deadlock timeout: 30s"
-      },
-      {
-        "timestamp": "2026-03-26T15:25:00Z",
+        "timestamp": "2026-03-26T11:03:00Z",
         "service": "order-service",
         "level": "WARN",
-        "message": "Request queue depth: 40687 - approaching limit"
+        "message": "c.a.s.db.ReadRouter [read-pool-26] - stale read detected: row version 8429 != primary version 19058"
       },
       {
-        "timestamp": "2026-03-26T15:27:00Z",
+        "timestamp": "2026-03-26T11:05:00Z",
         "service": "order-service",
         "level": "ERROR",
-        "message": "Lock wait timeout exceeded for table order-service_records"
+        "message": "c.a.s.db.ReplicaMonitor [replica-health-1] - replica 10.220.122.253:5442 lag: 101s (threshold: 5s)"
+      },
+      {
+        "timestamp": "2026-03-26T11:07:00Z",
+        "service": "order-service",
+        "level": "INFO",
+        "message": "c.a.s.db.ReplicationManager [repl-mgr-1] - pausing non-critical replication streams to 10.77.222.56:5442"
       }
     ],
-    "search-service": [
+    "notification-service": [
       {
-        "timestamp": "2026-03-26T15:22:00Z",
-        "service": "search-service",
-        "level": "ERROR",
-        "message": "Timeout calling order-service: exceeded 10s deadline"
+        "timestamp": "2026-03-26T11:02:00Z",
+        "service": "notification-service",
+        "level": "WARN",
+        "message": "c.a.s.client.ServiceClient [http-43] - HTTP 200 from 10.247.224.245:8093 but response body contains stale entity version 8813"
       },
       {
-        "timestamp": "2026-03-26T15:27:00Z",
-        "service": "search-service",
-        "level": "WARN",
-        "message": "Circuit breaker half-open for order-service"
+        "timestamp": "2026-03-26T11:07:00Z",
+        "service": "notification-service",
+        "level": "ERROR",
+        "message": "c.a.s.cache.Invalidator [cache-inv-1] - cache entry stale: key=user:50758 local_ver=1521 remote_ver=16558"
       }
     ]
   },
   "metrics": {
-    "order-service:deadlocks_per_min": [
+    "order-service:replication_lag_s": [
       1.8,
-      3.8,
-      8.0,
-      17.1,
-      36.2,
-      77.0
+      2.9,
+      4.4,
+      6.9,
+      10.7,
+      16.7,
+      25.9,
+      40.3
     ],
     "order-service:error_rate": [
-      1.6,
-      2.8,
-      4.8,
-      8.3,
-      14.3,
-      24.6,
-      42.5,
-      73.2
+      1.8,
+      1.8,
+      1.8,
+      63.0,
+      63.0,
+      63.0
     ],
-    "order-service:latency_p99": [
-      0.3,
-      0.8,
-      2.6,
-      8.1,
-      25.1,
-      77.7
+    "notification-service:error_rate": [
+      1.9,
+      1.9,
+      1.9,
+      98.7,
+      98.7,
+      98.7,
+      98.7
     ],
-    "search-service:error_rate": [
-      0.4,
-      0.4,
-      0.4,
-      57.4,
-      57.4,
-      57.4
+    "analytics-service:cpu": [
+      19.0,
+      24.9,
+      14.8,
+      16.4,
+      18.3,
+      21.5
     ],
-    "notification-service:cpu": [
-      32.4,
-      34.2,
-      25.6,
-      21.9,
-      24.4,
-      27.0
-    ],
-    "config-server:cpu": [
-      31.8,
-      33.0,
-      32.0,
-      38.9,
-      34.7,
-      35.0
+    "inventory-service:cpu": [
+      31.7,
+      34.5,
+      38.1,
+      39.2,
+      28.9,
+      27.7
     ]
   },
   "dependencies": {
@@ -195,36 +188,37 @@
       "order-service-db",
       "order-service-store"
     ],
-    "search-service": [
-      "order-service",
-      "search-service-db"
-    ],
     "notification-service": [
+      "order-service",
       "notification-service-db"
     ],
-    "config-server": [
-      "config-server-db"
+    "analytics-service": [
+      "analytics-service-db"
+    ],
+    "inventory-service": [
+      "inventory-service-db"
     ]
   },
   "root_cause": {
     "service": "order-service",
-    "description": "Deadlock storm in order-service database caused by concurrent transaction ordering bug in 5.0.3",
+    "description": "Database replication lag on order-service caused read replicas to serve stale data after 2.1.1 schema migration",
     "keywords": [
-      "deadlock",
-      "transaction",
-      "lock",
-      "contention",
-      "database",
-      "concurrent"
+      "replication",
+      "lag",
+      "stale",
+      "replica",
+      "schema",
+      "migration",
+      "database"
     ]
   },
   "valid_remediations": [
     {
-      "action": "restart_service",
+      "action": "rollback_deploy",
       "service": "order-service"
     },
     {
-      "action": "rollback_deploy",
+      "action": "restart_service",
       "service": "order-service"
     }
   ],
@@ -243,11 +237,11 @@
     }
   ],
   "grading_rubric": {
-    "triage_weight": 0.3,
-    "diagnostic_weight": 0.21,
-    "root_cause_weight": 0.15,
-    "remediation_weight": 0.14,
-    "efficiency_weight": 0.08,
+    "triage_weight": 0.31,
+    "diagnostic_weight": 0.2,
+    "root_cause_weight": 0.13,
+    "remediation_weight": 0.15,
+    "efficiency_weight": 0.09,
     "documentation_weight": 0.12
   }
 }

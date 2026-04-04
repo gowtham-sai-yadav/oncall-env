@@ -1,369 +1,370 @@
 {
   "incident_id": "INC-20260326-204",
   "difficulty": "hard",
-  "description": "SEV1 incident: Deadlock Storm affecting user-service. Cascading impact on cache-layer, message-queue. Multiple concurrent events make diagnosis challenging.",
+  "description": "SEV1 incident: Replication Lag affecting inventory-service. Cascading impact on auth-service, internal-dns. Multiple concurrent events make diagnosis challenging.",
   "expected_severity": "SEV1",
   "initial_alerts": [
     {
       "alert_id": "alert-20401",
       "severity": "critical",
-      "service": "user-service",
-      "message": "Transaction deadlocks spiking - 448/min detected",
-      "timestamp": "2026-03-26T22:49:05Z",
+      "service": "inventory-service",
+      "message": "Data inconsistency detected - read replicas 100s behind primary",
+      "timestamp": "2026-03-26T18:17:05Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-20402",
-      "severity": "critical",
-      "service": "user-service",
-      "message": "Request queue depth exceeding 500 - requests backing up",
-      "timestamp": "2026-03-26T22:50:10Z",
+      "severity": "warning",
+      "service": "inventory-service",
+      "message": "Replication lag exceeding 30s threshold",
+      "timestamp": "2026-03-26T18:18:10Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-20403",
       "severity": "warning",
-      "service": "cache-layer",
-      "message": "Upstream user-service response time degraded",
-      "timestamp": "2026-03-26T22:51:15Z",
+      "service": "auth-service",
+      "message": "Stale data returned for user queries",
+      "timestamp": "2026-03-26T18:19:15Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-20404",
       "severity": "critical",
-      "service": "cache-layer",
-      "message": "cache-layer error rate spiking - requests failing",
-      "timestamp": "2026-03-26T22:49:42Z",
+      "service": "auth-service",
+      "message": "auth-service error rate spiking - requests failing",
+      "timestamp": "2026-03-26T18:17:11Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-20405",
       "severity": "critical",
-      "service": "message-queue",
-      "message": "message-queue error rate spiking - requests failing",
-      "timestamp": "2026-03-26T22:49:49Z",
+      "service": "internal-dns",
+      "message": "internal-dns error rate spiking - requests failing",
+      "timestamp": "2026-03-26T18:17:53Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-20406",
-      "severity": "info",
-      "service": "config-server",
-      "message": "Elasticsearch reindex started - expected temporary latency increase",
-      "timestamp": "2026-03-26T22:45:09Z",
+      "severity": "warning",
+      "service": "logging-pipeline",
+      "message": "CPU usage at 62% - approaching threshold",
+      "timestamp": "2026-03-26T18:08:08Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-20407",
       "severity": "warning",
-      "service": "service-mesh",
-      "message": "CPU usage at 71% - approaching threshold",
-      "timestamp": "2026-03-26T22:47:32Z",
+      "service": "logging-pipeline",
+      "message": "Disk usage at 72% on data volume",
+      "timestamp": "2026-03-26T18:14:57Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-20408",
-      "severity": "info",
-      "service": "config-server",
-      "message": "SSL certificate renewal scheduled for next week",
-      "timestamp": "2026-03-26T22:47:38Z",
+      "severity": "warning",
+      "service": "logging-pipeline",
+      "message": "Memory usage at 68% - within normal range but trending up",
+      "timestamp": "2026-03-26T18:13:07Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-20409",
-      "severity": "info",
-      "service": "config-server",
-      "message": "Model v4.2 deployment started - canary rollout in progress",
-      "timestamp": "2026-03-26T22:44:43Z",
+      "severity": "warning",
+      "service": "cdn-proxy",
+      "message": "Log volume increased 20% - review retention policy",
+      "timestamp": "2026-03-26T18:14:38Z",
       "acknowledged": false,
       "silenced": false
     }
   ],
   "services": [
     {
-      "name": "user-service",
+      "name": "inventory-service",
+      "status": "degraded",
+      "latency_ms": 1124,
+      "error_rate": 68.8,
+      "cpu_percent": 68,
+      "memory_percent": 84,
+      "version": "1.5.0"
+    },
+    {
+      "name": "auth-service",
+      "status": "degraded",
+      "latency_ms": 3182,
+      "error_rate": 14.4,
+      "cpu_percent": 37,
+      "memory_percent": 56,
+      "version": "4.0.1"
+    },
+    {
+      "name": "internal-dns",
       "status": "down",
       "latency_ms": 0,
-      "error_rate": 79.6,
-      "cpu_percent": 93,
-      "memory_percent": 43,
-      "version": "2.3.0"
+      "error_rate": 78.4,
+      "cpu_percent": 24,
+      "memory_percent": 61,
+      "version": "1.2.3"
     },
     {
-      "name": "cache-layer",
-      "status": "degraded",
-      "latency_ms": 3042,
-      "error_rate": 20.7,
+      "name": "logging-pipeline",
+      "status": "healthy",
+      "latency_ms": 141,
+      "error_rate": 0.1,
       "cpu_percent": 42,
-      "memory_percent": 66,
-      "version": "3.2.0"
-    },
-    {
-      "name": "message-queue",
-      "status": "degraded",
-      "latency_ms": 876,
-      "error_rate": 49.6,
-      "cpu_percent": 20,
-      "memory_percent": 43,
-      "version": "2.4.1"
+      "memory_percent": 44,
+      "version": "2.0.0"
     },
     {
       "name": "config-server",
       "status": "healthy",
-      "latency_ms": 80,
-      "error_rate": 0.8,
-      "cpu_percent": 5,
-      "memory_percent": 35,
-      "version": "4.0.1"
+      "latency_ms": 145,
+      "error_rate": 0.1,
+      "cpu_percent": 7,
+      "memory_percent": 24,
+      "version": "3.2.0"
     },
     {
-      "name": "auth-service",
+      "name": "cdn-proxy",
       "status": "healthy",
-      "latency_ms": 182,
-      "error_rate": 0.6,
-      "cpu_percent": 29,
-      "memory_percent": 22,
-      "version": "4.2.0"
-    },
-    {
-      "name": "service-mesh",
-      "status": "healthy",
-      "latency_ms": 48,
+      "latency_ms": 74,
       "error_rate": 0.8,
-      "cpu_percent": 36,
+      "cpu_percent": 30,
       "memory_percent": 35,
-      "version": "2.1.1"
+      "version": "4.1.0"
     }
   ],
   "recent_deployments": [
     {
-      "service": "user-service",
-      "version": "2.3.0",
-      "timestamp": "2026-03-26T21:03:00Z",
-      "deployer": "ml-team"
-    },
-    {
-      "service": "service-mesh",
-      "version": "2.1.1",
-      "timestamp": "2026-03-26T21:45:00Z",
-      "deployer": "search-team"
+      "service": "inventory-service",
+      "version": "1.5.0",
+      "timestamp": "2026-03-26T17:22:00Z",
+      "deployer": "ci-bot"
     },
     {
       "service": "config-server",
-      "version": "4.0.1",
-      "timestamp": "2026-03-26T19:00:00Z",
-      "deployer": "search-team"
+      "version": "3.2.0",
+      "timestamp": "2026-03-26T17:37:00Z",
+      "deployer": "ml-team"
+    },
+    {
+      "service": "logging-pipeline",
+      "version": "2.0.0",
+      "timestamp": "2026-03-26T16:17:00Z",
+      "deployer": "ops-team"
     }
   ],
   "logs": {
-    "user-service": [
+    "inventory-service": [
       {
-        "timestamp": "2026-03-26T22:48:00Z",
-        "service": "user-service",
+        "timestamp": "2026-03-26T18:16:00Z",
+        "service": "inventory-service",
         "level": "ERROR",
-        "message": "Deadlock detected: txn-22616 waiting for lock held by txn-60838"
+        "message": "c.a.s.db.ReplicaMonitor [replica-health-1] - replica 10.2.38.97:5434 lag: 39s (threshold: 5s)"
       },
       {
-        "timestamp": "2026-03-26T22:49:15Z",
-        "service": "user-service",
-        "level": "ERROR",
-        "message": "Transaction aborted after deadlock timeout: 30s"
-      },
-      {
-        "timestamp": "2026-03-26T22:50:30Z",
-        "service": "user-service",
+        "timestamp": "2026-03-26T18:18:00Z",
+        "service": "inventory-service",
         "level": "WARN",
-        "message": "Request queue depth: 31662 - approaching limit"
+        "message": "c.a.s.db.ReadRouter [read-pool-11] - stale read detected: row version 9233 != primary version 11174"
       },
       {
-        "timestamp": "2026-03-26T22:51:45Z",
-        "service": "user-service",
+        "timestamp": "2026-03-26T18:20:00Z",
+        "service": "inventory-service",
         "level": "ERROR",
-        "message": "Lock wait timeout exceeded for table user-service_records"
-      }
-    ],
-    "cache-layer": [
-      {
-        "timestamp": "2026-03-26T22:49:00Z",
-        "service": "cache-layer",
-        "level": "ERROR",
-        "message": "Timeout calling user-service: exceeded 10s deadline"
+        "message": "c.a.s.db.ReplicaMonitor [replica-health-1] - replica 10.211.59.220:5434 lag: 64s (threshold: 5s)"
       },
       {
-        "timestamp": "2026-03-26T22:54:00Z",
-        "service": "cache-layer",
-        "level": "WARN",
-        "message": "Circuit breaker half-open for user-service"
-      }
-    ],
-    "message-queue": [
-      {
-        "timestamp": "2026-03-26T22:49:00Z",
-        "service": "message-queue",
-        "level": "ERROR",
-        "message": "Timeout calling user-service: exceeded 10s deadline"
-      },
-      {
-        "timestamp": "2026-03-26T22:54:00Z",
-        "service": "message-queue",
-        "level": "WARN",
-        "message": "Circuit breaker half-open for user-service"
-      }
-    ],
-    "service-mesh": [
-      {
-        "timestamp": "2026-03-26T22:48:00Z",
-        "service": "service-mesh",
+        "timestamp": "2026-03-26T18:22:00Z",
+        "service": "inventory-service",
         "level": "INFO",
-        "message": "Healthy - serving requests normally"
+        "message": "c.a.s.db.ReplicationManager [repl-mgr-1] - pausing non-critical replication streams to 10.2.38.97:5434"
       }
     ],
-    "config-server": [
+    "auth-service": [
       {
-        "timestamp": "2026-03-26T22:48:00Z",
-        "service": "config-server",
+        "timestamp": "2026-03-26T18:17:00Z",
+        "service": "auth-service",
+        "level": "WARN",
+        "message": "c.a.s.client.ServiceClient [http-45] - HTTP 200 from 10.105.94.242:8100 but response body contains stale entity version 1335"
+      },
+      {
+        "timestamp": "2026-03-26T18:22:00Z",
+        "service": "auth-service",
+        "level": "ERROR",
+        "message": "c.a.s.cache.Invalidator [cache-inv-1] - cache entry stale: key=user:89493 local_ver=8818 remote_ver=13247"
+      }
+    ],
+    "internal-dns": [
+      {
+        "timestamp": "2026-03-26T18:17:00Z",
+        "service": "internal-dns",
+        "level": "WARN",
+        "message": "c.a.s.client.ServiceClient [http-15] - HTTP 200 from 10.105.94.242:8100 but response body contains stale entity version 7441"
+      },
+      {
+        "timestamp": "2026-03-26T18:22:00Z",
+        "service": "internal-dns",
+        "level": "ERROR",
+        "message": "c.a.s.cache.Invalidator [cache-inv-1] - cache entry stale: key=user:78461 local_ver=7242 remote_ver=17594"
+      }
+    ],
+    "logging-pipeline": [
+      {
+        "timestamp": "2026-03-26T18:16:00Z",
+        "service": "logging-pipeline",
         "level": "INFO",
-        "message": "Model serving normally - no dependency issues"
+        "message": "c.a.s.health.Monitor [health-check-1] - status=UP, checks=[db:UP, cache:UP, queue:UP]"
+      }
+    ],
+    "cdn-proxy": [
+      {
+        "timestamp": "2026-03-26T18:16:00Z",
+        "service": "cdn-proxy",
+        "level": "INFO",
+        "message": "c.a.s.cache.Stats [cache-stats-1] - hit_ratio=96% entries=24531 evictions=12/s"
       }
     ]
   },
   "metrics": {
-    "user-service:deadlocks_per_min": [
-      1.7,
-      4.0,
-      9.7,
-      23.2,
-      55.5
-    ],
-    "user-service:error_rate": [
-      1.1,
-      3.0,
-      8.0,
-      21.6,
-      58.2
-    ],
-    "user-service:latency_p99": [
-      0.1,
+    "inventory-service:replication_lag_s": [
+      0.3,
       0.6,
-      3.1,
-      15.8,
-      81.9
+      1.3,
+      3.0,
+      6.7,
+      14.9,
+      33.3,
+      74.2
     ],
-    "cache-layer:error_rate": [
-      1.9,
-      1.9,
-      44.1,
-      44.1,
-      44.1
+    "inventory-service:error_rate": [
+      0.6,
+      0.6,
+      0.6,
+      76.6,
+      76.6,
+      76.6
     ],
-    "message-queue:error_rate": [
-      0.9,
-      0.9,
-      78.2,
-      78.2,
-      78.2
+    "auth-service:error_rate": [
+      1.0,
+      1.0,
+      1.0,
+      95.1,
+      95.1,
+      95.1
+    ],
+    "internal-dns:error_rate": [
+      0.8,
+      0.8,
+      0.8,
+      98.7,
+      98.7,
+      98.7,
+      98.7
+    ],
+    "logging-pipeline:cpu": [
+      40.1,
+      41.6,
+      25.7,
+      23.8,
+      36.9,
+      26.8
     ],
     "config-server:cpu": [
-      35.9,
-      29.1,
-      35.9,
-      34.5,
-      38.9,
-      30.8
-    ],
-    "auth-service:cpu": [
-      38.2,
-      40.9,
-      17.8,
-      34.6,
-      39.6,
-      31.4
+      35.1,
+      23.3,
+      31.3,
+      29.3,
+      30.6,
+      31.2
     ]
   },
   "dependencies": {
-    "user-service": [
-      "user-service-db",
-      "user-service-store"
+    "inventory-service": [
+      "inventory-service-db",
+      "inventory-service-store"
     ],
-    "cache-layer": [
-      "user-service",
-      "cache-layer-db"
+    "auth-service": [
+      "inventory-service",
+      "auth-service-db"
     ],
-    "message-queue": [
-      "user-service",
-      "message-queue-db"
+    "internal-dns": [
+      "inventory-service",
+      "internal-dns-db"
+    ],
+    "logging-pipeline": [
+      "logging-pipeline-db"
     ],
     "config-server": [
       "config-server-db"
     ],
-    "auth-service": [
-      "auth-service-db"
-    ],
-    "service-mesh": [
-      "service-mesh-db"
+    "cdn-proxy": [
+      "cdn-proxy-db"
     ]
   },
   "root_cause": {
-    "service": "user-service",
-    "description": "Deadlock storm in user-service database caused by concurrent transaction ordering bug in 2.3.0",
+    "service": "inventory-service",
+    "description": "Database replication lag on inventory-service caused read replicas to serve stale data after 1.5.0 schema migration",
     "keywords": [
-      "deadlock",
-      "transaction",
-      "lock",
-      "contention",
-      "database",
-      "concurrent"
+      "replication",
+      "lag",
+      "stale",
+      "replica",
+      "schema",
+      "migration",
+      "database"
     ]
   },
   "valid_remediations": [
     {
-      "action": "restart_service",
-      "service": "user-service"
+      "action": "rollback_deploy",
+      "service": "inventory-service"
     },
     {
-      "action": "rollback_deploy",
-      "service": "user-service"
+      "action": "restart_service",
+      "service": "inventory-service"
     }
   ],
   "expected_diagnostics": [
     {
       "action_type": "query_logs",
       "params": {
-        "service": "user-service"
+        "service": "inventory-service"
       }
     },
     {
       "action_type": "check_metrics",
       "params": {
-        "service": "user-service"
+        "service": "inventory-service"
       }
     },
     {
       "action_type": "query_logs",
       "params": {
-        "service": "cache-layer"
+        "service": "auth-service"
       }
     },
     {
       "action_type": "query_logs",
       "params": {
-        "service": "message-queue"
+        "service": "internal-dns"
       }
     }
   ],
   "grading_rubric": {
-    "triage_weight": 0.11,
-    "diagnostic_weight": 0.24,
-    "root_cause_weight": 0.28,
-    "remediation_weight": 0.21,
-    "efficiency_weight": 0.11,
-    "documentation_weight": 0.05
+    "triage_weight": 0.12,
+    "diagnostic_weight": 0.25,
+    "root_cause_weight": 0.29,
+    "remediation_weight": 0.16,
+    "efficiency_weight": 0.12,
+    "documentation_weight": 0.06
   }
 }

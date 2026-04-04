@@ -1,24 +1,24 @@
 {
   "incident_id": "INC-20260326-304",
   "difficulty": "expert",
-  "description": "SEV1 incident: Deadlock Storm affecting order-service. Cascading impact on cdn-proxy, cache-layer. Multiple concurrent events make diagnosis challenging. Red herrings present - focus on evidence-based investigation.",
+  "description": "SEV1 incident: Replication Lag affecting cache-layer. Cascading impact on cdn-proxy, analytics-service. Multiple concurrent events make diagnosis challenging. Red herrings present - focus on evidence-based investigation.",
   "expected_severity": "SEV1",
   "initial_alerts": [
     {
       "alert_id": "alert-30401",
       "severity": "critical",
-      "service": "order-service",
-      "message": "Transaction deadlocks spiking - 492/min detected",
-      "timestamp": "2026-03-26T22:19:05Z",
+      "service": "cache-layer",
+      "message": "Data inconsistency detected - read replicas 35s behind primary",
+      "timestamp": "2026-03-26T09:33:05Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-30402",
-      "severity": "critical",
-      "service": "order-service",
-      "message": "Request queue depth exceeding 500 - requests backing up",
-      "timestamp": "2026-03-26T22:20:10Z",
+      "severity": "warning",
+      "service": "cache-layer",
+      "message": "Replication lag exceeding 30s threshold",
+      "timestamp": "2026-03-26T09:34:10Z",
       "acknowledged": false,
       "silenced": false
     },
@@ -26,8 +26,8 @@
       "alert_id": "alert-30403",
       "severity": "warning",
       "service": "cdn-proxy",
-      "message": "Upstream order-service response time degraded",
-      "timestamp": "2026-03-26T22:21:15Z",
+      "message": "Stale data returned for user queries",
+      "timestamp": "2026-03-26T09:35:15Z",
       "acknowledged": false,
       "silenced": false
     },
@@ -36,377 +36,329 @@
       "severity": "critical",
       "service": "cdn-proxy",
       "message": "cdn-proxy error rate spiking - requests failing",
-      "timestamp": "2026-03-26T22:19:24Z",
+      "timestamp": "2026-03-26T09:33:19Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-30405",
       "severity": "critical",
-      "service": "cache-layer",
-      "message": "cache-layer error rate spiking - requests failing",
-      "timestamp": "2026-03-26T22:19:13Z",
+      "service": "analytics-service",
+      "message": "analytics-service error rate spiking - requests failing",
+      "timestamp": "2026-03-26T09:33:42Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-30406",
       "severity": "info",
-      "service": "logging-pipeline",
-      "message": "Elasticsearch reindex started - expected temporary latency increase",
-      "timestamp": "2026-03-26T22:10:28Z",
+      "service": "email-service",
+      "message": "Scheduled maintenance window starting in 2 hours",
+      "timestamp": "2026-03-26T09:22:02Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-30407",
       "severity": "info",
-      "service": "internal-dns",
-      "message": "Model v4.2 deployment started - canary rollout in progress",
-      "timestamp": "2026-03-26T22:15:38Z",
+      "service": "logging-pipeline",
+      "message": "Canary deployment proceeding as expected",
+      "timestamp": "2026-03-26T09:28:08Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-30408",
-      "severity": "warning",
-      "service": "search-service",
-      "message": "Log volume increased 20% - review retention policy",
-      "timestamp": "2026-03-26T22:12:11Z",
+      "severity": "info",
+      "service": "logging-pipeline",
+      "message": "New dashboard version deployed - no action required",
+      "timestamp": "2026-03-26T09:29:54Z",
       "acknowledged": false,
       "silenced": false
     },
     {
       "alert_id": "alert-30409",
       "severity": "info",
-      "service": "logging-pipeline",
-      "message": "SSL certificate renewal scheduled for next week",
-      "timestamp": "2026-03-26T22:14:35Z",
+      "service": "billing-service",
+      "message": "Elasticsearch reindex started - expected temporary latency increase",
+      "timestamp": "2026-03-26T09:28:01Z",
       "acknowledged": false,
       "silenced": false
     }
   ],
   "services": [
     {
-      "name": "order-service",
+      "name": "cache-layer",
       "status": "degraded",
-      "latency_ms": 3058,
-      "error_rate": 40.6,
-      "cpu_percent": 51,
-      "memory_percent": 86,
-      "version": "5.0.3"
+      "latency_ms": 3252,
+      "error_rate": 57.4,
+      "cpu_percent": 94,
+      "memory_percent": 82,
+      "version": "1.1.0"
     },
     {
       "name": "cdn-proxy",
       "status": "down",
       "latency_ms": 0,
-      "error_rate": 74.0,
-      "cpu_percent": 78,
-      "memory_percent": 52,
-      "version": "1.5.0"
+      "error_rate": 73.1,
+      "cpu_percent": 28,
+      "memory_percent": 50,
+      "version": "5.0.3"
     },
     {
-      "name": "cache-layer",
+      "name": "analytics-service",
       "status": "degraded",
-      "latency_ms": 2443,
-      "error_rate": 14.2,
-      "cpu_percent": 27,
-      "memory_percent": 36,
-      "version": "1.2.3"
+      "latency_ms": 4495,
+      "error_rate": 48.5,
+      "cpu_percent": 39,
+      "memory_percent": 43,
+      "version": "2.4.1"
+    },
+    {
+      "name": "email-service",
+      "status": "healthy",
+      "latency_ms": 186,
+      "error_rate": 0.5,
+      "cpu_percent": 11,
+      "memory_percent": 27,
+      "version": "1.0.0"
     },
     {
       "name": "logging-pipeline",
       "status": "healthy",
-      "latency_ms": 51,
-      "error_rate": 0.8,
-      "cpu_percent": 42,
-      "memory_percent": 40,
-      "version": "2.4.1"
+      "latency_ms": 121,
+      "error_rate": 0.7,
+      "cpu_percent": 41,
+      "memory_percent": 25,
+      "version": "4.1.0"
     },
     {
-      "name": "search-service",
+      "name": "billing-service",
       "status": "healthy",
-      "latency_ms": 73,
-      "error_rate": 0.4,
-      "cpu_percent": 8,
-      "memory_percent": 41,
-      "version": "5.0.3"
-    },
-    {
-      "name": "session-store",
-      "status": "healthy",
-      "latency_ms": 82,
-      "error_rate": 0.5,
-      "cpu_percent": 33,
-      "memory_percent": 51,
-      "version": "1.5.0"
-    },
-    {
-      "name": "api-gateway",
-      "status": "healthy",
-      "latency_ms": 140,
-      "error_rate": 0.8,
-      "cpu_percent": 23,
-      "memory_percent": 54,
-      "version": "1.5.0"
-    },
-    {
-      "name": "internal-dns",
-      "status": "healthy",
-      "latency_ms": 119,
-      "error_rate": 0.1,
-      "cpu_percent": 14,
-      "memory_percent": 51,
+      "latency_ms": 198,
+      "error_rate": 0.2,
+      "cpu_percent": 48,
+      "memory_percent": 19,
       "version": "1.5.0"
     }
   ],
   "recent_deployments": [
     {
-      "service": "order-service",
-      "version": "5.0.3",
-      "timestamp": "2026-03-26T21:27:00Z",
-      "deployer": "sre-bot"
-    },
-    {
-      "service": "session-store",
-      "version": "1.5.0",
-      "timestamp": "2026-03-26T20:35:00Z",
-      "deployer": "ml-team"
-    },
-    {
-      "service": "internal-dns",
-      "version": "1.5.0",
-      "timestamp": "2026-03-26T21:58:00Z",
-      "deployer": "ops-team"
-    },
-    {
-      "service": "search-service",
-      "version": "5.0.3",
-      "timestamp": "2026-03-26T19:45:00Z",
+      "service": "cache-layer",
+      "version": "1.1.0",
+      "timestamp": "2026-03-26T08:25:00Z",
       "deployer": "dev-team"
     },
     {
-      "service": "api-gateway",
+      "service": "billing-service",
       "version": "1.5.0",
-      "timestamp": "2026-03-26T21:43:00Z",
+      "timestamp": "2026-03-26T06:35:00Z",
+      "deployer": "search-team"
+    },
+    {
+      "service": "email-service",
+      "version": "1.0.0",
+      "timestamp": "2026-03-26T08:27:00Z",
+      "deployer": "search-team"
+    },
+    {
+      "service": "logging-pipeline",
+      "version": "4.1.0",
+      "timestamp": "2026-03-26T08:42:00Z",
       "deployer": "search-team"
     }
   ],
   "logs": {
-    "order-service": [
+    "cache-layer": [
       {
-        "timestamp": "2026-03-26T22:18:00Z",
-        "service": "order-service",
+        "timestamp": "2026-03-26T09:32:00Z",
+        "service": "cache-layer",
         "level": "ERROR",
-        "message": "Deadlock detected: txn-76093 waiting for lock held by txn-71379"
+        "message": "c.a.s.db.ReplicaMonitor [replica-health-1] - replica 10.24.217.87:5442 lag: 37s (threshold: 5s)"
       },
       {
-        "timestamp": "2026-03-26T22:20:00Z",
-        "service": "order-service",
-        "level": "ERROR",
-        "message": "Transaction aborted after deadlock timeout: 30s"
-      },
-      {
-        "timestamp": "2026-03-26T22:22:00Z",
-        "service": "order-service",
+        "timestamp": "2026-03-26T09:34:00Z",
+        "service": "cache-layer",
         "level": "WARN",
-        "message": "Request queue depth: 49622 - approaching limit"
+        "message": "c.a.s.db.ReadRouter [read-pool-5] - stale read detected: row version 5718 != primary version 10418"
       },
       {
-        "timestamp": "2026-03-26T22:24:00Z",
-        "service": "order-service",
+        "timestamp": "2026-03-26T09:36:00Z",
+        "service": "cache-layer",
         "level": "ERROR",
-        "message": "Lock wait timeout exceeded for table order-service_records"
+        "message": "c.a.s.db.ReplicaMonitor [replica-health-1] - replica 10.33.224.102:5442 lag: 100s (threshold: 5s)"
+      },
+      {
+        "timestamp": "2026-03-26T09:38:00Z",
+        "service": "cache-layer",
+        "level": "INFO",
+        "message": "c.a.s.db.ReplicationManager [repl-mgr-1] - pausing non-critical replication streams to 10.24.217.87:5442"
       }
     ],
     "cdn-proxy": [
       {
-        "timestamp": "2026-03-26T22:19:00Z",
-        "service": "cdn-proxy",
-        "level": "ERROR",
-        "message": "Timeout calling order-service: exceeded 10s deadline"
-      },
-      {
-        "timestamp": "2026-03-26T22:24:00Z",
+        "timestamp": "2026-03-26T09:33:00Z",
         "service": "cdn-proxy",
         "level": "WARN",
-        "message": "Circuit breaker half-open for order-service"
-      }
-    ],
-    "cache-layer": [
-      {
-        "timestamp": "2026-03-26T22:19:00Z",
-        "service": "cache-layer",
-        "level": "ERROR",
-        "message": "Timeout calling order-service: exceeded 10s deadline"
+        "message": "c.a.s.client.ServiceClient [http-18] - HTTP 200 from 10.198.140.72:8090 but response body contains stale entity version 2443"
       },
       {
-        "timestamp": "2026-03-26T22:24:00Z",
-        "service": "cache-layer",
+        "timestamp": "2026-03-26T09:38:00Z",
+        "service": "cdn-proxy",
+        "level": "ERROR",
+        "message": "c.a.s.cache.Invalidator [cache-inv-1] - cache entry stale: key=user:79048 local_ver=7567 remote_ver=17739"
+      }
+    ],
+    "analytics-service": [
+      {
+        "timestamp": "2026-03-26T09:33:00Z",
+        "service": "analytics-service",
         "level": "WARN",
-        "message": "Circuit breaker half-open for order-service"
-      }
-    ],
-    "api-gateway": [
+        "message": "c.a.s.client.ServiceClient [http-43] - HTTP 200 from 10.198.140.72:8090 but response body contains stale entity version 9287"
+      },
       {
-        "timestamp": "2026-03-26T22:18:00Z",
-        "service": "api-gateway",
-        "level": "INFO",
-        "message": "Scheduled reindex 40% complete - elevated latency expected"
-      }
-    ],
-    "session-store": [
-      {
-        "timestamp": "2026-03-26T22:18:00Z",
-        "service": "session-store",
-        "level": "INFO",
-        "message": "Batch job completed: processed 3911 records"
+        "timestamp": "2026-03-26T09:38:00Z",
+        "service": "analytics-service",
+        "level": "ERROR",
+        "message": "c.a.s.cache.Invalidator [cache-inv-1] - cache entry stale: key=user:47889 local_ver=4391 remote_ver=14321"
       }
     ],
     "logging-pipeline": [
       {
-        "timestamp": "2026-03-26T22:18:00Z",
+        "timestamp": "2026-03-26T09:32:00Z",
         "service": "logging-pipeline",
         "level": "INFO",
-        "message": "Model serving normally - no dependency issues"
+        "message": "c.a.s.cache.Stats [cache-stats-1] - hit_ratio=88% entries=24531 evictions=12/s"
       }
     ],
-    "internal-dns": [
+    "billing-service": [
       {
-        "timestamp": "2026-03-26T22:18:00Z",
-        "service": "internal-dns",
+        "timestamp": "2026-03-26T09:32:00Z",
+        "service": "billing-service",
         "level": "INFO",
-        "message": "Batch job completed: processed 34360 records"
+        "message": "c.a.s.health.Monitor [health-check-1] - status=UP, checks=[db:UP, cache:UP, queue:UP]"
+      }
+    ],
+    "email-service": [
+      {
+        "timestamp": "2026-03-26T09:32:00Z",
+        "service": "email-service",
+        "level": "INFO",
+        "message": "c.a.s.ml.ModelServer [model-serve-1] - inference latency p99=23ms, model=v4.2, batch_size=32"
       }
     ]
   },
   "metrics": {
-    "order-service:deadlocks_per_min": [
-      0.9,
-      1.8,
-      3.4,
-      6.5,
-      12.5,
-      23.9,
-      45.8,
+    "cache-layer:replication_lag_s": [
+      1.7,
+      3.0,
+      5.3,
+      9.3,
+      16.3,
+      28.6,
+      50.0,
       87.6
     ],
-    "order-service:error_rate": [
-      0.7,
-      1.2,
-      2.0,
-      3.6,
-      6.3,
-      11.1,
-      19.6,
-      34.6
-    ],
-    "order-service:latency_p99": [
-      1.0,
-      2.3,
-      5.1,
-      11.6,
-      26.0,
-      58.6
+    "cache-layer:error_rate": [
+      1.5,
+      1.5,
+      1.5,
+      44.2,
+      44.2,
+      44.2
     ],
     "cdn-proxy:error_rate": [
-      1.7,
-      1.7,
-      1.7,
-      57.7,
-      57.7,
-      57.7
+      1.8,
+      1.8,
+      1.8,
+      1.8,
+      45.5,
+      45.5,
+      45.5,
+      45.5
     ],
-    "cache-layer:error_rate": [
-      0.3,
-      0.3,
-      0.3,
-      0.3,
-      80.5,
-      80.5,
-      80.5,
-      80.5
+    "analytics-service:error_rate": [
+      0.9,
+      0.9,
+      0.9,
+      94.5,
+      94.5,
+      94.5
+    ],
+    "email-service:cpu": [
+      25.0,
+      25.6,
+      21.6,
+      30.1,
+      20.2,
+      26.6
     ],
     "logging-pipeline:cpu": [
-      21.4,
-      29.8,
-      29.3,
-      33.8,
-      28.0,
-      21.6
-    ],
-    "search-service:cpu": [
-      28.7,
-      28.3,
-      32.4,
-      22.0,
-      31.0,
-      23.8
+      48.9,
+      41.7,
+      44.5,
+      47.4,
+      44.0,
+      38.8
     ]
   },
   "dependencies": {
-    "order-service": [
-      "order-service-db",
-      "order-service-store"
+    "cache-layer": [
+      "cache-layer-db",
+      "cache-layer-store"
     ],
     "cdn-proxy": [
-      "order-service",
+      "cache-layer",
       "cdn-proxy-db"
     ],
-    "cache-layer": [
-      "order-service",
-      "cache-layer-db"
+    "analytics-service": [
+      "cache-layer",
+      "analytics-service-db"
+    ],
+    "email-service": [
+      "email-service-db"
     ],
     "logging-pipeline": [
-      "order-service",
       "logging-pipeline-db"
     ],
-    "search-service": [
-      "search-service-db"
-    ],
-    "session-store": [
-      "session-store-db"
-    ],
-    "api-gateway": [
-      "api-gateway-db"
-    ],
-    "internal-dns": [
-      "internal-dns-db"
+    "billing-service": [
+      "billing-service-db"
     ]
   },
   "root_cause": {
-    "service": "order-service",
-    "description": "Deadlock storm in order-service database caused by concurrent transaction ordering bug in 5.0.3",
+    "service": "cache-layer",
+    "description": "Database replication lag on cache-layer caused read replicas to serve stale data after 1.1.0 schema migration",
     "keywords": [
-      "deadlock",
-      "transaction",
-      "lock",
-      "contention",
-      "database",
-      "concurrent"
+      "replication",
+      "lag",
+      "stale",
+      "replica",
+      "schema",
+      "migration",
+      "database"
     ]
   },
   "valid_remediations": [
     {
-      "action": "restart_service",
-      "service": "order-service"
+      "action": "rollback_deploy",
+      "service": "cache-layer"
     },
     {
-      "action": "rollback_deploy",
-      "service": "order-service"
+      "action": "restart_service",
+      "service": "cache-layer"
     }
   ],
   "expected_diagnostics": [
     {
       "action_type": "query_logs",
       "params": {
-        "service": "order-service"
+        "service": "cache-layer"
       }
     },
     {
       "action_type": "check_metrics",
       "params": {
-        "service": "order-service"
+        "service": "cache-layer"
       }
     },
     {
@@ -414,20 +366,14 @@
       "params": {
         "service": "cdn-proxy"
       }
-    },
-    {
-      "action_type": "query_logs",
-      "params": {
-        "service": "cache-layer"
-      }
     }
   ],
   "grading_rubric": {
-    "triage_weight": 0.03,
-    "diagnostic_weight": 0.21,
-    "root_cause_weight": 0.38,
+    "triage_weight": 0.04,
+    "diagnostic_weight": 0.2,
+    "root_cause_weight": 0.37,
     "remediation_weight": 0.18,
-    "efficiency_weight": 0.07,
-    "documentation_weight": 0.13
+    "efficiency_weight": 0.09,
+    "documentation_weight": 0.12
   }
 }
