@@ -319,7 +319,6 @@ class OnCallEnvironment(Environment[OnCallAction, OnCallObservation, OnCallState
         for svc in self._services:
             if svc["name"] == svc_name:
                 remediation = self._scenario.get("valid_remediations", [])
-                # Check if restart is a valid remediation for this service
                 is_valid = any(
                     r.get("action") == "restart_service" and r.get("service") == svc_name
                     for r in remediation
@@ -328,12 +327,12 @@ class OnCallEnvironment(Environment[OnCallAction, OnCallObservation, OnCallState
                     svc["status"] = "healthy"
                     svc["error_rate"] = 0.0
                     svc["latency_ms"] = max(svc.get("latency_ms", 50) * 0.3, 15)
-                    return f"Service {svc_name} restarted successfully. Status now healthy.", {}
                 else:
                     # Restart doesn't fix the root cause but temporarily improves things
                     if svc["status"] == "down":
                         svc["status"] = "degraded"
-                    return f"Service {svc_name} restarted, but issues persist.", {}
+                # Ambiguous response — model must verify via check_metrics/query_logs
+                return f"Service {svc_name} restart initiated. Use check_metrics or query_logs to verify recovery.", {}
         return f"Service {svc_name} not found.", {}
 
     def _handle_scale_service(self, params: dict) -> tuple[str, dict]:
@@ -349,8 +348,7 @@ class OnCallEnvironment(Environment[OnCallAction, OnCallObservation, OnCallState
                 if is_valid:
                     svc["status"] = "healthy"
                     svc["error_rate"] = max(svc.get("error_rate", 0) * 0.2, 0)
-                    return f"Service {svc_name} scaled to {replicas} replicas. Recovering.", {}
-                return f"Service {svc_name} scaled to {replicas} replicas. No significant change.", {}
+                return f"Service {svc_name} scaled to {replicas} replicas. Use check_metrics to verify effect.", {}
         return f"Service {svc_name} not found.", {}
 
     def _handle_rollback_deploy(self, params: dict) -> tuple[str, dict]:
@@ -367,8 +365,7 @@ class OnCallEnvironment(Environment[OnCallAction, OnCallObservation, OnCallState
                     svc["status"] = "healthy"
                     svc["error_rate"] = 0.0
                     svc["version"] = target_version
-                    return f"Service {svc_name} rolled back to {target_version}. Status healthy.", {}
-                return f"Service {svc_name} rolled back to {target_version}. Issues persist -- root cause is elsewhere.", {}
+                return f"Service {svc_name} rollback to {target_version} initiated. Use check_metrics or query_logs to verify.", {}
         return f"Service {svc_name} not found.", {}
 
     def _handle_update_config(self, params: dict) -> tuple[str, dict]:
@@ -387,8 +384,7 @@ class OnCallEnvironment(Environment[OnCallAction, OnCallObservation, OnCallState
                 if is_valid:
                     svc["status"] = "healthy"
                     svc["error_rate"] = 0.0
-                    return f"Config '{config_key}' updated to '{config_value}' on {svc_name}. Service recovering.", {}
-                return f"Config '{config_key}' updated on {svc_name}. No immediate effect.", {}
+                return f"Config '{config_key}' updated to '{config_value}' on {svc_name}. Use check_metrics to verify effect.", {}
         return f"Service {svc_name} not found.", {}
 
     def _handle_set_severity(self, params: dict) -> tuple[str, dict]:
