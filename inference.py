@@ -14,13 +14,12 @@ STDOUT FORMAT
 - The script must emit exactly three line types to stdout, in this order:
 
     [START] task=<task_name> env=<benchmark> model=<model_name>
-    [STEP]  step=<n> action=<action_str> reward=<0.00> done=<true|false> error=<msg|null>
-    [END]   success=<true|false> steps=<n> score=<score> rewards=<r1,r2,...,rn>
+    [STEP] step=<n> action=<action_str> reward=<0.00> done=<true|false> error=<msg|null>
+    [END] success=<true|false> steps=<n> score=<score> rewards=<r1,r2,...,rn>
 """
 
 from __future__ import annotations
 
-import asyncio
 import json
 import os
 import textwrap
@@ -28,10 +27,10 @@ from typing import List, Optional
 
 from openai import OpenAI
 
-from oncall_env.client import OnCallEnvClient
 from oncall_env.models import OnCallAction
+from oncall_env.server.environment import OnCallEnvironment
 
-API_KEY = os.getenv("HF_TOKEN") or os.getenv("API_KEY")
+API_KEY = os.getenv("HF_TOKEN") or os.getenv("OPENAI_API_KEY") or os.getenv("API_KEY")
 API_BASE_URL = os.getenv("API_BASE_URL") or "https://router.huggingface.co/v1"
 MODEL_NAME = os.getenv("MODEL_NAME") or "Qwen/Qwen2.5-72B-Instruct"
 BENCHMARK = "oncall_env"
@@ -101,7 +100,7 @@ def log_step(step: int, action: str, reward: float, done: bool, error: Optional[
 def log_end(success: bool, steps: int, score: float, rewards: List[float]) -> None:
     rewards_str = ",".join(f"{r:.2f}" for r in rewards)
     print(
-        f"[END] success={str(success).lower()} steps={steps} score={score:.2f} rewards={rewards_str}",
+        f"[END] success={str(success).lower()} steps={steps} score={score:.3f} rewards={rewards_str}",
         flush=True,
     )
 
@@ -202,16 +201,29 @@ def format_observation(obs) -> str:
     return "\n".join(parts)
 
 
+# ── Error detection ─────────────────────────────────────────────────────────
+
+_ERROR_PATTERNS = ("not found", "unknown action", "error executing")
+
+
+def _extract_error(message: str) -> Optional[str]:
+    """Return the message as an error string if it indicates a failed action."""
+    msg_lower = message.lower()
+    if any(pat in msg_lower for pat in _ERROR_PATTERNS):
+        return message
+    return None
+
+
 # ── Episode runner ──────────────────────────────────────────────────────────
 
 
-async def run_episode(base_url: str, task_id: int = 1, scenario_idx: int = 0) -> float:
+def run_episode(task_id: int = 1, scenario_idx: int = 0) -> float:
     """Run a single episode against the environment."""
     client_llm = OpenAI(api_key=API_KEY, base_url=API_BASE_URL)
     task_name = f"task{task_id}_scenario{scenario_idx}"
 
-    env_client = OnCallEnvClient(base_url=base_url)
-    await env_client.connect()
+    env = OnCallEnvironment()
+    obs = env.reset(task_id=task_id, scenario_idx=scenario_idx)
 
     rewards: List[float] = []
     steps_taken = 0
@@ -221,9 +233,6 @@ async def run_episode(base_url: str, task_id: int = 1, scenario_idx: int = 0) ->
     log_start(task=task_name, env=BENCHMARK, model=MODEL_NAME)
 
     try:
-        result = await env_client.reset(task_id=task_id, scenario_idx=scenario_idx)
-        obs = result.observation
-
         messages = [
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": format_observation(obs)},
@@ -245,12 +254,11 @@ async def run_episode(base_url: str, task_id: int = 1, scenario_idx: int = 0) ->
             action = parse_action_from_llm(llm_text)
             action_str = f"{action.action_type}({json.dumps(action.params)})"
 
-            result = await env_client.step(action)
-            obs = result.observation
+            obs = env.step(action)
 
-            reward = result.reward or 0.0
-            done = result.done
-            error = None
+            reward = obs.reward if obs.reward is not None else 0.0
+            done = obs.done
+            error = _extract_error(obs.message)
 
             rewards.append(reward)
             steps_taken = step
@@ -273,9 +281,9 @@ async def run_episode(base_url: str, task_id: int = 1, scenario_idx: int = 0) ->
 
     finally:
         try:
-            await env_client.close()
-        except Exception:
-            pass
+            env.close()
+        except Exception as e:
+            print(f"[DEBUG] env.close() error (cleanup): {e}", flush=True)
         log_end(success=success, steps=steps_taken, score=score, rewards=rewards)
 
     return score
@@ -284,15 +292,13 @@ async def run_episode(base_url: str, task_id: int = 1, scenario_idx: int = 0) ->
 # ── Main ────────────────────────────────────────────────────────────────────
 
 
-async def main() -> None:
-    base_url = os.environ.get("ONCALL_ENV_URL", "ws://localhost:8000")
-
+def main() -> None:
     for task_id in range(1, 5):
         try:
-            await run_episode(base_url, task_id=task_id, scenario_idx=0)
+            run_episode(task_id=task_id, scenario_idx=0)
         except Exception as e:
             print(f"[DEBUG] Task {task_id} failed: {e}", flush=True)
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()

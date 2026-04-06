@@ -182,7 +182,7 @@ class OnCallEnvironment(Environment[OnCallAction, OnCallObservation, OnCallState
                 propagate_recovery(self._services, deps, target_svc)
 
         done = self._resolved or self._state.step_count >= MAX_STEPS
-        reward = self._compute_final_reward() if done else None
+        reward = self._compute_final_reward() if done else self._compute_intermediate_reward()
 
         obs = self._make_observation(message=msg, done=done, reward=reward)
         # Merge any extra fields from handler
@@ -204,15 +204,12 @@ class OnCallEnvironment(Environment[OnCallAction, OnCallObservation, OnCallState
     # ── metadata ─────────────────────────────────────────────────────────
 
     def get_metadata(self):
-        return {
-            "name": "OnCallEnv",
-            "description": "Incident Response Command Center -- simulates production on-call engineering with alert triage, root cause diagnosis, remediation, and documentation across 4 difficulty levels.",
-            "version": "0.2.0",
-            "tasks": 4,
-            "scenarios_per_task": 12,
-            "action_types": 13,
-            "grading_components": 6,
-        }
+        from openenv.core.env_server.types import EnvironmentMetadata
+        return EnvironmentMetadata(
+            name="OnCallEnv",
+            description="Incident Response Command Center -- simulates production on-call engineering with alert triage, root cause diagnosis, remediation, and documentation across 4 difficulty levels.",
+            version="0.2.0",
+        )
 
     # ── Action Handlers ─────────────────────────────────────────────────
 
@@ -575,6 +572,27 @@ class OnCallEnvironment(Environment[OnCallAction, OnCallObservation, OnCallState
                 "reward_signals": self._compute_step_reward_signals(),
             },
         )
+
+    def _compute_intermediate_reward(self) -> float:
+        """Compute a progress-based reward for non-terminal steps.
+
+        Aggregates the per-step reward signals into a single float so that
+        the reward field provides varying signal across the trajectory,
+        not just a sparse end-of-episode score.
+        """
+        signals = self._compute_step_reward_signals()
+        reward = (
+            signals.get("oncall.triage_progress", 0) * 0.25
+            + signals.get("oncall.investigation_depth", 0) * 0.35
+            + signals.get("oncall.severity_set", 0) * 0.15
+            + signals.get("oncall.summary_written", 0) * 0.15
+            + signals.get("oncall.resolved", 0) * 0.10
+        )
+        # Apply premature action penalty (scaled down for intermediate steps)
+        premature = signals.get("oncall.premature_action", 0)
+        if premature < 0:
+            reward = max(reward + premature * 0.2, 0.0)
+        return round(min(reward, 1.0), 4)
 
     def _compute_final_reward(self) -> float:
         return grade_episode(

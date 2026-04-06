@@ -9,6 +9,7 @@ dependencies = [
     "fastapi>=0.100.0",
     "pydantic>=2.0",
     "uvicorn>=0.20.0",
+    "openai>=1.0",
 ]
 
 [project.optional-dependencies]
@@ -18,9 +19,6 @@ train = [
     "transformers>=4.40.0",
     "accelerate>=0.30.0",
     "datasets>=2.18.0",
-]
-inference = [
-    "openai>=1.0",
 ]
 
 [project.scripts]
