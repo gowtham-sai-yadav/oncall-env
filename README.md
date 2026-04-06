@@ -15,6 +15,18 @@ An OpenEnv RL environment that simulates production incident response. An AI age
 
 **Key insight:** Frontier LLMs (GPT-5.2) act before investigating 97% of the time in incident response ([OpenSec, arXiv 2601.21083](https://arxiv.org/abs/2601.21083)). OnCallEnv is designed to test and train this calibration gap -- can an agent learn to *investigate before it acts*?
 
+## Real-World Utility
+
+OnCallEnv is built for production use in post-training pipelines, not as a demo. Here's why:
+
+- **Every engineering org has on-call rotations.** PagerDuty processes 20B+ events/year. An AI on-call agent trained with this environment could triage alerts, diagnose outages, and escalate correctly -- reducing MTTR and engineer burnout.
+- **Pluggable into GRPO training today.** The environment exposes per-step reward signals compatible with TRL's `GRPOTrainer`. You can fine-tune a 0.5B-7B model on incident response right now using `train.py`.
+- **Curriculum-ready.** 4 difficulty tiers (easy/medium/hard/expert) with 12 scenarios each allow natural curriculum learning -- start with single-service triage, scale to multi-service cascading failures with red herrings.
+- **Anti-reward-hacking by design.** Investigation gates, EGAR scoring, blast radius penalties, and ambiguous feedback prevent the model from gaming the reward signal through brute-force restarts or lucky guesses.
+- **11 real root cause types** modeled from actual production incidents: connection pool exhaustion, memory leaks, replication lag, deadlocks, DNS failures, TLS expiry, load balancer misconfig, and more.
+
+Think of it as the "SWE-bench for incident response" -- a standardized benchmark where we can measure and improve how well AI handles production outages.
+
 ## Why Incident Response?
 
 On-call engineering is a **universal real-world task** that every engineering organization performs daily. Unlike game environments, incident response requires:
@@ -85,7 +97,7 @@ python inference.py
 ## Docker
 
 ```bash
-docker build -f server/Dockerfile -t oncall-env .
+docker build -t oncall-env .
 docker run -p 8000:8000 oncall-env
 ```
 
@@ -289,6 +301,7 @@ oncall_env/
 ├── generate_scenarios.py    # Scenario generator (48 scenarios, 11 root cause types)
 ├── openenv.yaml             # OpenEnv manifest
 ├── pyproject.toml           # Dependencies
+├── Dockerfile               # Multi-stage Docker build (root level)
 ├── scenarios/               # 48 pre-generated incident scenarios
 │   ├── task1_easy/          # 12 scenarios
 │   ├── task2_medium/        # 12 scenarios
@@ -301,17 +314,16 @@ oncall_env/
     ├── rubric.py            # TrajectoryRubric for GRPO training integration
     ├── simulator.py         # Dynamic degradation + cascading recovery engine
     ├── scenario_loader.py   # JSON scenario loading
-    ├── test_oncall.py       # 43 tests (all passing)
-    └── Dockerfile           # Multi-stage Docker build
+    └── test_oncall.py       # 43 tests (all passing)
 ```
 
 ## Environment Variables
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `API_BASE_URL` | LLM API endpoint | `https://api.openai.com/v1` |
-| `MODEL_NAME` | Model to use for inference | `gpt-4o-mini` |
-| `HF_TOKEN` | Hugging Face token (fallback API key) | - |
+| `API_BASE_URL` | LLM API endpoint | `https://router.huggingface.co/v1` |
+| `MODEL_NAME` | Model to use for inference | `Qwen/Qwen2.5-72B-Instruct` |
+| `HF_TOKEN` | Hugging Face API token | - |
 | `ONCALL_ENV_URL` | Environment WebSocket URL | `ws://localhost:8000` |
 
 ## Rubric System (GRPO Training)
