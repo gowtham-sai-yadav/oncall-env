@@ -79,7 +79,7 @@ class OnCallToolEnv:
         from oncall_env.server.environment import OnCallEnvironment
         self.env = OnCallEnvironment()
         self.reward = 0.0
-        self._done = False
+        self.done = False
         # Pick a random task/scenario for this episode
         self._task_id = random.choice([1, 2, 3, 4])
         self._scenario_idx = random.randint(0, 11)
@@ -92,7 +92,7 @@ class OnCallToolEnv:
             or None if no initial context is needed.
         """
         self.reward = 0.0
-        self._done = False
+        self.done = False
         obs = self.env.reset(
             task_id=self._task_id,
             scenario_idx=self._scenario_idx,
@@ -166,6 +166,18 @@ class OnCallToolEnv:
             Confirmation that restart was initiated. Use check_metrics to verify.
         """
         return self._step("restart_service", {"service_name": service_name})
+
+    def scale_service(self, service_name: str, replicas: int) -> str:
+        """Scale a service to a specified number of replicas.
+
+        Args:
+            service_name: Real service name (discovered through investigation)
+            replicas: Target number of replicas
+
+        Returns:
+            Confirmation that scaling was initiated. Use check_metrics to verify.
+        """
+        return self._step("scale_service", {"service_name": service_name, "replicas": replicas})
 
     def rollback_deploy(self, service_name: str, target_version: str) -> str:
         """Rollback a service to a previous version.
@@ -241,21 +253,12 @@ class OnCallToolEnv:
     def _step(self, action_type: str, params: dict) -> str:
         """Execute an action and return formatted observation."""
         from oncall_env.models import OnCallAction
-        if self._done:
-            return "Incident already resolved."
+        if self.done:
+            raise ValueError("Episode is already resolved.")
         obs = self.env.step(OnCallAction(action_type=action_type, params=params))
         if obs.done and obs.reward is not None:
             self.reward = obs.reward
-            self._done = True
-        else:
-            # Use shaped reward from intermediate signals
-            signals = obs.metadata.get("reward_signals", {})
-            self.reward = (
-                signals.get("oncall.triage_progress", 0.0) * 0.2
-                + signals.get("oncall.investigation_depth", 0.0) * 0.3
-                + signals.get("oncall.severity_set", 0.0) * 0.1
-                + (1.0 + signals.get("oncall.premature_action", 0.0)) * 0.2
-            )
+            self.done = True
         return _format_obs(obs)
 
 
@@ -299,10 +302,11 @@ def oncall_reward(environments: list[OnCallToolEnv], **kwargs) -> list[float]:
     """Extract reward from each environment instance.
 
     Called by GRPOTrainer after each episode completes. Returns the
-    grader's reward for completed episodes, or shaped intermediate
-    reward for ongoing episodes.
+    grader's reward for completed episodes, or 0.0 for incomplete ones.
+    GRPO compares completions within a group — clean binary signals
+    (real score vs zero) produce better training than shaped rewards.
     """
-    return [env.reward for env in environments]
+    return [env.reward if env.done else 0.0 for env in environments]
 
 
 # ── Evaluation (standalone, not part of training loop) ──────────────────
@@ -458,20 +462,29 @@ def main():
     print(f"Device: {device_str}")
 
     # Generate training prompts
-    # NOTE: Prompts contain ONLY the system message. The scenario-specific
-    # observation comes from OnCallToolEnv.reset() which TRL calls automatically.
-    # This ensures the dataset prompt and environment scenario always match.
+    # NOTE: Prompts contain ONLY the user instruction. The scenario-specific
+    # observation comes from OnCallToolEnv.reset() which TRL calls automatically
+    # and appends to the last user message. This ensures the dataset prompt and
+    # environment scenario always match.
     print(f"\nGenerating {args.episodes} training prompts...")
 
-    system_msg = (
+    prompt_text = (
         "You are an on-call engineer responding to a production incident. "
-        "Use the available tools to investigate, diagnose, and resolve the incident. "
-        "Start by acknowledging critical alerts, then investigate services to discover "
-        "their real identities and diagnose the root cause."
+        "Use the available tools to investigate, diagnose, and resolve the incident.\n\n"
+        "PROCESS:\n"
+        "1. TRIAGE: Acknowledge critical alerts and set severity level.\n"
+        "2. INVESTIGATE: Query logs and check metrics for services to discover "
+        "their real identities. Services initially appear as anonymous aliases "
+        "(service-A, service-B, etc.).\n"
+        "3. DIAGNOSE: Analyze evidence from logs and metrics to identify the root cause.\n"
+        "4. REMEDIATE: Fix the root cause (restart, rollback, scale, or config change).\n"
+        "5. DOCUMENT: Write a summary and resolve the incident.\n\n"
+        "Always investigate before taking remediation actions. "
+        "You MUST call resolve_incident as your final action."
     )
     prompts = [
         {
-            "prompt": [{"role": "system", "content": system_msg}],
+            "prompt": [{"role": "user", "content": prompt_text}],
         }
         for _ in range(args.episodes)
     ]
@@ -491,12 +504,14 @@ def main():
         per_device_train_batch_size=args.batch_size,
         learning_rate=args.lr,
         num_generations=args.num_generations,
-        max_completion_length=256,
-        max_prompt_length=2048,
+        max_completion_length=4096,
         gradient_accumulation_steps=16,
         gradient_checkpointing=True,
         logging_steps=10,
         save_steps=50,
+        log_completions=True,
+        num_completions_to_print=2,
+        chat_template_kwargs={"enable_thinking": False},
         report_to="none",
     )
 
