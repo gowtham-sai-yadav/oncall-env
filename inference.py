@@ -176,10 +176,9 @@ async def run_baseline(base_url: str, task_id: int = 1, scenario_idx: int = 0):
     try:
         result = await env_client.reset(task_id=task_id, scenario_idx=scenario_idx)
         obs = result.observation
-        print(f"\n{'='*60}")
-        print(f"Task {task_id} | Scenario {scenario_idx}")
-        print(f"{'='*60}")
-        print(format_observation(obs))
+
+        # Structured logging required by hackathon evaluator
+        print(f"[START] task_id={task_id} scenario_idx={scenario_idx}")
 
         messages = [
             {"role": "system", "content": SYSTEM_PROMPT},
@@ -196,24 +195,18 @@ async def run_baseline(base_url: str, task_id: int = 1, scenario_idx: int = 0):
                 max_completion_tokens=500,
             )
             llm_text = response.choices[0].message.content or ""
-            print(f"\n--- Step {step} ---")
-            print(f"LLM: {llm_text}")
 
             action = parse_action_from_llm(llm_text)
-            print(f"Action: {action.action_type} {action.params}")
+            params_json = json.dumps(action.params)
+            print(f"[STEP] action={action.action_type} params={params_json}")
 
             result = await env_client.step(action)
             obs = result.observation
-            print(f"Reward: {obs.reward}, Done: {obs.done}")
-            print(f"Env: {obs.message}")
 
             messages.append({"role": "assistant", "content": llm_text})
             messages.append({"role": "user", "content": format_observation(obs)})
 
-        print(f"\n{'='*60}")
-        print(f"Final Reward: {obs.reward}")
-        print(f"Steps taken: {step}")
-        print(f"{'='*60}")
+        print(f"[END] reward={obs.reward} steps={step}")
         return obs.reward
 
     finally:
@@ -232,11 +225,7 @@ async def main():
             print(f"Task {task_id} failed: {e}")
             scores[f"task{task_id}"] = None
 
-    print("\n" + "=" * 60)
-    print("BASELINE SCORES")
-    print("=" * 60)
-    for task, score in scores.items():
-        print(f"  {task}: {score}")
+    print(f"[SUMMARY] scores={json.dumps(scores)}")
 
 
 if __name__ == "__main__":
