@@ -2,13 +2,16 @@
 
 from __future__ import annotations
 
+import os
 from typing import Any, Dict, List, Optional
 
+import gradio as gr
 from openenv.core.env_server.http_server import create_app
 
 from oncall_env.models import OnCallAction, OnCallObservation
 from oncall_env.server.environment import OnCallEnvironment
 from oncall_env.server.graders import grade_episode
+from oncall_env.server.gradio_ui import create_gradio_app
 from oncall_env.server.scenario_loader import list_scenarios, load_scenario_by_task
 
 app = create_app(
@@ -17,6 +20,11 @@ app = create_app(
     observation_cls=OnCallObservation,
     env_name="oncall_env",
 )
+
+# Mount Gradio UI at root so judges can interact with the environment
+if os.environ.get("ENABLE_WEB_INTERFACE", "true").lower() == "true":
+    gradio_app = create_gradio_app()
+    app = gr.mount_gradio_app(app, gradio_app, path="/")
 
 
 # ── Health check ─────────────────────────────────────────────────────────

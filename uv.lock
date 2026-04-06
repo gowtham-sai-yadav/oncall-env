@@ -2167,6 +2167,7 @@ version = "0.2.0"
 source = { editable = "." }
 dependencies = [
     { name = "fastapi" },
+    { name = "gradio" },
     { name = "openai" },
     { name = "openenv-core", extra = ["core"] },
     { name = "pydantic" },
@@ -2187,6 +2188,7 @@ requires-dist = [
     { name = "accelerate", marker = "extra == 'train'", specifier = ">=0.30.0" },
     { name = "datasets", marker = "extra == 'train'", specifier = ">=2.18.0" },
     { name = "fastapi", specifier = ">=0.100.0" },
+    { name = "gradio", specifier = ">=4.0" },
     { name = "openai", specifier = ">=1.0" },
     { name = "openenv-core", extras = ["core"], specifier = ">=0.2.1" },
     { name = "pydantic", specifier = ">=2.0" },
