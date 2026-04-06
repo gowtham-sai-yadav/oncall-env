@@ -161,12 +161,12 @@ Weights shift per difficulty level:
 
 | Component | Easy | Medium | Hard | Expert |
 |-----------|------|--------|------|--------|
-| Triage | 0.30 | 0.20 | 0.10 | 0.05 |
-| Diagnostic | 0.20 | 0.25 | 0.25 | 0.20 |
-| Root Cause | 0.15 | 0.20 | 0.30 | 0.35 |
-| Remediation | 0.15 | 0.20 | 0.20 | 0.20 |
+| Triage | 0.30 | 0.10 | 0.10 | 0.05 |
+| Diagnostic | 0.20 | 0.30 | 0.25 | 0.25 |
+| Root Cause | 0.15 | 0.30 | 0.30 | 0.35 |
+| Remediation | 0.15 | 0.15 | 0.20 | 0.20 |
 | Efficiency | 0.10 | 0.10 | 0.10 | 0.10 |
-| Documentation | 0.10 | 0.05 | 0.05 | 0.10 |
+| Documentation | 0.10 | 0.05 | 0.05 | 0.05 |
 
 **Key grading features:**
 - **EGAR (Evidence-Gated Action Rate)**: Bonus for investigating a service BEFORE remediating it
