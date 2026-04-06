@@ -50,9 +50,15 @@ def propagate_recovery(
 
     # Find services whose dependency list mentions the fixed_service
     for svc_name, deps in dependencies.items():
-        # Match both exact name and .internal suffix patterns
+        # Match exact name or strip common suffixes (.internal, .local)
+        def _base_name(s: str) -> str:
+            for suffix in (".internal", ".local", ".svc"):
+                if s.endswith(suffix):
+                    return s[: -len(suffix)]
+            return s
+
         depends_on_fixed = any(
-            fixed_service == d or fixed_service in d or d in fixed_service
+            fixed_service == d or _base_name(fixed_service) == _base_name(d)
             for d in deps
         )
         if not depends_on_fixed:
