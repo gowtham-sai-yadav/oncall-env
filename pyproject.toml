@@ -1,6 +1,6 @@
 [project]
 name = "oncall-env"
-version = "0.1.0"
+version = "0.2.0"
 description = "Incident Response Command Center - an OpenEnv RL environment simulating on-call engineering"
 readme = "README.md"
 requires-python = ">=3.10"
