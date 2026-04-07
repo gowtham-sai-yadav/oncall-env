@@ -223,6 +223,60 @@ GPT-5.2 identifies root causes correctly in every task but cannot resolve incide
 
 This gap is precisely what RL training can close: teaching the model to investigate 3+ services before remediating, verify fixes via metrics instead of restarting blindly, and stop chasing downstream symptoms after the root cause is addressed.
 
+## Model Leaderboard
+
+We benchmarked multiple agents on OnCallEnv to measure how well different models handle incident response. All scores are zero-shot (no fine-tuning) on the final hardened environment (R6).
+
+| Agent | Size | Task 1 (Easy) | Task 2 (Med) | Task 3 (Hard) | Task 4 (Expert) | Avg |
+|-------|------|:---:|:---:|:---:|:---:|:---:|
+| Heuristic baseline | -- | 0.29 | 0.11 | 0.12 | 0.08 | **0.15** |
+| Qwen2.5-7B-Instruct | 7B | 0.00 | 0.00 | 0.00 | 0.00 | **0.00** |
+| Llama-3.1-8B-Instruct | 8B | 0.00 | 0.00 | 0.00 | 0.00 | **0.00** |
+| GPT-4o-mini | -- | 0.53 | 0.21 | 0.58 | 0.23 | **0.39** |
+| GPT-4o | -- | 0.82 | 0.55 | 0.59 | 0.15 | **0.53** |
+| GPT-5.2 | -- | 0.73 | 0.51 | 0.53 | 0.55 | **0.58** |
+| Claude Sonnet 4 | -- | 0.78 | 0.63 | 0.56 | 0.63 | **0.65** |
+| **Claude Opus 4** | -- | **0.76** | **0.61** | **0.77** | **0.71** | **0.71** |
+
+**Score distribution by model class:**
+- **Small models (7-8B): 0.00** -- Cannot follow the multi-step protocol. They attempt actions (Qwen reached 0.67 intermediate progress, Llama 0.47) but never call `resolve_incident`, so final score is 0.
+- **Heuristic baseline: 0.15** -- Simple rule-based agent. Acknowledges alerts and restarts first unhealthy service, but no real investigation.
+- **Mid-tier models: 0.39-0.53** -- GPT-4o-mini and GPT-4o can handle easy tasks but fail on expert scenarios. GPT-4o got stuck in a 50-step loop on Task 4 trying `acknowledge_alert("501")` instead of `acknowledge_alert("alert-501")` -- a classic format error that RL training could fix.
+- **Frontier models (zero-shot): 0.58-0.71** -- Can identify root causes and remediate, but waste steps on restart loops, symptom chasing, and premature remediation.
+- **Theoretical RL ceiling: 1.00** -- Perfect investigation → diagnosis → targeted fix → documentation.
+
+**Key takeaways:**
+- **8 agents across 6 capability tiers**: 0.00 → 0.15 → 0.39 → 0.53 → 0.58 → 0.71 → 1.00
+- Claude Opus 4 leads at 0.71 avg, but still leaves a **0.29 gap** to perfect -- room for RL improvement
+- Expert task (Task 4) is the hardest differentiator: GPT-4o scores 0.15, Opus scores 0.71
+- Even frontier models exhibit failure modes (restart loops, format errors, premature remediation) that RL can address
+
+## RL Training Signal
+
+The score distribution across agents demonstrates a clear **learning landscape** for reinforcement learning:
+
+```
+Score:  0.0    0.15     0.39   0.53  0.58    0.65   0.71    1.0
+        |-------|--------|------|-----|-------|------|-------|
+        7B     Heuristic 4o-   GPT   GPT    Sonnet Opus   Ceiling
+        models  baseline mini  -4o   -5.2
+
+        <------- RL training improves models along this spectrum ------->
+```
+
+Per-step reward signals show how the grader tracks agent progress within an episode:
+
+| Episode Phase | triage_progress | investigation_depth | severity_set | summary_written | resolved |
+|---|:---:|:---:|:---:|:---:|:---:|
+| Start | 0.00 | 0.00 | 0 | 0 | 0 |
+| After triage | 1.00 | 0.00 | 1 | 0 | 0 |
+| After investigation | 1.00 | 1.00 | 1 | 0 | 0 |
+| After documentation + resolve | 1.00 | 1.00 | 1 | 1 | 1 |
+
+These 6 signals are available at **every step** in `observation.metadata["reward_signals"]`, enabling dense per-step feedback for GRPO training. The `premature_action` signal (-0.5 penalty) specifically teaches models to investigate before remediating -- addressing the core calibration gap.
+
+To run GRPO training: `python train.py --model Qwen/Qwen2.5-0.5B-Instruct --episodes 200`
+
 ## Per-Step Reward Signals (for RL Training)
 
 Every observation includes `metadata.reward_signals` with 6 training signals:
