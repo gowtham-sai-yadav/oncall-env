@@ -21,10 +21,11 @@ app = create_app(
     env_name="oncall_env",
 )
 
-# Mount Gradio UI at root so judges can interact with the environment
-if os.environ.get("ENABLE_WEB_INTERFACE", "true").lower() == "true":
-    gradio_app = create_gradio_app()
-    app = gr.mount_gradio_app(app, gradio_app, path="/")
+# Mount custom Gradio UI at root so judges can interact with the environment
+# Note: ENABLE_WEB_INTERFACE=false in Dockerfile disables OpenEnv's built-in /web UI
+# to avoid conflicts. Our custom UI is always mounted at /.
+gradio_app = create_gradio_app()
+app = gr.mount_gradio_app(app, gradio_app, path="/")
 
 
 # ── Health check ─────────────────────────────────────────────────────────

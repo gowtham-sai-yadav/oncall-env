@@ -30,7 +30,7 @@ COPY --from=builder /app/env/.venv /app/.venv
 COPY --from=builder /app/env /app/env
 ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONPATH="/app/env:$PYTHONPATH"
-ENV ENABLE_WEB_INTERFACE=true
+ENV ENABLE_WEB_INTERFACE=false
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
