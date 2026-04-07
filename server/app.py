@@ -21,12 +21,6 @@ app = create_app(
     env_name="oncall_env",
 )
 
-# Mount custom Gradio UI at root so judges can interact with the environment
-# Note: ENABLE_WEB_INTERFACE=false in Dockerfile disables OpenEnv's built-in /web UI
-# to avoid conflicts. Our custom UI is always mounted at /.
-gradio_app = create_gradio_app()
-app = gr.mount_gradio_app(app, gradio_app, path="/")
-
 
 # ── Health check ─────────────────────────────────────────────────────────
 
@@ -100,14 +94,9 @@ async def run_grader(body: Dict[str, Any]):
 
 @app.post("/baseline")
 async def run_baseline_endpoint(body: Dict[str, Any] = {}):
-    """Run a heuristic baseline agent and return scores per task.
-
-    This is a deterministic heuristic (no LLM needed) that demonstrates
-    basic incident response using ONLY observation data returned by
-    reset() and step(). It never accesses env internals like _scenario.
-    """
+    """Run a heuristic baseline agent and return scores per task."""
     task_ids = body.get("task_ids", [1, 2, 3, 4])
-    scenario_idx = body.get("scenario_idx", None)  # None = run all scenarios
+    scenario_idx = body.get("scenario_idx", None)
     scores = {}
 
     for task_id in task_ids:
@@ -121,7 +110,6 @@ async def run_baseline_endpoint(body: Dict[str, Any] = {}):
             except Exception as e:
                 task_scores.append({"error": str(e)})
 
-        # Return average score if multiple scenarios, single score otherwise
         if len(task_scores) == 1:
             scores[f"task{task_id}"] = task_scores[0]
         else:
@@ -135,19 +123,10 @@ async def run_baseline_endpoint(body: Dict[str, Any] = {}):
 
 
 def _run_baseline_episode(task_id: int, scenario_idx: int) -> float:
-    """Run a single baseline episode using ONLY observation-space data.
-
-    The baseline follows a simple heuristic:
-    1. Acknowledge critical alerts visible in obs.alerts
-    2. Set severity to SEV2 (reasonable guess, not always correct)
-    3. Query logs for the first degraded/down service found in obs.services
-    4. Attempt restart_service on the first degraded/down service
-    5. Write a generic summary and resolve
-    """
+    """Run a single baseline episode using ONLY observation-space data."""
     env = OnCallEnvironment()
     obs = env.reset(task_id=task_id, scenario_idx=scenario_idx)
 
-    # --- Step 1: Acknowledge critical alerts from observation ---
     for alert in (obs.alerts or []):
         if alert.severity == "critical":
             obs = env.step(OnCallAction(
@@ -157,52 +136,36 @@ def _run_baseline_episode(task_id: int, scenario_idx: int) -> float:
             if obs.done:
                 return obs.reward
 
-    # --- Step 2: Set severity (guess SEV2 -- not always right) ---
-    obs = env.step(OnCallAction(
-        action_type="set_severity",
-        params={"level": "SEV2"},
-    ))
+    obs = env.step(OnCallAction(action_type="set_severity", params={"level": "SEV2"}))
     if obs.done:
         return obs.reward
 
-    # --- Step 3: Query logs for the first unhealthy service ---
-    unhealthy = [
-        s for s in (obs.services or [])
-        if s.status in ("degraded", "down")
-    ]
+    unhealthy = [s for s in (obs.services or []) if s.status in ("degraded", "down")]
     first_unhealthy_name = unhealthy[0].name if unhealthy else None
 
     if first_unhealthy_name:
-        obs = env.step(OnCallAction(
-            action_type="query_logs",
-            params={"service": first_unhealthy_name},
-        ))
+        obs = env.step(OnCallAction(action_type="query_logs", params={"service": first_unhealthy_name}))
         if obs.done:
             return obs.reward
 
-    # --- Step 4: Attempt restart on first unhealthy service ---
     if first_unhealthy_name:
-        obs = env.step(OnCallAction(
-            action_type="restart_service",
-            params={"service_name": first_unhealthy_name},
-        ))
+        obs = env.step(OnCallAction(action_type="restart_service", params={"service_name": first_unhealthy_name}))
         if obs.done:
             return obs.reward
 
-    # --- Step 5: Write generic summary and resolve ---
     summary_svc = first_unhealthy_name or "unknown service"
-    obs = env.step(OnCallAction(
-        action_type="write_summary",
-        params={"text": f"Investigated incident. Service {summary_svc} appeared degraded. Attempted restart."},
-    ))
+    obs = env.step(OnCallAction(action_type="write_summary", params={"text": f"Investigated incident. Service {summary_svc} appeared degraded. Attempted restart."}))
     if obs.done:
         return obs.reward
 
-    obs = env.step(OnCallAction(
-        action_type="resolve_incident",
-        params={"resolution_note": "Resolved via heuristic baseline"},
-    ))
+    obs = env.step(OnCallAction(action_type="resolve_incident", params={"resolution_note": "Resolved via heuristic baseline"}))
     return obs.reward
+
+
+# ── Mount Gradio UI LAST (after all API routes are registered) ───────────
+# Mounted at /ui to avoid swallowing API routes like /tasks, /reset, etc.
+gradio_app = create_gradio_app()
+app = gr.mount_gradio_app(app, gradio_app, path="/ui")
 
 
 def main():
