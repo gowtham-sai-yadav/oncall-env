@@ -402,7 +402,7 @@ OnCallEnv integrates with the OpenEnv `TrajectoryRubric` system:
 from oncall_env.client import OnCallEnvClient
 from oncall_env.models import OnCallAction
 
-async with OnCallEnvClient(base_url="wss://your-space.hf.space") as env:
+async with OnCallEnvClient(base_url="wss://gowtham-sai-yadav-oncall-env.hf.space") as env:
     result = await env.reset(task_id=1, scenario_idx=0)
     
     # Agent investigates
