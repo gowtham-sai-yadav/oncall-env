@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 import textwrap
 from typing import List, Optional
 
@@ -277,13 +278,9 @@ def run_episode(task_id: int = 1, scenario_idx: int = 0) -> float:
         success = score >= SUCCESS_SCORE_THRESHOLD
 
     except Exception as exc:
-        print(f"[DEBUG] Episode error: {exc}", flush=True)
+        print(f"[DEBUG] Episode error: {exc}", file=sys.stderr, flush=True)
 
     finally:
-        try:
-            env.close()
-        except Exception as e:
-            print(f"[DEBUG] env.close() error (cleanup): {e}", flush=True)
         log_end(success=success, steps=steps_taken, score=score, rewards=rewards)
 
     return score
@@ -297,7 +294,7 @@ def main() -> None:
         try:
             run_episode(task_id=task_id, scenario_idx=0)
         except Exception as e:
-            print(f"[DEBUG] Task {task_id} failed: {e}", flush=True)
+            print(f"[DEBUG] Task {task_id} failed: {e}", file=sys.stderr, flush=True)
 
 
 if __name__ == "__main__":

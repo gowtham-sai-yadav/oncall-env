@@ -97,10 +97,14 @@ async def run_baseline_endpoint(body: Dict[str, Any] = {}):
     """Run a heuristic baseline agent and return scores per task."""
     task_ids = body.get("task_ids", [1, 2, 3, 4])
     scenario_idx = body.get("scenario_idx", None)
+    valid_tasks = {1: "task1_easy", 2: "task2_medium", 3: "task3_hard", 4: "task4_expert"}
     scores = {}
 
     for task_id in task_ids:
-        num_scenarios = len(list_scenarios({1: "task1_easy", 2: "task2_medium", 3: "task3_hard", 4: "task4_expert"}[task_id]))
+        if task_id not in valid_tasks:
+            scores[f"task{task_id}"] = {"error": f"Invalid task_id: {task_id}. Must be 1-4."}
+            continue
+        num_scenarios = len(list_scenarios(valid_tasks[task_id]))
         indices = [scenario_idx] if scenario_idx is not None else range(num_scenarios)
         task_scores = []
         for idx in indices:

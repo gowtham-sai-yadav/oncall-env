@@ -327,6 +327,7 @@ def evaluate_model(model_name_or_path: str, num_tasks: int = 4) -> dict[str, flo
     tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, trust_remote_code=True)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
+        tokenizer.pad_token_id = tokenizer.eos_token_id
 
     model = AutoModelForCausalLM.from_pretrained(
         model_name_or_path,
@@ -371,7 +372,8 @@ def evaluate_model(model_name_or_path: str, num_tasks: int = 4) -> dict[str, flo
 
         reward = obs.reward if obs.reward is not None else env._compute_final_reward()
         scores[f"task{task_id}"] = reward
-        print(f"  task{task_id}: {reward:.4f} ({step + 1} steps)")
+        steps_done = step + 1 if obs.done or step > 0 else 0
+        print(f"  task{task_id}: {reward:.4f} ({steps_done} steps)")
 
     return scores
 

@@ -168,7 +168,14 @@ def reset_env(task_id: int, scenario_idx: int, session_state: dict):
     if scenario_idx >= num_scenarios:
         scenario_idx = 0
 
-    obs = env.reset(task_id=task_id, scenario_idx=scenario_idx)
+    try:
+        obs = env.reset(task_id=task_id, scenario_idx=scenario_idx)
+    except Exception as e:
+        error_msg = f"Reset failed: {e}"
+        return (
+            error_msg, "", "", "", "N/A", "0.0", "False", "0",
+            "", "", "", error_msg, "",
+        )
     d = _obs_to_display(obs)
     history = f"=== Reset: Task {task_id}, Scenario {scenario_idx} ===\n{d['message']}\n"
     return (
