@@ -31,9 +31,9 @@ from openai import OpenAI
 from oncall_env.models import OnCallAction
 from oncall_env.server.environment import OnCallEnvironment
 
-API_KEY = os.getenv("HF_TOKEN") or os.getenv("OPENAI_API_KEY") or os.getenv("API_KEY")
-API_BASE_URL = os.getenv("API_BASE_URL") or "https://router.huggingface.co/v1"
-MODEL_NAME = os.getenv("MODEL_NAME") or "Qwen/Qwen2.5-72B-Instruct"
+API_BASE_URL = os.getenv("API_BASE_URL", "https://router.huggingface.co/v1")
+MODEL_NAME = os.getenv("MODEL_NAME", "Qwen/Qwen2.5-72B-Instruct")
+HF_TOKEN = os.getenv("HF_TOKEN") or os.getenv("OPENAI_API_KEY") or os.getenv("API_KEY")
 BENCHMARK = "oncall_env"
 MAX_STEPS = 50
 TEMPERATURE = 0.2
@@ -220,7 +220,7 @@ def _extract_error(message: str) -> Optional[str]:
 
 def run_episode(task_id: int = 1, scenario_idx: int = 0) -> float:
     """Run a single episode against the environment."""
-    client_llm = OpenAI(api_key=API_KEY, base_url=API_BASE_URL)
+    client_llm = OpenAI(api_key=HF_TOKEN, base_url=API_BASE_URL)
     task_name = f"task{task_id}_scenario{scenario_idx}"
 
     env = OnCallEnvironment()
